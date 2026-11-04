@@ -75,11 +75,6 @@ export function MobileTopBar({ menu }: { menu: ReactNode }) {
             ref={drawer}
             tabIndex={-1}
             data-rail={inWorkspace ? undefined : true}
-            onClick={(event) => {
-              // A tap on any link in the drawer closes it, even when the
-              // link points at the page already shown.
-              if ((event.target as HTMLElement).closest("a")) setOpen(false);
-            }}
             className="agos-sidebar agos-drawer group/side relative outline-none"
           >
             {menu}
@@ -91,13 +86,28 @@ export function MobileTopBar({ menu }: { menu: ReactNode }) {
 }
 
 /** While the drawer is open: the page behind it does not scroll, focus moves
- * into it, and Escape closes it, back to the button that opened it. */
+ * into it, Escape closes it (back to the button that opened it), and a tap on
+ * any of its links closes it. */
 function useDrawerKeys(
   open: boolean,
   setOpen: (open: boolean) => void,
   opener: RefObject<HTMLButtonElement | null>,
   drawer: RefObject<HTMLDivElement | null>,
 ) {
+  // A tap (or Enter) on any link in the drawer closes it, even when the link
+  // points at the page already shown. Delegated: the links are the sidebar's.
+  useEffect(() => {
+    const el = drawer.current;
+    if (!open || !el) return;
+    const onClick = (event: MouseEvent) => {
+      if ((event.target as HTMLElement).closest("a")) setOpen(false);
+    };
+    el.addEventListener("click", onClick);
+    return () => {
+      el.removeEventListener("click", onClick);
+    };
+  }, [open, drawer, setOpen]);
+
   // The page behind the drawer must not scroll.
   useEffect(() => {
     if (!open) return;

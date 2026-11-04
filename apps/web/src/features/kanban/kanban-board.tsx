@@ -123,10 +123,10 @@ export function KanbanBoardView({
       ) : (
         <div
           data-fill
-          className="task-board -mx-4 flex min-h-[24rem] flex-1 flex-col overflow-x-auto px-4 pb-1 sm:-mx-8 sm:px-8"
+          className="task-board -mx-4 flex min-h-[24rem] flex-1 flex-col overflow-x-auto px-4 pb-1 max-md:snap-x max-md:snap-mandatory sm:-mx-8 sm:px-8"
         >
           <ol
-            className="grid min-h-0 flex-1 grid-rows-[minmax(0,1fr)] gap-3"
+            className="grid min-h-0 flex-1 grid-rows-[minmax(0,1fr)] gap-3 max-md:flex"
             style={{
               gridTemplateColumns: `repeat(${String(Math.max(groups.length, 1))}, minmax(0, 1fr))`,
               minWidth: `${String(Math.max(groups.length, 1) * 220)}px`,
@@ -141,7 +141,7 @@ export function KanbanBoardView({
                   key={group.key || "none"}
                   aria-labelledby={id}
                   className={cn(
-                    "board-column flex min-h-0 min-w-0 flex-col rounded-xl bg-sunken p-2",
+                    "board-column flex min-h-0 min-w-0 flex-col rounded-xl bg-sunken p-2 max-md:w-[min(85vw,340px)] max-md:shrink-0 max-md:snap-center",
                     muted && "opacity-80",
                   )}
                 >

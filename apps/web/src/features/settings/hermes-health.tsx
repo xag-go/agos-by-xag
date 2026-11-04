@@ -38,11 +38,11 @@ function ReportBlock({ title, report }: { title: string; report: Report }) {
   return (
     <details className="rounded-xl border border-line">
       <summary className="flex cursor-pointer items-center justify-between gap-3 px-4 py-2 text-sm">
-        <code>{title}</code>
+        <span className="font-medium">{title}</span>
         <Counts report={report} />
       </summary>
       {report.pending ? (
-        <p className="px-4 pb-3 text-sm text-ink-2">Hermes is checking…</p>
+        <p className="px-4 pb-3 text-sm text-ink-2">Checking…</p>
       ) : report.error ? (
         <p className="px-4 pb-3 text-sm text-danger">{report.error}</p>
       ) : (
@@ -97,13 +97,11 @@ export function HermesHealthView() {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <h3 id="hermes-health" className="font-medium">
-            Hermes&apos;s checks
+            Engine checks
           </h3>
           <p className="mt-1 text-sm text-ink-2">
-            Runs Hermes&apos;s own <code>hermes status --full</code> and{" "}
-            <code>hermes doctor</code> (without --fix) in each workspace&apos;s
-            Hermes. Nothing is changed. The Co-Founder can run them for you from
-            a chat too.
+            Runs a full check and a status report in each workspace. Nothing is
+            changed. The Co-Founder can run them for you from a chat too.
           </p>
         </div>
         <Button
@@ -117,21 +115,16 @@ export function HermesHealthView() {
             ? "Checking…"
             : data
               ? "Run again"
-              : "Run Hermes's checks"}
+              : "Run the checks"}
         </Button>
       </div>
       <FormStatus error={error} />
       {data && data.roots.length === 0 ? (
-        <p className="text-sm text-ink-2">
-          No workspace&apos;s Hermes is set up yet.
-        </p>
+        <p className="text-sm text-ink-2">No workspace is set up yet.</p>
       ) : null}
       {data?.roots.map((root) => (
         <div key={root.workspaceId} className="flex flex-col gap-2">
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h4 className="font-medium">{root.name}</h4>
-            <code className="text-xs break-all text-ink-3">{root.home}</code>
-          </div>
+          <h4 className="font-medium">{root.name}</h4>
           <p className="text-xs text-ink-3">
             {root.checking ? (
               "Checking…"
@@ -141,8 +134,8 @@ export function HermesHealthView() {
               </>
             ) : null}
           </p>
-          <ReportBlock title="hermes doctor" report={root.doctor} />
-          <ReportBlock title="hermes status --full" report={root.status} />
+          <ReportBlock title="Full check" report={root.doctor} />
+          <ReportBlock title="Status" report={root.status} />
         </div>
       ))}
     </PanelSection>

@@ -6,11 +6,13 @@ export function IconButton({
   label,
   onClick,
   active,
+  className,
   children,
 }: {
   label: string;
   onClick: () => void;
   active?: boolean;
+  className?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -22,6 +24,7 @@ export function IconButton({
       className={cn(
         "flex size-9 items-center justify-center rounded-full text-ink-2 hover:bg-canvas hover:text-ink",
         active && "bg-canvas text-ink",
+        className,
       )}
     >
       <svg

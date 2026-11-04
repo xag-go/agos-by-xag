@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState, useTransition } from "react";
 import type {
   CatalogProvider,
@@ -22,6 +23,7 @@ export function ChatHeader({
   agents = [],
   addresses = [],
   connections = [],
+  backHref,
 }: {
   workspaceId: string;
   chat: Chat;
@@ -29,6 +31,8 @@ export function ChatHeader({
   agents?: { name: string; title: string }[];
   addresses?: ChatAddress[];
   connections?: ChannelConnection[];
+  /** On a phone the chat is full-screen: a way back to the list (md-:only). */
+  backHref?: string;
 }) {
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,6 +40,28 @@ export function ChatHeader({
 
   return (
     <header className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-line px-4 py-2.5 sm:px-6">
+      {backHref && (
+        <Link
+          href={backHref}
+          aria-label="Back to the list"
+          className="-ml-2.5 flex size-11 shrink-0 items-center justify-center rounded-full text-ink-2 hover:bg-sunken hover:text-ink md:hidden"
+        >
+          <svg
+            viewBox="0 0 20 20"
+            className="size-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.75}
+            aria-hidden
+          >
+            <path
+              d="M12.5 4.5 7 10l5.5 5.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </Link>
+      )}
       {editing ? (
         <form
           className="flex items-center gap-2"

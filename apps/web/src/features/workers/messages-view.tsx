@@ -23,6 +23,7 @@ export function MessagesView({
   workspaceId,
   team,
   current,
+  asked = false,
   catalog,
   addresses = [],
   connections = [],
@@ -30,6 +31,8 @@ export function MessagesView({
   workspaceId: string;
   team: Team;
   current: Chat | null;
+  /** The URL names a chat. On a phone that opens it full-screen; otherwise the list. */
+  asked?: boolean;
   catalog: CatalogProvider[];
   addresses?: ChatAddress[];
   connections?: ChannelConnection[];
@@ -47,11 +50,16 @@ export function MessagesView({
   return (
     <div
       data-fill
-      className="messages-panel grid min-h-[28rem] flex-1 overflow-hidden rounded-xl border border-line bg-panel md:grid-cols-[17rem_minmax(0,1fr)]"
+      className="messages-panel grid min-h-[28rem] flex-1 overflow-hidden rounded-xl border border-line bg-panel max-md:!grid-rows-[minmax(0,1fr)] md:grid-cols-[17rem_minmax(0,1fr)]"
     >
       <nav
         aria-label="Conversations"
-        className="flex min-h-0 flex-col gap-4 overflow-y-auto border-b border-line bg-sunken/50 p-2 md:border-r md:border-b-0"
+        className={cn(
+          "min-h-0 flex-col gap-4 overflow-y-auto border-b border-line bg-sunken/50 p-2 md:border-r md:border-b-0",
+          // One column on a phone: the list, or (when a chat is asked) the
+          // chat full-screen with a way back. Both side by side from md up.
+          asked ? "hidden md:flex" : "flex",
+        )}
       >
         <section className="flex flex-col gap-0.5">
           <div className="flex items-center justify-between px-3 pt-1 pb-1">
@@ -100,7 +108,7 @@ export function MessagesView({
               >
                 <button
                   type="submit"
-                  className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-sm text-ink-2 hover:bg-ink/4.5 hover:text-ink"
+                  className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-sm text-ink-2 hover:bg-ink/4.5 hover:text-ink max-md:min-h-11"
                 >
                   <Avatar letter={w.title.slice(0, 1).toUpperCase()} />
                   <span className="truncate">{w.title}</span>
@@ -115,11 +123,15 @@ export function MessagesView({
       {current ? (
         <section
           aria-label={current.title}
-          className="flex min-h-0 min-w-0 flex-col"
+          className={cn(
+            "min-h-0 min-w-0 flex-col md:flex",
+            asked ? "flex" : "hidden",
+          )}
         >
           <ChatHeader
             workspaceId={workspaceId}
             chat={current}
+            backHref={base}
             catalog={catalog}
             addresses={addresses}
             connections={connections}
@@ -150,7 +162,7 @@ export function MessagesView({
           />
         </section>
       ) : (
-        <div className="flex flex-col items-center justify-center gap-2 p-6 text-center">
+        <div className="hidden flex-col items-center justify-center gap-2 p-6 text-center md:flex">
           <span className="message-empty-mark" aria-hidden="true">
             ↗
           </span>

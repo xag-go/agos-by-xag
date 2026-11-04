@@ -45,7 +45,7 @@ export function AccessSwitch({
         aria-haspopup="menu"
         aria-expanded={open}
         className={cn(
-          "flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-medium transition-colors disabled:opacity-60",
+          "flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-medium transition-colors disabled:opacity-60 max-md:h-11",
           full
             ? "bg-attention text-attention-ink"
             : "text-ink-2 hover:bg-canvas hover:text-ink",

@@ -39,7 +39,7 @@ export function ChatsView({
   return (
     <Panel
       data-fill
-      className="grid min-h-[28rem] flex-1 grid-cols-[minmax(0,1fr)] overflow-hidden md:grid-cols-[17rem_minmax(0,1fr)]"
+      className="grid min-h-[28rem] flex-1 grid-cols-[minmax(0,1fr)] overflow-hidden max-md:grid-rows-[minmax(0,1fr)] md:grid-cols-[17rem_minmax(0,1fr)]"
     >
       <nav
         aria-label="Sessions"
@@ -57,12 +57,12 @@ export function ChatsView({
               name="title"
               aria-label="New session name"
               placeholder="New session — e.g. Research"
-              className="h-8 min-w-0 flex-1 rounded-lg border border-line-strong bg-panel px-2.5 text-sm text-ink placeholder:text-ink-3 focus-visible:border-accent"
+              className="h-8 min-w-0 flex-1 rounded-lg border border-line-strong bg-panel px-2.5 text-sm text-ink placeholder:text-ink-3 focus-visible:border-accent max-md:h-11"
             />
             <button
               type="submit"
               aria-label="Add session"
-              className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-ink hover:opacity-85"
+              className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-ink hover:opacity-85 max-md:size-11"
             >
               <svg
                 viewBox="0 0 16 16"
@@ -137,15 +137,10 @@ export function ChatsView({
             asked ? "flex" : "hidden",
           )}
         >
-          <Link
-            href={base}
-            className="flex items-center gap-1.5 border-b border-line px-4 py-2 text-sm text-ink-2 hover:text-ink md:hidden"
-          >
-            <span aria-hidden>←</span> Sessions
-          </Link>
           <ChatHeader
             workspaceId={workspaceId}
             chat={current}
+            backHref={base}
             catalog={catalog}
             agents={agents}
             addresses={addresses}

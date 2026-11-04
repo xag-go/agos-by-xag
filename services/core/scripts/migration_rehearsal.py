@@ -614,6 +614,11 @@ def main(argv: list[str] | None = None) -> int:
                 "no old version found: this git checkout is shallow (only the newest commit)."
                 " Clone with the full history (actions/checkout: fetch-depth: 0)."
             )
+        elif not versions:
+            print(
+                "no old version found: the git history holds no older migrations list"
+                " (e.g. a one-commit export). Rehearse a backup copy with --db instead."
+            )
         for sha, n in versions:
             db_file = work / f"v{n}" / "data" / "system" / "agos.db"
             try:

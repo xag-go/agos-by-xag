@@ -67,6 +67,19 @@ def metrics(screen: str, report: dict[str, Any]) -> dict[str, dict[str, Any]]:
 # Lighthouse sometimes loses its own page-load trace ("NO_NAVSTART ... Please run
 # Lighthouse again", seen on a 2-CPU runner): that run is made again.
 TRIES = 3
+# GitHub's ubuntu-24.04 image 20261101 kills the workspace dashboard's page under
+# Lighthouse ("Page.enable: Session closed", 3 tries in a row; image 20261025 passed):
+# shared memory goes to /tmp instead of the runner's small /dev/shm, and WebGL keeps
+# its software renderer with the GPU off.
+CHROME_FLAGS = " ".join(
+    (
+        "--headless=new",
+        "--no-sandbox",
+        "--disable-gpu",
+        "--disable-dev-shm-usage",
+        "--enable-unsafe-swiftshader",
+    )
+)
 
 
 def _run(url: str, chrome: str, out: Path) -> dict[str, Any]:
@@ -87,7 +100,7 @@ def _lighthouse(url: str, chrome: str, out: Path) -> None:
             str(LIGHTHOUSE),
             url,
             f"--chrome-path={chrome}",
-            "--chrome-flags=--headless=new --no-sandbox --disable-gpu",
+            f"--chrome-flags={CHROME_FLAGS}",
             f"--only-categories={','.join(CATEGORIES)}",
             "--preset=desktop",
             "--throttling-method=provided",

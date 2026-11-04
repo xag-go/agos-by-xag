@@ -190,29 +190,33 @@ def test_a_few_points_of_noise_pass_and_a_real_drop_fails() -> None:
 def test_a_lighthouse_runtime_error_is_run_again(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Lighthouse's own trace error ("NO_NAVSTART ... Please run Lighthouse again", seen
-    on a 2-CPU runner) is retried; a run that keeps failing still fails the test."""
+    """Lighthouse's own errors ("NO_NAVSTART ... Please run Lighthouse again", "Page.enable:
+    Session closed") are retried after its leftover Chrome is ended; a run that keeps
+    failing still fails the test."""
     out = tmp_path / "x.json"
-    calls: list[int] = []
+    calls: list[str] = []
+    monkeypatch.setattr(time, "sleep", lambda _s: None)
 
     def run(args: list[str], **_kw: Any) -> None:
-        calls.append(1)
-        if len(calls) == 1:
+        calls.append("pkill" if args[0].endswith("pkill") else "lighthouse")
+        if calls == ["lighthouse"]:
             raise subprocess.CalledProcessError(1, args)
-        out.write_text('{"categories": {}}')
+        if calls[-1] == "lighthouse":
+            out.write_text('{"categories": {}}')
 
     monkeypatch.setattr(subprocess, "run", run)
     assert _run("http://x", "/chrome", out) == {"categories": {}}
-    assert len(calls) == 2
+    assert calls == ["lighthouse", "pkill", "lighthouse"]
 
     calls.clear()
     out.unlink()
 
     def broken(args: list[str], **_kw: Any) -> None:
-        calls.append(1)
-        raise subprocess.CalledProcessError(1, args)
+        calls.append("pkill" if args[0].endswith("pkill") else "lighthouse")
+        if calls[-1] == "lighthouse":
+            raise subprocess.CalledProcessError(1, args)
 
     monkeypatch.setattr(subprocess, "run", broken)
     with pytest.raises(subprocess.CalledProcessError):
         _run("http://x", "/chrome", out)
-    assert len(calls) == TRIES
+    assert calls == ["lighthouse", "pkill"] * TRIES

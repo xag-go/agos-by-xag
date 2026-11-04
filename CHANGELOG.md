@@ -6,6 +6,12 @@ Every notable change to AGOS is written here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- `agos uninstall` now also removes the sandbox containers Hermes started for your
+  workspaces (named `hermes-…`). They kept running after the uninstall with the
+  workspace files mounted, and the workspace network could not be removed.
+
 ## [0.1.0] - 2026-11-04
 
 The first public release (beta).

@@ -50,7 +50,7 @@ export function MessagesView({
   return (
     <div
       data-fill
-      className="messages-panel grid min-h-[28rem] flex-1 overflow-hidden rounded-xl border border-line bg-panel max-md:!grid-rows-[minmax(0,1fr)] md:grid-cols-[17rem_minmax(0,1fr)]"
+      className="messages-panel grid min-h-112 flex-1 overflow-hidden rounded-xl border border-line bg-panel max-md:!grid-rows-1 md:grid-cols-[17rem_minmax(0,1fr)]"
     >
       <nav
         aria-label="Conversations"

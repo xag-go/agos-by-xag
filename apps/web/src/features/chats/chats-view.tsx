@@ -39,7 +39,7 @@ export function ChatsView({
   return (
     <Panel
       data-fill
-      className="grid min-h-[28rem] flex-1 grid-cols-[minmax(0,1fr)] overflow-hidden max-md:grid-rows-[minmax(0,1fr)] md:grid-cols-[17rem_minmax(0,1fr)]"
+      className="grid min-h-112 flex-1 grid-cols-1 overflow-hidden max-md:grid-rows-1 md:grid-cols-[17rem_minmax(0,1fr)]"
     >
       <nav
         aria-label="Sessions"

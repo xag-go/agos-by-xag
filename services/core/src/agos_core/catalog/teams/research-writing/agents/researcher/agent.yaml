@@ -1,0 +1,11 @@
+name: researcher
+title: Researcher
+summary: Finds and checks sources for each question.
+reports_to: research-lead
+model: null
+skills:
+  - cite-sources
+reads: []
+"on": true
+heartbeat: ""
+notes: ""

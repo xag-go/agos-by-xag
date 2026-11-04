@@ -1,0 +1,41 @@
+{
+  "about": "Hermes calls outside agos_core/hermes_gateway (ADR 0024), per rule and file. Counts may only go down; lower them here in the same change (python tests/hermes_gateway_scan.py --update).",
+  "counts": {
+    "actions_import": {
+      "actions/agos_update.py": 1,
+      "actions/remote_access.py": 1
+    },
+    "engine_cli": {},
+    "engine_runner": {
+      "actions/owner_time.py": 1,
+      "migrate_root.py": 1
+    },
+    "hermes_python": {
+      "actions/account_pause.py": 1,
+      "actions/backups.py": 1,
+      "actions/secrets_check.py": 1,
+      "actions/services/automation/cron.py": 1,
+      "actions/services/chat/turns.py": 1,
+      "actions/services/connector/app_catalog.py": 1,
+      "actions/services/connector/connect_flow.py": 1,
+      "actions/services/connector/nous_apps.py": 1,
+      "actions/services/library/sources.py": 1,
+      "actions/services/settings/model_logins.py": 1
+    },
+    "sqlite3_connect": {
+      "migrate_root.py": 3
+    },
+    "subprocess": {
+      "actions/agos_update.py": 2,
+      "actions/remote_access.py": 2
+    }
+  },
+  "totals": {
+    "actions_import": 2,
+    "engine_cli": 0,
+    "engine_runner": 2,
+    "hermes_python": 10,
+    "sqlite3_connect": 3,
+    "subprocess": 4
+  }
+}

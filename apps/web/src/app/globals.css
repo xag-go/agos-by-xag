@@ -1,0 +1,1216 @@
+@import "tailwindcss";
+
+/*
+ * AGOS semantic design tokens.
+ *
+ * Contrast, weight and spacing establish hierarchy. Black and white; the accent is
+ * solid ink, while status colors retain meaning:
+ *   - danger (red): errors, blocked work, destructive actions;
+ *   - live (green): a connection lamp that is up.
+ * "Waiting for you" is solid ink (inverted), the loudest thing in the UI.
+ *
+ * Token roles (semantic names, so the palette changes in one place):
+ *   paper       app background        panel        cards, inputs, popovers
+ *   sunken      wells, hover, columns ink/-2/-3    text: primary/secondary/muted
+ *   line        hairlines             line-strong  inputs, emphasis borders
+ *   accent      primary action + the Start gate
+ *   attention   "waiting for you" (always paired with its label)
+ *   success     done / ok (always paired with a check or the word)
+ */
+:root {
+  --paper: #fafafa;
+  --panel: #ffffff;
+  --sunken: #f2f2f2;
+  --ink: #0a0a0a;
+  --ink-2: #525252;
+  --ink-3: #737373;
+  --line: #e8e8e8;
+  --line-strong: #d4d4d4;
+  --accent: #0a0a0a;
+  --accent-ink: #ffffff;
+  --accent-soft: #f0f0f0;
+  --attention: #0a0a0a;
+  --attention-ink: #ffffff;
+  --attention-soft: #f2f2f2;
+  --success: #0a0a0a;
+  --success-soft: #f0f0f0;
+  --danger: #c4281c;
+  --danger-soft: #fdf1f0;
+  --live: #16a34a;
+  --focus: #0a0a0a;
+  --backdrop: rgb(0 0 0 / 0.32);
+  color-scheme: light;
+}
+
+/* Dark: follows the system unless the owner picked a theme (data-theme). */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0a0a0a;
+    --panel: #141414;
+    --sunken: #1a1a1a;
+    --ink: #ededed;
+    --ink-2: #a1a1a1;
+    --ink-3: #7a7a7a;
+    --line: #262626;
+    --line-strong: #3a3a3a;
+    --accent: #ededed;
+    --accent-ink: #0a0a0a;
+    --accent-soft: #222222;
+    --attention: #ededed;
+    --attention-ink: #0a0a0a;
+    --attention-soft: #1c1c1c;
+    --success: #ededed;
+    --success-soft: #222222;
+    --danger: #ff6b5e;
+    --danger-soft: #2a1513;
+    --live: #3ddc84;
+    --focus: #ededed;
+    --backdrop: rgb(0 0 0 / 0.6);
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --paper: #0a0a0a;
+  --panel: #141414;
+  --sunken: #1a1a1a;
+  --ink: #ededed;
+  --ink-2: #a1a1a1;
+  --ink-3: #7a7a7a;
+  --line: #262626;
+  --line-strong: #3a3a3a;
+  --accent: #ededed;
+  --accent-ink: #0a0a0a;
+  --accent-soft: #222222;
+  --attention: #ededed;
+  --attention-ink: #0a0a0a;
+  --attention-soft: #1c1c1c;
+  --success: #ededed;
+  --success-soft: #222222;
+  --danger: #ff6b5e;
+  --danger-soft: #2a1513;
+  --live: #3ddc84;
+  --focus: #ededed;
+  --backdrop: rgb(0 0 0 / 0.6);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-panel: var(--panel);
+  --color-sunken: var(--sunken);
+  --color-canvas: var(--sunken);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-attention: var(--attention);
+  --color-attention-ink: var(--attention-ink);
+  --color-attention-soft: var(--attention-soft);
+  --color-hold-ink: var(--hold-ink);
+  --color-hold-soft: var(--hold-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-live: var(--live);
+  --font-sans: var(--font-body), system-ui, sans-serif;
+  --font-display: var(--font-body), system-ui, sans-serif;
+  --font-mono: var(--font-code), ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/*
+ * Design tokens for the values the screens use beyond Tailwind's scale: the small type steps,
+ * letter-spacing, line-heights, radii, the shell's easing, shadows, the 3D office HUD's warm
+ * palette, and the vision page's per-element colors (CSS variables set on the element).
+ * `inline`, so each class compiles to the value itself (`text-11` is `font-size: 11px`),
+ * exactly what the arbitrary value it replaced (`text-[11px]`) compiled to.
+ */
+@theme inline {
+  --text-8: 8px;
+  --text-8\.5: 8.5px;
+  --text-9\.5: 9.5px;
+  --text-10: 10px;
+  --text-11: 11px;
+  --text-11\.5: 11.5px;
+  --text-12\.5: 12.5px;
+  --text-13: 13px;
+  --text-13\.5: 13.5px;
+  --text-15: 15px;
+  --text-16\.5: 16.5px;
+  --text-17: 17px;
+  --text-19: 19px;
+  --text-30: 30px;
+  --text-body: 0.9375rem;
+  --text-body-sm: 0.8125rem;
+  --text-caption: 0.75rem;
+  --text-caption-sm: 0.6875rem;
+  --text-micro: 0.65rem;
+  --text-em-sm: 0.85em;
+  --tracking-display: -0.02em;
+  --tracking-heading: -0.015em;
+  --tracking-title: -0.01em;
+  --tracking-label: 0.02em;
+  --tracking-caps: 0.12em;
+  --tracking-caps-wide: 0.14em;
+  --leading-heading: 1.2;
+  --leading-compact: 1.3;
+  --leading-cozy: 1.35;
+  --radius-3: 3px;
+  --radius-5: 5px;
+  --radius-7: 7px;
+  --radius-9: 9px;
+  --radius-10: 10px;
+  --radius-14: 14px;
+  --radius-20: 20px;
+  --radius-composer: 1.75rem;
+  /* Written as the classes wrote it, so the compiled CSS is the same text. */
+  /* prettier-ignore */
+  --ease-glide: cubic-bezier(.2,.8,.2,1);
+  --font-vision-serif: var(--vision-serif);
+  --color-hud-night: #1c1d20;
+  --color-hud-stone: #9a958c;
+  --color-hud-stone-deep: #7d786f;
+  --color-hud-sand-dim: #b9b2a6;
+  --color-hud-sand: #cfc9bd;
+  --color-hud-sand-light: #d8d2c6;
+  --color-hud-gold: #e6c98d;
+  --color-hud-brass: #c9a45c;
+  --color-hud-alarm: #e0574c;
+  --color-hud-alarm-soft: #f1a59e;
+  --color-hud-amber: #e0a33c;
+  --color-hud-cream: #f1ece3;
+  --color-hud-cream-light: #f6f1e8;
+  --color-lane: var(--lane);
+  --color-lane-ink: var(--lane-ink);
+  --color-lane-ink-2: var(--lane-ink-2);
+  --color-lane-accent: var(--lane-accent);
+  --color-lane-bar: var(--lane-bar);
+  --color-run-ink: var(--run-ink);
+  --color-run-soft: var(--run-soft);
+  --color-review-ink: var(--review-ink);
+  --color-review-soft: var(--review-soft);
+  --color-goal-hue: var(--goal-hue);
+  --color-goal-tint: var(--goal-tint);
+  --color-goal-avatar: var(--goal-avatar);
+  --color-goal-avatar-ink: var(--goal-avatar-ink);
+  --color-goal-mini: var(--goal-mini);
+  --color-goal-mini-line: var(--goal-mini-line);
+  --color-goal-ns: var(--goal-ns);
+  --color-hero-ink: var(--hero-ink);
+  --color-hero-line: var(--hero-line);
+  --color-majorelle: var(--majorelle);
+  --shadow-ring-accent: 0 0 0 2px var(--accent);
+  --shadow-ring-danger: 0 0 0 2px var(--danger);
+  --shadow-chart-node: 0 10px 30px -18px rgb(0 0 0/0.45);
+  --shadow-popover: 0 12px 32px -8px rgb(0 0 0/0.25);
+  --shadow-card-rest: 0 1px 2px rgb(0 0 0/0.04);
+  --shadow-goal-lift:
+    0 1px 2px rgb(15 27 42/0.05), 0 6px 16px rgb(15 27 42/0.08);
+  --shadow-goal: 0 1px 2px rgb(15 27 42/0.05);
+  --shadow-thumb: 0 1px 3px rgb(0 0 0/0.12);
+  --shadow-rail-flyout:
+    0 24px 56px -20px rgb(0 0 0/0.45), 0 4px 16px -6px rgb(0 0 0/0.25);
+  --shadow-composer: 0 2px 12px -4px rgb(0 0 0/0.12);
+  --shadow-float: 0 8px 24px -6px rgb(0 0 0/0.35);
+  --shadow-inset-lane: inset 0 0 0 1.5px var(--lane-ink-3);
+  --shadow-inset-goal-mini: inset 0 0 0 1px var(--goal-mini-line);
+  --shadow-inset-line-strong: inset 0 0 0 1px var(--line-strong);
+  --shadow-tile-current:
+    inset 0 1px 0 rgb(255 255 255/0.18), 0 0 0 2px var(--paper),
+    0 0 0 3.5px var(--ink);
+  --shadow-tile-up:
+    inset 0 1px 0 rgb(255 255 255/0.18), 0 10px 24px -6px rgb(0 0 0/0.45);
+  --shadow-tile-rest:
+    inset 0 1px 0 rgb(255 255 255/0.18), 0 1px 2px rgb(0 0 0/0.25);
+  --shadow-lane: var(--lane-shadow);
+  --shadow-vision-card: var(--vision-card-shadow);
+}
+
+html {
+  background: var(--paper);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+/* Display text runs slightly tight, as in most product UIs. */
+.font-display {
+  letter-spacing: -0.02em;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+::selection {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* Selects share one chevron, drawn in the current text color. */
+.agos-select {
+  background-image:
+    linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position:
+    calc(100% - 15px) 50%,
+    calc(100% - 11px) 50%;
+  background-size: 4px 4px;
+  background-repeat: no-repeat;
+}
+
+dialog:focus-visible {
+  outline: none;
+}
+
+dialog::backdrop {
+  background: var(--backdrop);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  dialog[open] {
+    animation: dialog-in 160ms ease-out;
+  }
+}
+
+/* AGOS atelier: a floating graphite navigation, neutral canvas, black and white.
+ * A command-center look inspired the separated shell and precise surface hierarchy, not its
+ * two-rail architecture, financial content, branding or navigation. */
+:root {
+  --paper: #f7f7f7;
+  --sunken: #efefef;
+  --ink: #0a0a0a;
+  --ink-2: #525252;
+  --ink-3: #6b6b6b;
+  --line: #e4e4e4;
+  --accent: #0a0a0a;
+  --accent-ink: #ffffff;
+  --accent-soft: #ededed;
+  --focus: #0a0a0a;
+  --surface-shadow: 0 1px 3px rgb(0 0 0 / 0.025), 0 6px 20px rgb(0 0 0 / 0.02);
+}
+:root[data-theme="dark"] {
+  --paper: #101012;
+  --panel: #19191c;
+  --sunken: #202023;
+  --ink-3: #96969f;
+  --line: #2d2d32;
+  --accent: #ededed;
+  --accent-ink: #141414;
+  --accent-soft: #222222;
+  --focus: #ededed;
+  --surface-shadow: 0 1px 0 rgb(255 255 255 / 0.025);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #101012;
+    --panel: #19191c;
+    --sunken: #202023;
+    --ink-3: #96969f;
+    --line: #2d2d32;
+    --accent: #ededed;
+    --accent-ink: #141414;
+    --accent-soft: #222222;
+    --focus: #ededed;
+    --surface-shadow: 0 1px 0 rgb(255 255 255 / 0.025);
+  }
+}
+body {
+  font-family: var(--font-body), Arial, sans-serif;
+}
+.app-main {
+  background: var(--paper);
+}
+
+/* Floating graphite sidebar. It re-scopes the tokens so every existing nav
+ * component (links, badges, tooltips, theme switcher) renders on graphite
+ * without per-component edits. */
+.agos-sidebar {
+  top: 12px;
+  height: calc(100dvh - 24px);
+  margin: 12px 0 12px 12px;
+  border-radius: 20px;
+  background: var(--paper);
+  box-shadow:
+    0 0 0 1px rgb(0 0 0 / 0.5),
+    0 18px 40px -18px rgb(0 0 0 / 0.45);
+  --paper: #111111;
+  --panel: #222222;
+  --sunken: #1c1c1c;
+  --ink: #f5f5f5;
+  --ink-2: #b0b0b0;
+  --ink-3: #8a8a8a;
+  --line: #2a2a2a;
+  --line-strong: #3a3a3a;
+  --accent: #ededed;
+  --accent-ink: #111111;
+  --attention: #f5f5f5;
+  --attention-ink: #111111;
+  --focus: #ededed;
+  color: var(--ink);
+  color-scheme: dark;
+}
+.agos-sidebar > div {
+  border-radius: inherit;
+}
+/* The workspace rail: a shade deeper than the panel, the left corners of the
+ * sidebar as its own. Tooltips spill out of it to the right. */
+.agos-rail {
+  border-radius: inherit;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+  background: var(--sunken);
+  box-shadow: inset -1px 0 0 var(--line);
+}
+.agos-sidebar[data-rail] .agos-rail {
+  box-shadow: none;
+}
+.agos-foot {
+  border-radius: inherit;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+/* The rail's preview: grows out of its tile; the arrow points back at it. */
+.agos-rail-preview {
+  transform-origin: left var(--pointer-y, 44px);
+  animation: agos-rail-preview-in 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.agos-rail-preview::before {
+  content: "";
+  position: absolute;
+  left: -7px;
+  top: calc(var(--pointer-y, 44px) - 7px);
+  width: 14px;
+  height: 14px;
+  background: var(--panel);
+  border-left: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  transform: rotate(45deg);
+  border-bottom-left-radius: 3px;
+}
+@keyframes agos-rail-preview-in {
+  from {
+    opacity: 0;
+    transform: translateX(-6px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.agos-sidebar .sidebar-brand span {
+  letter-spacing: 0.02em;
+}
+.agos-sidebar a[aria-current="page"] {
+  background: rgb(255 255 255 / 0.08);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.05);
+}
+:root[data-theme="dark"] .agos-sidebar {
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.06),
+    0 18px 40px -18px rgb(0 0 0 / 0.8);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .agos-sidebar {
+    box-shadow:
+      0 0 0 1px rgb(255 255 255 / 0.06),
+      0 18px 40px -18px rgb(0 0 0 / 0.8);
+  }
+}
+
+/* Workspace identity: an ink monogram tile beside the title. */
+.workspace-identity {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.workspace-monogram {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background:
+    radial-gradient(
+      120% 120% at 20% 0%,
+      rgb(255 255 255 / 0.22),
+      transparent 55%
+    ),
+    var(--accent);
+  color: var(--accent-ink);
+  font-size: 24px;
+  font-weight: 600;
+  text-transform: uppercase;
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 0.12),
+    0 8px 20px -10px var(--accent);
+}
+
+@media (max-width: 767px) {
+}
+.workspace-eyebrow {
+  margin-bottom: 7px;
+  color: var(--ink-3);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.workspace-heading h1 {
+  font-size: 27px;
+  line-height: 1.2;
+  letter-spacing: -0.045em;
+}
+.workspace-heading > a {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  font-size: 12px;
+}
+.workspace-heading > div > p:not(.workspace-eyebrow):empty {
+  display: none;
+}
+.dashboard-grid > * {
+  min-width: 0;
+}
+.dashboard-panel,
+.performance-panel,
+.messages-panel,
+.dashboard-stats {
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+}
+.dashboard-stat {
+  border: 0;
+  border-radius: 0;
+  position: relative;
+  padding: 22px 24px;
+}
+.dashboard-stat + .dashboard-stat {
+  border-left: 1px solid var(--line);
+}
+.dashboard-stat > span:first-child {
+  font-size: 12px;
+  font-weight: 500;
+}
+.dashboard-stat > span:nth-child(2) {
+  font-size: 42px;
+  font-weight: 500;
+  letter-spacing: -0.06em;
+  margin: 5px 0;
+}
+.dashboard-stat:hover {
+  background: var(--sunken);
+}
+.dashboard-stat.bg-attention:hover {
+  background: var(--attention);
+}
+.dashboard-panel header,
+.performance-panel header {
+  padding-top: 18px;
+  padding-bottom: 18px;
+}
+.performance-panel thead {
+  background: color-mix(in srgb, var(--sunken) 55%, var(--panel));
+}
+.performance-panel tbody tr:hover {
+  background: var(--sunken);
+}
+.performance-panel .text-live {
+  color: var(--ink-2);
+}
+.performance-panel th {
+  white-space: nowrap;
+}
+.board-column {
+  border: 1px solid var(--line);
+}
+.board-column > div {
+  padding: 8px 5px 15px;
+}
+.board-column h2 {
+  justify-content: space-between;
+}
+.board-column h2 > span {
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  min-width: 22px;
+  text-align: center;
+}
+.task-card {
+  box-shadow: var(--surface-shadow);
+}
+.task-card:hover {
+  box-shadow: 0 3px 12px rgb(0 0 0 / 0.07);
+}
+.task-card > span:first-child {
+  font-size: 10px;
+}
+.messages-panel > nav {
+  padding: 16px 10px;
+  gap: 25px;
+}
+.messages-panel > nav h2 {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+}
+.messages-panel > nav a {
+  min-height: 44px;
+}
+.messages-panel > nav a[aria-current="page"] {
+  background: var(--panel);
+  box-shadow:
+    0 0 0 1px var(--line),
+    var(--surface-shadow);
+}
+.message-empty-mark {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 14px;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background: var(--paper);
+  font-size: 26px;
+}
+.agos-button {
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+  font-size: 13px;
+}
+.settings-page > h1 {
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--line);
+  font-size: 27px;
+  letter-spacing: -0.04em;
+}
+.settings-page section {
+  border-radius: 12px;
+  box-shadow: var(--surface-shadow);
+}
+.settings-page [class*="max-w-"] {
+  max-width: none;
+}
+@media (max-width: 639px) {
+  .workspace-heading h1 {
+    font-size: 24px;
+  }
+  .workspace-heading > a {
+    padding: 0 10px;
+  }
+
+  .dashboard-stat {
+    padding: 18px;
+  }
+  .dashboard-stat:nth-child(3) {
+    border-left: 0;
+  }
+  .dashboard-stat:nth-child(n + 3) {
+    border-top: 1px solid var(--line);
+  }
+  .messages-panel {
+    grid-template-rows: minmax(0, 0.8fr) minmax(0, 1fr);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* ---- Office 3D (features/office3d) ---------------------------------------- */
+.office3d-marker {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 4px;
+  will-change: transform;
+  font-family: var(--font-sans, system-ui);
+  white-space: nowrap;
+}
+.office3d-mark {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border-radius: 999px;
+  background: #f6f1e8;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.25);
+  color: #2e3033;
+  font-size: 13px;
+  font-weight: 800;
+}
+.office3d-mark.is-waiting {
+  background: #d6453b;
+  color: #fff;
+  animation: office3d-pulse 1.6s ease-in-out infinite;
+}
+.office3d-mark.is-blocked {
+  background: #d9952b;
+  color: #fff;
+}
+.office3d-mark.is-thought {
+  display: none;
+}
+.office3d-marker.is-thinking .office3d-mark.is-thought {
+  display: grid;
+}
+.office3d-mark.is-thought {
+  background: rgb(246 241 232 / 0.92);
+  color: #5f6f66;
+  font-size: 15px;
+  line-height: 0;
+}
+.office3d-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3px 9px 4px;
+  border: 1px solid rgb(255 255 255 / 0.08);
+  border-radius: 8px;
+  background: rgb(28 29 32 / 0.9);
+  color: #f6f1e8;
+  font-size: 11px;
+  line-height: 1.3;
+}
+.office3d-label strong {
+  font-weight: 600;
+}
+.office3d-label span {
+  color: #b9b2a6;
+  font-size: 10px;
+}
+@keyframes office3d-pulse {
+  50% {
+    transform: scale(1.12);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .office3d-mark {
+    animation: none !important;
+  }
+}
+
+.office3d {
+  background: #1b1c1f;
+  color: #f1ece3;
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.1),
+    0 12px 40px rgb(0 0 0 / 0.12);
+}
+.office3d-btn {
+  display: inline-flex;
+  height: 30px;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  border: 1px solid rgb(255 255 255 / 0.08);
+  border-radius: 8px;
+  background: rgb(255 255 255 / 0.03);
+  color: #e9e3d8;
+  font-size: 12px;
+  transition:
+    background-color 0.18s,
+    border-color 0.18s;
+}
+.office3d-btn:hover {
+  border-color: rgb(255 255 255 / 0.18);
+  background: rgb(255 255 255 / 0.07);
+}
+.office3d-btn[aria-pressed="true"],
+.office3d-btn.is-on {
+  border-color: rgb(201 164 92 / 0.6);
+  background: rgb(201 164 92 / 0.14);
+}
+.office3d-btn.is-primary {
+  border-color: transparent;
+  background: #f1ece3;
+  color: #1b1c1f;
+  font-weight: 600;
+}
+.office3d-btn.is-primary:hover {
+  background: #fff;
+}
+.office3d-icon {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 8px;
+  color: #e9e3d8;
+  font-size: 16px;
+  transition: background-color 0.18s;
+}
+.office3d-icon:hover {
+  background: rgb(255 255 255 / 0.08);
+}
+.office3d :focus-visible {
+  outline: 2px solid #c9a45c;
+  outline-offset: 2px;
+}
+.office3d-dt {
+  margin-bottom: 2px;
+  color: #8f8a81;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.office3d-inspector {
+  animation: office3d-in 0.2s ease-out;
+}
+.office3d-loading {
+  animation: office3d-fade 1.4s ease-in-out infinite alternate;
+}
+@keyframes office3d-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes office3d-fade {
+  to {
+    opacity: 0.4;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .office3d-inspector,
+  .office3d-loading {
+    animation: none;
+  }
+}
+
+/* Aqua Navy palette (owner's pick, 2026-10-23): cool blue-white light
+ * surfaces, deep navy dark surfaces, and one aqua accent (#0e939f light,
+ * #2bd3d8 dark) for primary actions, the logo and "waiting for you".
+ * Live stays green, danger stays red.
+ * Declared last so it wins over the tokens above. */
+:root {
+  --paper: #f5f8fb;
+  --panel: #ffffff;
+  --sunken: #eaf0f6;
+  --ink: #0f1729;
+  --ink-2: #44506a;
+  --ink-3: #5f6b84;
+  --line: #dbe4ee;
+  --line-strong: #c9d5e3;
+  --accent: #0e939f;
+  --accent-ink: #ffffff;
+  --accent-soft: #e1f4f6;
+  --attention: #0e939f;
+  --attention-ink: #ffffff;
+  --attention-soft: #e1f4f6;
+  --success: #0f1729;
+  --success-soft: #eaf0f6;
+  --live: #16a34a;
+  --focus: #0e939f;
+}
+:root[data-theme="dark"] {
+  --paper: #0a0e1a;
+  --panel: #121829;
+  --sunken: #182036;
+  --ink: #e9edf7;
+  --ink-2: #a9b2c8;
+  --ink-3: #8a93ab;
+  --line: #232c45;
+  --line-strong: #2f3b5c;
+  --accent: #2bd3d8;
+  --accent-ink: #031a1e;
+  --accent-soft: #0d2433;
+  --attention: #2bd3d8;
+  --attention-ink: #031a1e;
+  --attention-soft: #0d2433;
+  --success: #e9edf7;
+  --success-soft: #182036;
+  --live: #3ddc84;
+  --focus: #2bd3d8;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0a0e1a;
+    --panel: #121829;
+    --sunken: #182036;
+    --ink: #e9edf7;
+    --ink-2: #a9b2c8;
+    --ink-3: #8a93ab;
+    --line: #232c45;
+    --line-strong: #2f3b5c;
+    --accent: #2bd3d8;
+    --accent-ink: #031a1e;
+    --accent-soft: #0d2433;
+    --attention: #2bd3d8;
+    --attention-ink: #031a1e;
+    --attention-soft: #0d2433;
+    --success: #e9edf7;
+    --success-soft: #182036;
+    --live: #3ddc84;
+    --focus: #2bd3d8;
+    color-scheme: dark;
+  }
+}
+/* Sidebar: cool blue-grey in light mode, deep navy in dark mode. */
+.agos-sidebar {
+  --paper: #ecf1f7;
+  --panel: #ffffff;
+  --sunken: #e2e9f2;
+  --ink: #0f1729;
+  --ink-2: #44506a;
+  --ink-3: #5f6b84;
+  --line: #d6e0eb;
+  --line-strong: #c9d5e3;
+  --accent: #0e939f;
+  --accent-ink: #ffffff;
+  --attention: #0e939f;
+  --attention-ink: #ffffff;
+  --focus: #0e939f;
+  color-scheme: light;
+  box-shadow:
+    0 0 0 1px rgb(15 23 41 / 0.06),
+    0 18px 40px -22px rgb(15 23 41 / 0.18);
+}
+.agos-sidebar a[aria-current="page"] {
+  background: rgb(14 147 159 / 0.12);
+  box-shadow: inset 0 0 0 1px rgb(14 147 159 / 0.35);
+}
+:root[data-theme="dark"] .agos-sidebar {
+  --paper: #0d1220;
+  --panel: #182036;
+  --sunken: #0f1524;
+  --ink: #eef1f9;
+  --ink-2: #a9b2c8;
+  --ink-3: #8a93ab;
+  --line: #1e2740;
+  --line-strong: #2f3b5c;
+  --accent: #2bd3d8;
+  --accent-ink: #031a1e;
+  --attention: #2bd3d8;
+  --attention-ink: #031a1e;
+  --focus: #2bd3d8;
+  color-scheme: dark;
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.06),
+    0 18px 40px -18px rgb(0 0 0 / 0.8);
+}
+:root[data-theme="dark"] .agos-sidebar a[aria-current="page"] {
+  background: rgb(43 211 216 / 0.14);
+  box-shadow: inset 0 0 0 1px rgb(43 211 216 / 0.3);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .agos-sidebar {
+    --paper: #0d1220;
+    --panel: #182036;
+    --sunken: #0f1524;
+    --ink: #eef1f9;
+    --ink-2: #a9b2c8;
+    --ink-3: #8a93ab;
+    --line: #1e2740;
+    --line-strong: #2f3b5c;
+    --accent: #2bd3d8;
+    --accent-ink: #031a1e;
+    --attention: #2bd3d8;
+    --attention-ink: #031a1e;
+    --focus: #2bd3d8;
+    color-scheme: dark;
+    box-shadow:
+      0 0 0 1px rgb(255 255 255 / 0.06),
+      0 18px 40px -18px rgb(0 0 0 / 0.8);
+  }
+  :root:not([data-theme="light"]) .agos-sidebar a[aria-current="page"] {
+    background: rgb(43 211 216 / 0.14);
+    box-shadow: inset 0 0 0 1px rgb(43 211 216 / 0.3);
+  }
+}
+
+/* Vision page (owner's pick, layout C with the "focus first" Today, C2c):
+ * white cards lifted by a soft shadow, a quiet serif Vision line, and the
+ * owner's own lane in a deep teal ("accent dark") next to the team's lane.
+ * Review is the one warm hue (amber), blocked stays danger red. */
+:root {
+  --vision-serif: "Noto Serif", "DejaVu Serif", Georgia, serif;
+  --vision-card-shadow:
+    0 1px 2px rgb(15 27 42 / 0.04), 0 4px 16px rgb(15 27 42 / 0.05);
+  --lane: #10303a;
+  --lane-ink: #ffffff;
+  --lane-ink-2: #9fbcc2;
+  --lane-ink-3: #7fa7ad;
+  --lane-accent: #8fd0d2;
+  --lane-bar: #5fc4c7;
+  --lane-shadow: 0 10px 30px rgb(16 48 58 / 0.16);
+  --tick: #e7edf1;
+  --review: #d9a24a;
+  --review-soft: #fbf1df;
+  --review-ink: #a86a12;
+}
+:root[data-theme="dark"] {
+  --vision-card-shadow: 0 0 0 1px #232c45;
+  --lane: #0c2a33;
+  --lane-shadow: 0 0 0 1px rgb(43 211 216 / 0.16);
+  --tick: #232c45;
+  --review: #d9a24a;
+  --review-soft: #2b2312;
+  --review-ink: #e8b866;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --vision-card-shadow: 0 0 0 1px #232c45;
+    --lane: #0c2a33;
+    --lane-shadow: 0 0 0 1px rgb(43 211 216 / 0.16);
+    --tick: #232c45;
+    --review-soft: #2b2312;
+    --review-ink: #e8b866;
+  }
+}
+.vision-card {
+  background: var(--panel);
+  border-radius: 20px;
+  box-shadow: var(--vision-card-shadow);
+}
+/* Vision page (owner's pick V3, Today on the right): goals on the left 60%,
+ * Today's one card on the right 40% (sticky), stacked below ~1100px with
+ * Today first. */
+.vision-cols {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+}
+@media (min-width: 1100px) {
+  .vision-cols {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    grid-template-areas: "goals today";
+  }
+  .vision-cols > .vision-goals {
+    grid-area: goals;
+  }
+  .vision-cols > .vision-today {
+    grid-area: today;
+    position: sticky;
+    top: 24px;
+  }
+}
+.vision-hero {
+  background: linear-gradient(
+    135deg,
+    var(--hero-from) 0%,
+    var(--hero-mid) 60%,
+    var(--panel) 100%
+  );
+  border-radius: 22px;
+  box-shadow: var(--vision-card-shadow);
+}
+:root {
+  --hero-from: #e9f5f5;
+  --hero-mid: #f6fbfb;
+  --hero-line: rgb(47 143 147 / 0.15);
+  --hero-ink: #0c2230;
+  --run-soft: #e5f2fb;
+  --run-ink: #2369a3;
+}
+:root[data-theme="dark"] {
+  --hero-from: #0f2a33;
+  --hero-mid: #15202f;
+  --hero-line: rgb(43 211 216 / 0.16);
+  --hero-ink: #eef1f9;
+  --run-soft: #13263a;
+  --run-ink: #8cc4ef;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --hero-from: #0f2a33;
+    --hero-mid: #15202f;
+    --hero-line: rgb(43 211 216 / 0.16);
+    --hero-ink: #eef1f9;
+    --run-soft: #13263a;
+    --run-ink: #8cc4ef;
+  }
+}
+
+/* Goals (V3): each goal a card whose header takes its own tint, cycling
+ * teal / amber / indigo by the goal's order (data-tone 0..2): title, owner,
+ * key result chips and a small ring; one footer line, the projects folded. */
+:root {
+  --goal-avatar: #10303a;
+  --goal-avatar-ink: #ffffff;
+  --goal-mini: #f8fafb;
+  --goal-mini-line: #eef2f5;
+  --goal-tint-0: #e3f1f1;
+  --goal-hue-0: #2f8f93;
+  --goal-tint-1: #f8eedd;
+  --goal-hue-1: #c0842a;
+  --goal-tint-2: #eceefa;
+  --goal-hue-2: #6470c2;
+  --goal-ns: #c3ccd5;
+}
+:root[data-theme="dark"] {
+  --goal-avatar: #1a4a57;
+  --goal-avatar-ink: #b5e6e8;
+  --goal-mini: #151c2f;
+  --goal-mini-line: #232c45;
+  --goal-tint-0: #0f2630;
+  --goal-hue-0: #3cc4c8;
+  --goal-tint-1: #2a2215;
+  --goal-hue-1: #e0a54c;
+  --goal-tint-2: #1c2140;
+  --goal-hue-2: #8e98ea;
+  --goal-ns: #4a5677;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --goal-avatar: #1a4a57;
+    --goal-avatar-ink: #b5e6e8;
+    --goal-mini: #151c2f;
+    --goal-mini-line: #232c45;
+    --goal-tint-0: #0f2630;
+    --goal-hue-0: #3cc4c8;
+    --goal-tint-1: #2a2215;
+    --goal-hue-1: #e0a54c;
+    --goal-tint-2: #1c2140;
+    --goal-hue-2: #8e98ea;
+    --goal-ns: #4a5677;
+  }
+}
+.goal-card[data-tone="0"] {
+  --goal-tint: var(--goal-tint-0);
+  --goal-hue: var(--goal-hue-0);
+}
+.goal-card[data-tone="1"] {
+  --goal-tint: var(--goal-tint-1);
+  --goal-hue: var(--goal-hue-1);
+}
+.goal-card[data-tone="2"] {
+  --goal-tint: var(--goal-tint-2);
+  --goal-hue: var(--goal-hue-2);
+}
+.goal-card[data-status="paused"],
+.goal-card[data-status="done"],
+.goal-card[data-status="dropped"] {
+  --goal-tint: var(--sunken);
+}
+.goal-top {
+  background: var(--goal-tint);
+}
+/* A key result's bar: faint quarter ticks so an empty bar still reads as a
+ * scale; nothing measured yet shows a faded stub. */
+.goal-bar {
+  position: relative;
+  display: block;
+  height: 5px;
+  border-radius: 99px;
+  background: var(--tick);
+  overflow: hidden;
+}
+.goal-bar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent calc(25% - 0.5px),
+    var(--panel) calc(25% - 0.5px) calc(25% + 0.5px),
+    transparent calc(25% + 0.5px) calc(50% - 0.5px),
+    var(--panel) calc(50% - 0.5px) calc(50% + 0.5px),
+    transparent calc(50% + 0.5px) calc(75% - 0.5px),
+    var(--panel) calc(75% - 0.5px) calc(75% + 0.5px),
+    transparent calc(75% + 0.5px)
+  );
+}
+.goal-bar > i {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  z-index: 1;
+  min-width: 5px;
+  border-radius: 99px;
+  background: var(--goal-hue);
+}
+.goal-bar[data-zero] > i {
+  opacity: 0.35;
+}
+.goal-krs {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(0, 1fr);
+}
+.goal-body {
+  container-type: inline-size;
+}
+.goal-projects {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr);
+}
+.goal-projects > .goal-new {
+  grid-column: span 1;
+}
+@container (min-width: 480px) {
+  .goal-projects {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .goal-projects > .goal-new {
+    grid-column: span var(--goal-span-2, 1);
+  }
+}
+@container (min-width: 820px) {
+  .goal-projects {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .goal-projects > .goal-new {
+    grid-column: span var(--goal-span-3, 1);
+  }
+}
+@media (min-width: 560px) {
+  .goal-krs[data-n="2"],
+  .goal-krs[data-n="4"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .goal-krs[data-n="3"],
+  .goal-krs[data-n="5"],
+  .goal-krs[data-n="6"] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* "Paused" (on hold) chip: its own amber so it never blends into the accent. */
+:root {
+  --hold-ink: #92400e;
+  --hold-soft: #fef3c7;
+}
+:root[data-theme="dark"] {
+  --hold-ink: #fcd34d;
+  --hold-soft: #3a2a0c;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --hold-ink: #fcd34d;
+    --hold-soft: #3a2a0c;
+  }
+}

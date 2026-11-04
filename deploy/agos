@@ -1,0 +1,977 @@
+#!/usr/bin/env bash
+# agos: manage this machine's AGOS (installed by install.sh / deploy/install-server.sh).
+#
+#   agos start | stop | restart          the three AGOS services
+#   agos status                          what runs, versions, where the data is
+#   agos logs [core|web|hooks|<workspace>]   follow a log (default: core)
+#   agos open                            open http://localhost:3000
+#   agos update [--yes] [--check] [--channel stable|beta|main]
+#                                        backup, new AGOS release + pinned Hermes,
+#                                        rebuild, restart; rolls back on failure
+#   agos channel [stable|beta|main]      which releases agos update follows (stable:
+#                                        the newest release, beta: betas too, main:
+#                                        the development branch)
+#   agos rollback [--to <stamp>] [--yes] [--force]
+#                                        back to the release before the last update
+#                                        (its code, Hermes, database and Hermes roots'
+#                                        config; today's database is kept aside). Refused
+#                                        when AGOS no longer runs that update's release
+#                                        (rolled back already, or updated since) unless --force
+#   agos doctor [--bundle [file]]        a redacted report for a GitHub issue
+#   agos staging up|down|status|refresh  a quiet second AGOS on a copy of this one
+#                                        (deploy/agos-staging.sh)
+#   agos backup                          a password-protected backup file now
+#   agos restore <file.agosb>            put a backup back (the current data is kept aside)
+#   agos uninstall [--delete-data] [--yes]  remove AGOS (keeps the data; --delete-data asks
+#                                        you to type DELETE and makes a last backup first)
+#   agos version
+#   agos check                           the installer's check list
+#
+# Settings live in /etc/agos/agos.conf (written by the installer; AGOS_CONF points
+# elsewhere, for the tests).
+set -euo pipefail
+
+CONF="${AGOS_CONF:-/etc/agos/agos.conf}"
+[[ -r "$CONF" ]] || { echo "AGOS is not installed here ($CONF is missing)." >&2; exit 1; }
+# shellcheck disable=SC1090
+. "$CONF"
+: "${AGOS_USER:?}" "${AGOS_HOME:?}" "${AGOS_APP:?}" "${AGOS_DATA_DIR:?}"
+AGOS_BACKUP_DIR="${AGOS_BACKUP_DIR:-$(dirname "$AGOS_DATA_DIR")/agos-backups}"
+CORE=http://127.0.0.1:8766
+WEB=http://localhost:3000
+SERVICES=(agos-core agos-hooks agos-web)
+HERMES="$AGOS_HOME/.local/bin/hermes"
+UV="$AGOS_HOME/.local/bin/uv"
+STATE="$AGOS_DATA_DIR/system/agos-update.json"
+# Update snapshots hold the Hermes roots' keys files (.env): they live in AGOS's own
+# data folder (0700), never in the backup folder, which holds no key (ADR 0023). The
+# backup leaves them out (engine/backup.py SKIP_DIRS).
+SNAPS="$AGOS_DATA_DIR/system/update-snapshots"
+WATCH_PID="$AGOS_DATA_DIR/system/agos-update-watch.pid"
+# Release channel (docs/adr/0028-release-channels.md). An install made before channels
+# has none in its agos.conf: stable, like every new install.
+CHANNEL="${AGOS_CHANNEL:-stable}"
+AGOS_REF="${AGOS_REF:-main}"
+ME="$(id -un)"
+SELF="$(readlink -f "${BASH_SOURCE[0]}")"
+# A copy made by run_from_copy / start_watch removes itself when it ends (bash keeps
+# its own open file, so deleting it while it runs is safe; this trap waits for the end).
+if [[ "${AGOS_UPDATE_COPY:-}" == 1 && -n "${AGOS_COPY_FILE:-}" && "$(readlink -f "$AGOS_COPY_FILE")" == "$SELF" ]]; then
+  trap 'rm -f "$AGOS_COPY_FILE"' EXIT
+  trap 'exit 143' TERM INT HUP
+fi
+
+die() { printf 'ERROR: %s\n' "$*" >&2; exit 1; }
+say() { printf '==> %s\n' "$*"; }
+
+# Run a command as the AGOS user (directly when we are it).
+as_agos() {
+  if [[ "$ME" == "$AGOS_USER" ]]; then "$@"
+  elif [[ $EUID -eq 0 ]]; then runuser -u "$AGOS_USER" -- env HOME="$AGOS_HOME" "$@"
+  else sudo -u "$AGOS_USER" -H -- "$@"
+  fi
+}
+# Re-run this whole command as the AGOS user (for anything touching its files).
+become_agos() {
+  [[ "$ME" == "$AGOS_USER" ]] && return 0
+  if [[ $EUID -eq 0 ]]; then cd /; exec runuser -u "$AGOS_USER" -- env HOME="$AGOS_HOME" bash "$SELF" "$@"; fi
+  cd /; exec sudo -u "$AGOS_USER" -H -- bash "$SELF" "$@"
+}
+# Commands that check out another release run from a copy of this file: bash reads
+# a script as it goes, and the checkout rewrites it under the running command.
+run_from_copy() {
+  [[ "${AGOS_UPDATE_COPY:-}" == 1 ]] && return 0
+  local copy; copy="$(mktemp "${TMPDIR:-/tmp}/agos-copy.XXXXXX")"
+  cp "$SELF" "$copy"
+  AGOS_UPDATE_COPY=1 AGOS_COPY_FILE="$copy" exec bash "$copy" "$@"
+}
+services() { # services start|stop|restart (the AGOS user has sudo for exactly these)
+  local order
+  if [[ "$1" == stop ]]; then order="agos-web agos-hooks agos-core"; else order="agos-core agos-hooks agos-web"; fi
+  # shellcheck disable=SC2086
+  if [[ $EUID -eq 0 ]]; then systemctl "$1" $order; else sudo -n /usr/bin/systemctl "$1" $order 2>/dev/null || sudo /usr/bin/systemctl "$1" $order; fi
+}
+token() { cat "$AGOS_DATA_DIR/system/internal.token"; }
+api() { # api METHOD PATH [curl args...]   (as the AGOS user only: the token is its)
+  local m="$1" p="$2"; shift 2
+  # The token goes to curl through a pipe (-H @file), never on its command line,
+  # where any local user would read it in ps or /proc/<pid>/cmdline.
+  curl -fsS -m 600 -X "$m" -H @<(printf 'x-agos-internal: %s\n' "$(token)") -H "content-type: application/json" "$@" "$CORE$p"
+}
+wait_up() { # wait until the core and the web answer
+  local _ tries="${AGOS_WAIT_TRIES:-120}" pause="${AGOS_WAIT_SLEEP:-2}"
+  for _ in $(seq 1 "$tries"); do curl -fsS -m 3 -o /dev/null "$CORE/health" 2>/dev/null && break; sleep "$pause"; done
+  curl -fsS -m 3 -o /dev/null "$CORE/health" 2>/dev/null || return 1
+  for _ in $(seq 1 "$tries"); do curl -fsS -m 5 -o /dev/null "$WEB/" 2>/dev/null && return 0; sleep "$pause"; done
+  return 1
+}
+user_systemctl() { as_agos env XDG_RUNTIME_DIR="/run/user/$(id -u "$AGOS_USER")" systemctl --user "$@"; }
+# AGOS's workspace gateways: Hermes's user services whose home is one of AGOS's
+# roots (never a Hermes gateway of your own). agos_gateways [running|all]
+agos_gateways() {
+  local u list=(list-units --type=service --state=running)
+  [[ "${1:-}" == all ]] && list=(list-unit-files --type=service)
+  for u in $(user_systemctl "${list[@]}" --no-legend --plain 'hermes-gateway*' 2>/dev/null | awk '{print $1}'); do
+    user_systemctl cat "$u" 2>/dev/null | grep -F "$AGOS_DATA_DIR/hermes" >/dev/null && echo "$u"  # all of it: -q + pipefail = SIGPIPE
+  done
+  return 0
+}
+version_line() {
+  local sha date hermes
+  sha="$(as_agos git -C "$AGOS_APP" rev-parse --short=12 HEAD 2>/dev/null || echo "?")"
+  date="$(as_agos git -C "$AGOS_APP" log -1 --format=%cs 2>/dev/null || echo "?")"
+  echo "AGOS $(as_agos cat "$AGOS_APP/VERSION" 2>/dev/null || echo "?") — commit $sha ($date, ${AGOS_REF:-local})"
+  # Whole output, then its first line (`| head -1` SIGPIPEs Hermes under pipefail).
+  hermes="$(as_agos "$HERMES" --version 2>/dev/null || true)"; hermes="${hermes%%$'\n'*}"
+  echo "Hermes ${hermes:-not found} — pin $(cut -c1-12 "$AGOS_APP/deploy/hermes.pin" 2>/dev/null)"
+}
+
+cmd_status() {
+  local s state
+  for s in "${SERVICES[@]}"; do
+    state="$(systemctl is-active "$s" 2>/dev/null || true)"
+    printf '  %-11s %s%s\n' "$s" "$state" "$(systemctl is-enabled --quiet "$s" 2>/dev/null && echo ", starts at boot")"
+  done
+  if curl -fsS -m 5 -o /dev/null "$CORE/health" 2>/dev/null; then echo "  core        answers"; else echo "  core        NOT answering"; fi
+  printf '  web         %s\n' "$(curl -s -m 10 -o /dev/null -w '%{http_code}' "$WEB/" || echo down) at $WEB"
+  if [[ "$ME" == "$AGOS_USER" || $EUID -eq 0 ]]; then
+    printf '  workspaces  %s\n' "$(as_agos bash -c 'curl -fsS -m 10 -H @<(printf "x-agos-internal: %s\n" "$(cat "$1")") "$2/workspaces"' _ "$AGOS_DATA_DIR/system/internal.token" "$CORE" 2>/dev/null | jq length 2>/dev/null || echo "?")"
+    printf '  gateways    %s running (one per active workspace)\n' "$(agos_gateways | wc -l)"
+  fi
+  echo "  data        $AGOS_DATA_DIR"
+  echo "  backups     $AGOS_BACKUP_DIR"
+  [[ ! -f /etc/agos/staging.conf ]] || echo "  staging     a staging copy is set up (agos staging status)"
+  version_line | sed 's/^/  /'
+}
+
+cmd_logs() {
+  local what="${1:-core}"
+  case "$what" in
+    core|web|hooks) exec journalctl -u "agos-$what" -n 100 -f ;;
+    *)
+      local root="$AGOS_DATA_DIR/hermes/agos-$what/logs"
+      if as_agos test -d "$root"; then
+        echo "Workspace $what: Hermes logs in $root"
+        as_agos bash -c "ls '$root'/*.log >/dev/null 2>&1" || die "No log files in $root yet."
+        as_agos bash -c "tail -n 100 -F '$root'/*.log"; exit
+      fi
+      die "No such log: '$what'. Use core, web, hooks or a workspace id (agos status lists them)." ;;
+  esac
+}
+
+cmd_open() {
+  if [[ "${AGOS_HOST_OS:-linux}" == linux ]] && command -v xdg-open >/dev/null && [[ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]]; then
+    xdg-open "$WEB" >/dev/null 2>&1 &
+  fi
+  echo "AGOS: $WEB"
+}
+
+# ---------------------------------------------------------------- backup ----------
+cmd_backup() {
+  become_agos backup "$@"
+  local has
+  has="$(api GET /backups | jq -r .hasPassword)" || die "The core is not answering (agos start)."
+  if [[ "$has" != true ]]; then
+    local pw="${AGOS_BACKUP_PASSWORD:-}" pw2
+    if [[ -z "$pw" ]]; then
+      [[ -t 0 ]] || die "No backup password yet: set one in Settings -> Server & backup (or run agos backup in a terminal)."
+      echo "Backups are encrypted with a password. Keep it safe: without it a backup can't be opened."
+      read -r -s -p "New backup password (10+ characters): " pw; echo
+      read -r -s -p "Same again: " pw2; echo
+      [[ "$pw" == "$pw2" ]] || die "The two passwords differ."
+    fi
+    jq -n --arg p "$pw" '{password: $p}' | api PUT /backups/password --data-binary @- >/dev/null \
+      || die "The password was refused (10 characters at least)."
+    unset pw pw2
+  fi
+  say "Backing up (AGOS data + Hermes's own backup of every workspace)"
+  local out
+  out="$(api POST /backups/run)" || die "The backup failed: see agos logs core."
+  echo "  $AGOS_BACKUP_DIR/$(jq -r .name <<<"$out") ($(( $(jq -r .size <<<"$out") / 1024 / 1024 )) MB)"
+}
+
+cmd_restore() {
+  local file="${1:-}"
+  [[ -n "$file" ]] || die "usage: agos restore <backup.agosb>"
+  file="$(readlink -f "$file")"
+  [[ -r "$file" ]] || die "Can't read $file."
+  become_agos restore "$file"
+  stop_watch  # a restore inside an update's watch is not that release breaking
+  [[ -t 0 || -n "${AGOS_BACKUP_PASSWORD:-}" ]] || die "Run this in a terminal (it asks the backup's password) or set AGOS_BACKUP_PASSWORD."
+  local stamp tmp aside
+  stamp="$(date -u +%Y%m%dT%H%M%SZ)"
+  tmp="$AGOS_BACKUP_DIR/restore-$stamp"
+  say "Opening and checking the backup"
+  (cd "$AGOS_APP/services/core" && "$UV" run --frozen python scripts/restore_and_verify.py "$file" "$tmp") \
+    || die "The backup could not be opened or is incomplete; nothing was changed."
+  say "Stopping AGOS and its workspaces"
+  local gw; gw="$(agos_gateways)"
+  # shellcheck disable=SC2086
+  [[ -z "$gw" ]] || user_systemctl stop $gw || true
+  services stop
+  aside="$AGOS_DATA_DIR.before-restore-$stamp"
+  if [[ -e "$AGOS_DATA_DIR/system/agos.db" ]]; then
+    mv "$AGOS_DATA_DIR" "$aside"
+    mkdir -m 700 "$AGOS_DATA_DIR"
+    echo "  Your current data is kept in $aside (kept 14 days; the newest such copy always stays)"
+  fi
+  # The kit's own placing (refuses to overwrite anything, then starts AGOS).
+  AGOS_DATA_DIR="$AGOS_DATA_DIR" "$AGOS_APP/deploy/place-restore.sh" "$tmp" || {
+    echo "The restore failed. Putting your data back." >&2
+    if [[ -d "$aside" ]]; then rm -rf "$AGOS_DATA_DIR"; mv "$aside" "$AGOS_DATA_DIR"; fi
+    services start; exit 1; }
+  rm -rf "$tmp"
+  chmod 700 "$AGOS_DATA_DIR"
+  wait_up || die "Restored, but AGOS is not answering: agos logs core"
+  echo "Restored. AGOS is running on the backup's data."
+}
+
+# ---------------------------------------------------------------- update ----------
+# Progress for Settings -> General -> Update AGOS (the core reads this file).
+state() { # state PHASE [detail]
+  local now; now="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  local prev='{}'
+  [[ -f "$STATE" ]] && prev="$(cat "$STATE")"
+  jq --arg p "$1" --arg d "${2:-}" --arg at "$now" --arg from "${OLD_SHA:-}" --arg to "${NEW_SHA:-}" '
+    .phase = $p | .from = $from | .to = $to
+    | .steps = ((.steps // []) + [{name: $p, at: $at, detail: $d}])
+    | if $p == "starting" then .steps = [{name: $p, at: $at, detail: $d}] | .started_at = $at | .error = null | .rolled_back = false else . end
+    | if ($p == "done" or $p == "failed" or $p == "up-to-date") then .finished_at = $at else . end
+    | if $p == "failed" then .error = $d else . end' <<<"$prev" > "$STATE.tmp" && mv "$STATE.tmp" "$STATE"
+  echo "==> $1${2:+: $2}"
+}
+
+build_here() { # pnpm + web build + core env, in the app folder
+  (cd "$AGOS_APP" && COREPACK_ENABLE_DOWNLOAD_PROMPT=0 CI=1 pnpm install --frozen-lockfile && pnpm --filter @agos/web build) &&
+  (cd "$AGOS_APP/services/core" && "$UV" sync --frozen) &&
+  git -C "$AGOS_APP" rev-parse HEAD > "$AGOS_APP/.agos-built"
+}
+hermes_to() { # hermes_to <commit>: Hermes's own installer, pinned
+  local pin="$1" uid f rc; uid="$(id -u)"
+  # The whole --version text, then a match (`| grep -q` under pipefail: Hermes
+  # SIGPIPEd after grep's first line read as "not on the pin").
+  [[ "$("$HERMES" --version 2>/dev/null || true)" == *"${pin:0:7}"* ]] && return 0
+  # A fresh private file (mktemp), never a predictable /tmp name another user could
+  # create first and swap before it runs.
+  f="$(mktemp)" || return 1
+  curl -fsSL "https://raw.githubusercontent.com/NousResearch/hermes-agent/$pin/scripts/install.sh" -o "$f" &&
+    XDG_RUNTIME_DIR="/run/user/$uid" bash "$f" --commit "$pin" --non-interactive
+  rc=$?; rm -f "$f"; return "$rc"
+}
+
+# ------------------------------------------------------------- releases ----------
+# Release channels (ADR 0028): stable = the newest vX.Y.Z tag, beta = the newest tag
+# counting vX.Y.Z-beta.N / -rc.N too, main = the branch AGOS_REF (development). An
+# update only moves forward: a release this code already holds is no update (an
+# install on main is never taken back to the last release).
+newest_tag() { # newest_tag stable|beta: the channel's newest release tag ("" = none)
+  local re='^v[0-9]+\.[0-9]+\.[0-9]+$'
+  [[ "$1" == beta ]] && re='^v[0-9]+\.[0-9]+\.[0-9]+(-(beta|rc)\.[0-9]+)?$'
+  # versionsort.suffix: v1.0.0-beta.2 sorts before v1.0.0. awk reads it all (no SIGPIPE).
+  { git -C "$AGOS_APP" -c versionsort.suffix=- tag -l 'v*' --sort=-v:refname | grep -E "$re" || true; } | awk 'NR == 1'
+}
+release_target() { # NEW_SHA / NEW_NAME for $CHANNEL (OLD_SHA set); NOTE: why there is nothing newer
+  NOTE=""
+  case "$CHANNEL" in
+    main)
+      git -C "$AGOS_APP" fetch -q origin "$AGOS_REF" || die "Could not reach $AGOS_REPO_URL."
+      NEW_SHA="$(git -C "$AGOS_APP" rev-parse FETCH_HEAD)"; NEW_NAME="$AGOS_REF" ;;
+    stable|beta)
+      # Never --force: a release tag that changed on the server is refused, not taken.
+      git -C "$AGOS_APP" fetch -q --tags origin \
+        || die "Could not read the releases from $AGOS_REPO_URL (offline, or a release tag changed there: docs/releases.md)."
+      NEW_NAME="$(newest_tag "$CHANNEL")"
+      if [[ -z "$NEW_NAME" ]]; then NEW_SHA="$OLD_SHA"; NOTE=" (no $CHANNEL release is published yet)"; return 0; fi
+      NEW_SHA="$(git -C "$AGOS_APP" rev-parse "$NEW_NAME^{commit}")"
+      if [[ "$NEW_SHA" != "$OLD_SHA" ]] && ! git -C "$AGOS_APP" merge-base --is-ancestor "$OLD_SHA" "$NEW_SHA"; then
+        NOTE=" (this code is newer than $NEW_NAME, the newest $CHANNEL release)"; NEW_SHA="$OLD_SHA"
+      fi ;;
+    *) die "Unknown release channel '$CHANNEL': stable, beta or main (agos channel)." ;;
+  esac
+}
+verify_release() { # the channel's release is the signed one (deploy/release-verify.sh); main is not checked
+  [[ "$CHANNEL" == main ]] && return 0
+  local checker="$AGOS_APP/deploy/release-verify.sh"
+  [[ -f "$checker" ]] || die "The release checker $checker is missing: re-run the installer."
+  # agos.conf's settings (not exported) reach the checker by name.
+  env AGOS_VERIFY="${AGOS_VERIFY:-require}" AGOS_RELEASES_URL="${AGOS_RELEASES_URL:-}" \
+    AGOS_RELEASE_PUBKEY="${AGOS_RELEASE_PUBKEY:-}" AGOS_RELEASE_IDENTITY="${AGOS_RELEASE_IDENTITY:-}" \
+    bash "$checker" "$NEW_NAME" "$NEW_SHA" "$AGOS_HOME/.local/bin"
+}
+cmd_channel() {
+  local want="${1:-}"
+  if [[ -z "$want" ]]; then
+    become_agos channel
+    [[ "$CHANNEL" == main ]] || git -C "$AGOS_APP" fetch -q --tags origin 2>/dev/null || true
+    echo "Release channel: $CHANNEL ($( [[ "$CHANNEL" == main ]] && echo "the $AGOS_REF branch" || echo "newest: $(newest_tag "$CHANNEL")" ))"
+    return 0
+  fi
+  [[ "$want" =~ ^(stable|beta|main)$ ]] || die "usage: agos channel [stable|beta|main]"
+  if [[ -w "$CONF" ]]; then :
+  elif [[ $EUID -ne 0 ]]; then exec sudo bash "$SELF" channel "$want"
+  fi
+  if grep -q '^AGOS_CHANNEL=' "$CONF"; then sed -i "s/^AGOS_CHANNEL=.*/AGOS_CHANNEL=$want/" "$CONF"
+  else printf 'AGOS_CHANNEL=%s\n' "$want" >> "$CONF"; fi
+  echo "agos update now follows the $want channel. (Nothing is updated until you run agos update.)"
+}
+
+cmd_update() {
+  local yes=0 check_only=0 a
+  local args=("$@")
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --yes|-y) yes=1 ;;
+      --check) check_only=1 ;;
+      --channel) [[ "${2:-}" =~ ^(stable|beta|main)$ ]] || die "usage: agos update --channel stable|beta|main"
+                 CHANNEL="$2"; shift ;;
+    esac
+    shift
+  done
+  set -- "${args[@]}"
+  become_agos update "$@"
+  run_from_copy update "$@"  # this file changes during the update
+  [[ -z "${AGOS_LOCAL_REPO:-}" ]] || die "This AGOS was installed from a folder ($AGOS_LOCAL_REPO): re-run the installer with --repo to update it."
+  exec 9>"$AGOS_DATA_DIR/system/agos-update.lock"
+  flock -n 9 || die "An update is already running."
+  stop_watch  # the last update's watch must not roll this one back
+
+  OLD_SHA="$(git -C "$AGOS_APP" rev-parse HEAD)"
+  release_target
+  if [[ "$check_only" == 1 ]]; then
+    if [[ "$OLD_SHA" == "$NEW_SHA" ]]; then echo "AGOS is up to date (${OLD_SHA:0:12}, $CHANNEL channel)$NOTE."
+    else echo "New AGOS release on the $CHANNEL channel: $NEW_NAME (${OLD_SHA:0:12} -> ${NEW_SHA:0:12})"; git -C "$AGOS_APP" log -n 20 --format='  - %s' "$OLD_SHA..$NEW_SHA"; fi
+    return 0
+  fi
+  if [[ "$OLD_SHA" == "$NEW_SHA" ]]; then
+    state starting "checking for a new release"; state up-to-date "${OLD_SHA:0:12}"
+    echo "AGOS is up to date (${OLD_SHA:0:12}, $CHANNEL channel)$NOTE."; return 0
+  fi
+  echo "AGOS ${OLD_SHA:0:12} -> ${NEW_SHA:0:12} ($NEW_NAME, $CHANNEL channel):"
+  git -C "$AGOS_APP" log -n 20 --format='  - %s' "$OLD_SHA..$NEW_SHA"
+  # Before anything stops: a release that is not the signed one changes nothing.
+  verify_release || { state starting "checking $NEW_NAME"; state failed "release $NEW_NAME is not verified; nothing was changed"; exit 1; }
+  if [[ "$yes" != 1 ]]; then
+    [[ -t 0 ]] || die "Add --yes to update without a question."
+    read -r -p "AGOS stops for a few minutes while it updates. Go on? [y/N] " a
+    [[ "$a" =~ ^[Yy] ]] || { echo "Not updated."; return 0; }
+  fi
+
+  state starting "${OLD_SHA:0:12} -> ${NEW_SHA:0:12}"
+  local stamp snap old_pin new_pin gateways
+  snaps_dir
+  stamp="$(date -u +%Y%m%dT%H%M%SZ)"
+  while [[ -e "$SNAPS/update-$stamp" || -e "$SNAPS/update-$stamp.partial" ]]; do sleep 1; stamp="$(date -u +%Y%m%dT%H%M%SZ)"; done
+  # Built as update-<stamp>.partial and renamed once whole (database, roots'
+  # settings, gateways list): a crash mid-snapshot never leaves a folder that looks
+  # like a rollback point (snapshot_dir and the rotation skip *.partial).
+  snap="$SNAPS/update-$stamp.partial"
+  mkdir -m 700 "$snap"
+
+  # 1. Backups: the full encrypted one when a backup password is set, and always a
+  # rollback point (the database as it is, which the new release may migrate).
+  state backup
+  if [[ "$(api GET /backups 2>/dev/null | jq -r .hasPassword 2>/dev/null)" == true ]]; then
+    if ! api POST /backups/run >/dev/null; then
+      # Nothing changed: no half snapshot left to shadow the last complete one.
+      local why; why="$(api GET /backups 2>/dev/null | jq -r '.lastError // empty' 2>/dev/null)"
+      rm -rf "$snap"; state failed "the backup failed${why:+ ($why)}; nothing was changed"; exit 1
+    fi
+  else
+    echo "  (no backup password set: only the rollback copy is made; set one in Settings -> Server & backup)"
+  fi
+  old_pin="$(cat "$AGOS_APP/deploy/hermes.pin")"
+  new_pin="$(git -C "$AGOS_APP" show "$NEW_SHA:deploy/hermes.pin")"
+  printf '%s\n' "$OLD_SHA" > "$snap/agos.sha"
+  printf '%s\n' "$NEW_SHA" > "$snap/to.sha"
+  printf '%s\n' "$old_pin" > "$snap/hermes.pin"
+
+  # 2. Stop: workspaces (only when Hermes or the agos-guard plugin changes: a running
+  # gateway keeps the plugin it loaded), then AGOS.
+  state stopping
+  gateways="$(agos_gateways | tr '\n' ' ')"
+  local restart_gw=0
+  [[ "$old_pin" != "$new_pin" ]] && restart_gw=1
+  git -C "$AGOS_APP" diff --quiet "$OLD_SHA" "$NEW_SHA" -- services/core/src/agos_core/hermes_plugin || restart_gw=1
+  if [[ "$restart_gw" == 1 && -n "$gateways" ]]; then
+    # shellcheck disable=SC2086
+    user_systemctl stop $gateways || true
+  fi
+  services stop
+  sqlite3 "$AGOS_DATA_DIR/system/agos.db" ".backup '$snap/agos.db'" || { rm -rf "$snap"; services start; state failed "could not copy the database; nothing was changed"; exit 1; }
+  snapshot_roots "$snap/roots.tar" || { rm -rf "$snap"; services start; state failed "could not copy the Hermes roots' settings; nothing was changed"; exit 1; }
+  printf '%s\n' $gateways > "$snap/gateways" && mv "$snap" "$SNAPS/update-$stamp" ||
+    { rm -rf "$snap"; services start; state failed "could not finish the rollback copy; nothing was changed"; exit 1; }
+  snap="$SNAPS/update-$stamp"
+
+  # 3. New code, Hermes at the new pin, build.
+  local failed=""
+  state code "${NEW_SHA:0:12}"
+  git -C "$AGOS_APP" checkout -q --detach "$NEW_SHA" || failed="git checkout"
+  if [[ -z "$failed" && "$old_pin" != "$new_pin" ]]; then
+    state hermes "${new_pin:0:12}"
+    hermes_to "$new_pin" || failed="Hermes update to ${new_pin:0:12}"
+  fi
+  if [[ -z "$failed" ]]; then state build; build_here || failed="the build"; fi
+  if [[ -z "$failed" ]] && ! git -C "$AGOS_APP" diff --quiet "$OLD_SHA" "$NEW_SHA" -- docker/sandbox; then
+    state sandbox; (cd "$AGOS_APP" && scripts/build-sandbox.sh) || failed="the sandbox image"
+  fi
+  if [[ -z "$failed" ]]; then
+    state starting-up
+    services start
+    wait_up || failed="AGOS did not start on the new release"
+  fi
+  if [[ -z "$failed" ]]; then
+    if [[ "$restart_gw" == 1 && -n "$gateways" ]]; then
+      # shellcheck disable=SC2086
+      user_systemctl start $gateways || true
+    fi
+    state "done" "${OLD_SHA:0:12} -> ${NEW_SHA:0:12}"
+    rotate_snapshots
+    start_watch "$(basename "$snap")"
+    echo "Updated. Rollback copy: $snap (agos rollback goes back to it)"
+    return 0
+  fi
+
+  # 4. Roll back: old code, old Hermes, old database, old roots' settings.
+  echo "The update failed at: $failed. Rolling back to ${OLD_SHA:0:12}." >&2
+  state rollback "$failed"
+  local back="AGOS is back on ${OLD_SHA:0:12}"
+  local rc=0
+  roll_back "$snap" "$gateways" || rc=$?
+  if [[ "$rc" == 2 ]]; then
+    state failed "$failed. The rollback did not start (not enough free disk, or today's data could not be kept aside); nothing of the data was changed. Free some space, then agos rollback."
+    exit 1
+  fi
+  [[ "$rc" == 0 ]] || back="AGOS did not come back by itself: agos logs core"
+  jq '.rolled_back = true' "$STATE" > "$STATE.tmp" && mv "$STATE.tmp" "$STATE"
+  state failed "$failed. $back."
+  exit 1
+}
+
+# ------------------------------------------------------------- rollback ----------
+# What a release may rewrite in the Hermes roots: each root's and member's settings,
+# keys file, plugins and cron jobs, and the managed scope. Not the sessions, memory
+# or skills (no release rewrites those). The tar holds keys (.env): 0600, in the
+# 0700 snapshot folder, never copied off this machine, gone with the snapshot.
+snapshot_roots() { # snapshot_roots <file.tar>
+  local out="$1" list rc=0 home f
+  list="$(mktemp)"
+  (
+    cd "$AGOS_DATA_DIR" || exit 1
+    shopt -s nullglob dotglob
+    for home in hermes/*/ hermes/*/profiles/*/; do
+      [[ -f "${home}config.yaml" ]] || continue
+      for f in config.yaml profile.yaml SOUL.md .env cron/jobs.json; do
+        [[ -f "$home$f" ]] && printf '%s\n' "$home$f"
+      done
+      [[ -d "${home}plugins" ]] && printf '%s\n' "${home}plugins"
+    done
+    [[ -f hermes-managed/config.yaml ]] && echo hermes-managed/config.yaml
+    true
+  ) > "$list" || rc=1
+  if [[ "$rc" == 0 ]]; then
+    (umask 077 && tar -C "$AGOS_DATA_DIR" -cf "$out" --files-from "$list") || rc=1
+    chmod 600 "$out" 2>/dev/null || true
+  fi
+  rm -f "$list"
+  return "$rc"
+}
+# A job's run state in cron/jobs.json (when it last ran, when it runs next, done or
+# not): never taken back from a snapshot, or a job that already ran since would run
+# again. Its definition (prompt, schedule...) is the snapshot's.
+CRON_RUN_STATE='["last_run_at","next_run_at","last_status","last_error","last_failure","last_dispatch","last_delivery_error","last_delivery_unverified","failure_streak","fire_claim","monitor_state","repeat","state","enabled","paused_at","paused_reason"]'
+merge_cron_state() { # merge_cron_state <from snapshot> <today's>: today's run state into the snapshot's jobs
+  local snap_jobs="$1" now_jobs="$2" out
+  [[ -f "$now_jobs" ]] || return 0
+  out="$snap_jobs.merge"
+  jq --slurpfile now "$now_jobs" --argjson keys "$CRON_RUN_STATE" '
+    if (type == "object") and ((.jobs // null) | type) == "array" and (($now[0].jobs // null) | type) == "array" then
+      ($now[0].jobs | map(select(type == "object" and .id != null) | {key: (.id | tostring), value: .}) | from_entries) as $n
+      | .jobs |= map(
+          if type == "object" and .id != null and $n[(.id | tostring)] != null then
+            . as $job | $n[(.id | tostring)] as $cur
+            | reduce $keys[] as $k ($job; if ($cur | has($k)) then .[$k] = $cur[$k] else . end)
+          else . end)
+    else . end' "$snap_jobs" > "$out" 2>/dev/null && mv -f "$out" "$snap_jobs" || { rm -f "$out"; return 1; }
+}
+restore_roots() { # restore_roots <file.tar>: the files as they were (plugins folders whole)
+  # Unpacked aside first (same disk): a tar that can't be read, or a full disk, leaves
+  # every live file and plugin as it is. Then each file and plugins folder is swapped in.
+  local tar="$1" d f tmp rc=0
+  # In the snapshots' folder: the same disk, 0700, and never in a backup (it holds .env files).
+  tmp="$(mktemp -d "$SNAPS/.roots-restore.XXXXXX")" || return 1
+  if ! tar -C "$tmp" -xpf "$tar"; then rm -rf "$tmp"; return 1; fi
+  while IFS= read -r -d '' f; do
+    f="${f#./}"
+    merge_cron_state "$tmp/$f" "$AGOS_DATA_DIR/$f" || echo "  $f: today's run state not kept (the snapshot's is used)" >&2
+  done < <(cd "$tmp" && find . -path '*/cron/jobs.json' -type f -print0)
+  for d in $(cd "$tmp" && find hermes -type d -name plugins 2>/dev/null); do
+    [[ "$d" =~ ^hermes/[A-Za-z0-9._-]+/(profiles/[A-Za-z0-9._-]+/)?plugins$ ]] || continue
+    rm -rf "${AGOS_DATA_DIR:?}/$d" && mkdir -p "$(dirname "$AGOS_DATA_DIR/$d")" && mv "$tmp/$d" "$AGOS_DATA_DIR/$d" || rc=1
+  done
+  while IFS= read -r -d '' f; do
+    f="${f#./}"
+    mkdir -p "$(dirname "$AGOS_DATA_DIR/$f")" && mv -f "$tmp/$f" "$AGOS_DATA_DIR/$f" || rc=1
+  done < <(cd "$tmp" && find . -type f -print0)
+  rm -rf "$tmp"
+  return "$rc"
+}
+file_size() { stat -c %s "$1" 2>/dev/null || echo 0; }
+free_bytes() { df -P -B1 "$1" 2>/dev/null | awk 'NR == 2 {print $4}'; }
+snaps_dir() { # the update snapshots' folder (0700), with any older ones moved in from the backup folder
+  local d
+  mkdir -p "$SNAPS" && chmod 700 "$SNAPS"
+  for d in "$AGOS_BACKUP_DIR"/update-*/; do
+    [[ -d "$d" && -f "$d/agos.sha" ]] || continue
+    d="${d%/}"
+    [[ -e "$SNAPS/$(basename "$d")" ]] || mv "$d" "$SNAPS/"
+  done
+}
+keep_today() { # keep_today <from sha>: today's database and roots' settings, kept aside; prints the folder
+  local from="$1" db="$AGOS_DATA_DIR/system/agos.db" dir stamp
+  stamp="$(date -u +%Y%m%dT%H%M%SZ)"; dir="$SNAPS/rolled-from-$stamp"
+  while [[ -e "$dir" ]]; do sleep 1; stamp="$(date -u +%Y%m%dT%H%M%SZ)"; dir="$SNAPS/rolled-from-$stamp"; done
+  mkdir -m 700 "$dir" || return 1
+  if [[ -f "$db" ]] && ! sqlite3 "$db" ".backup '$dir/agos.db'"; then rm -rf "$dir"; return 1; fi
+  if ! snapshot_roots "$dir/roots.tar"; then rm -rf "$dir"; return 1; fi
+  printf '%s\n' "$from" > "$dir/agos.sha" || { rm -rf "$dir"; return 1; }
+  printf '%s\n' "$dir"
+}
+start_again() { # start_again <gateways>: AGOS as it was (a rollback that stopped before changing anything)
+  services start || true
+  if [[ -n "$1" ]]; then
+    # shellcheck disable=SC2086
+    user_systemctl start $1 || true
+  fi
+}
+# roll_back <snapshot> <gateways>: that snapshot's code, Hermes pin, database and
+# roots' settings. Today's database and roots' settings are kept first, every time,
+# in their own $SNAPS/rolled-from-<now>/ (never rotated): when that copy can't be
+# made (full disk), nothing is changed and roll_back returns 2. 1 = rolled back but
+# AGOS is not answering.
+roll_back() {
+  local snap="$1" gateways="$2" to pin now_pin db="$AGOS_DATA_DIR/system/agos.db" kept need free
+  to="$(cat "$snap/agos.sha")"; pin="$(cat "$snap/hermes.pin")"
+  now_pin="$(cat "$AGOS_APP/deploy/hermes.pin" 2>/dev/null || true)"
+  # Room for today's copy and the snapshot's database beside the live one, first.
+  need=$(( $(file_size "$db") + $(file_size "$snap/agos.db") + 64 * 1024 * 1024 ))
+  free="$(free_bytes "$SNAPS")"
+  if [[ -z "$free" ]] || (( free < need )); then
+    echo "  Not enough free disk to roll back safely ($(( ${free:-0} / 1048576 )) MB free, $(( need / 1048576 )) MB needed): nothing was changed. Free some space (docs/runbooks/disk-full.md), then agos rollback." >&2
+    return 2
+  fi
+  if [[ -n "$gateways" ]]; then
+    # shellcheck disable=SC2086
+    user_systemctl stop $gateways || true
+  fi
+  services stop || true
+  kept="$(keep_today "$(git -C "$AGOS_APP" rev-parse HEAD)")" || {
+    echo "  Today's database could not be kept aside: nothing was changed (is the disk full?)." >&2
+    start_again "$gateways"; return 2; }
+  echo "  Today's database and roots' settings are kept in $kept"
+  # The snapshot's database goes beside the live one first, then takes its place in
+  # one rename: a copy that fails half-way never leaves a broken agos.db.
+  if ! cp "$snap/agos.db" "$db.rollback-tmp"; then
+    rm -f "$db.rollback-tmp"
+    echo "  The snapshot's database could not be copied: nothing was changed." >&2
+    start_again "$gateways"; return 2
+  fi
+  if ! git -C "$AGOS_APP" checkout -q --detach "$to"; then
+    rm -f "$db.rollback-tmp"
+    echo "  The release ${to:0:12} could not be checked out: nothing was changed." >&2
+    start_again "$gateways"; return 2
+  fi
+  [[ "$pin" == "$now_pin" ]] || hermes_to "$pin" || echo "  Hermes could not go back to ${pin:0:12}" >&2
+  rm -f "$db-wal" "$db-shm"
+  mv -f "$db.rollback-tmp" "$db"
+  build_here || echo "  The old release did not rebuild cleanly" >&2
+  # After the build: nothing of the new release rewrites them again before the start.
+  if [[ -f "$snap/roots.tar" ]]; then
+    restore_roots "$snap/roots.tar" || echo "  The Hermes roots' settings could not be put back" >&2
+  fi
+  services start
+  if [[ -n "$gateways" ]]; then
+    # shellcheck disable=SC2086
+    user_systemctl start $gateways || true
+  fi
+  wait_up
+}
+
+snapshot_whole() { # snapshot_whole <dir>: a finished update snapshot (renamed from .partial; older AGOS: agos.sha + agos.db)
+  [[ "$(basename "$1")" =~ ^update-[0-9]{8}T[0-9]{6}Z$ && -f "$1/agos.sha" && -f "$1/agos.db" ]]
+}
+rotate_snapshots() { # the last three whole update snapshots stay; crash leftovers go (rolled-from-* are never touched)
+  local d whole=()
+  while IFS= read -r d; do
+    if snapshot_whole "$d"; then whole+=("$d"); else rm -rf "$d"; fi
+  done < <(find "$SNAPS" -mindepth 1 -maxdepth 1 -name 'update-*' -type d | sort)
+  if [[ ${#whole[@]} -gt 3 ]]; then rm -rf "${whole[@]:0:${#whole[@]}-3}"; fi
+}
+
+snapshot_dir() { # snapshot_dir [stamp]: the update snapshot to roll back to (newest by default)
+  local stamp="${1:-}" found=""
+  snaps_dir
+  if [[ -n "$stamp" ]]; then
+    stamp="${stamp#update-}"
+    [[ "$stamp" =~ ^[0-9]{8}T[0-9]{6}Z$ ]] || die "No such update: '$1' (ls $SNAPS)."
+    found="$SNAPS/update-$stamp"
+  else
+    # The newest whole one: a crash mid-snapshot leaves an update-*.partial folder.
+    local d
+    while IFS= read -r d; do
+      snapshot_whole "$d" && found="$d"
+    done < <(find "$SNAPS" -mindepth 1 -maxdepth 1 -name 'update-*' -type d 2>/dev/null | sort)
+  fi
+  [[ -n "$found" ]] && snapshot_whole "$found" || return 1
+  printf '%s\n' "$found"
+}
+
+cmd_rollback() {
+  local stamp="" yes=0 force=0 a snap made
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --to) [[ -n "${2:-}" && "$2" != -* ]] || die "usage: agos rollback [--to <stamp>] [--yes] [--force] (--to needs an update's time, ls $SNAPS)"
+            stamp="$2"; shift 2 ;;
+      --yes|-y) yes=1; shift ;;
+      --force) force=1; shift ;;
+      *) die "usage: agos rollback [--to <stamp>] [--yes] [--force]" ;;
+    esac
+  done
+  local args=(); [[ -n "$stamp" ]] && args+=(--to "$stamp"); [[ "$yes" == 1 ]] && args+=(--yes); [[ "$force" == 1 ]] && args+=(--force)
+  become_agos rollback "${args[@]}"
+  run_from_copy rollback "${args[@]}"
+  exec 9>"$AGOS_DATA_DIR/system/agos-update.lock"
+  flock -w 600 9 || die "An update is running."
+  stop_watch
+  snap="$(snapshot_dir "$stamp")" || die "No update to roll back to (no complete $SNAPS/update-* folder)."
+  OLD_SHA="$(git -C "$AGOS_APP" rev-parse HEAD)"
+  NEW_SHA="$(cat "$snap/agos.sha")"
+  made="$(cat "$snap/to.sha" 2>/dev/null || true)"
+  # Only the release that update made goes back: a second rollback (or one after a
+  # later update) would put an older database over today's.
+  if [[ "$force" != 1 && "$made" != "$OLD_SHA" ]]; then
+    if [[ "$OLD_SHA" == "$NEW_SHA" ]]; then
+      die "AGOS already runs ${NEW_SHA:0:12}, the release before $(basename "$snap"): it was rolled back already. Nothing changed (--force puts that update's database back again; today's is kept aside first)."
+    fi
+    die "AGOS runs ${OLD_SHA:0:12}, not ${made:0:12} (the release $(basename "$snap") made): it moved since. Nothing changed (--force rolls back anyway; today's data is kept aside first)."
+  fi
+  echo "Back to ${NEW_SHA:0:12} (the release before the update of $(basename "$snap")), from ${OLD_SHA:0:12}."
+  echo "AGOS's data and the Hermes roots' settings go back to that moment; today's are kept in $SNAPS/rolled-from-<now>."
+  if [[ "$yes" != 1 ]]; then
+    [[ -t 0 ]] || die "Add --yes to roll back without a question."
+    read -r -p "AGOS stops for a few minutes. Roll back? [y/N] " a
+    [[ "$a" =~ ^[Yy] ]] || { echo "Nothing changed."; return 0; }
+  fi
+  state starting "rollback ${OLD_SHA:0:12} -> ${NEW_SHA:0:12}"
+  state rollback "asked for (agos rollback)"
+  local back="AGOS is back on ${NEW_SHA:0:12}" rc=0
+  roll_back "$snap" "$(agos_gateways | tr '\n' ' ')" || rc=$?
+  if [[ "$rc" == 2 ]]; then
+    state failed "rollback refused: today's data could not be kept aside (is the disk full?); nothing was changed"
+    echo "Nothing was changed: AGOS still runs ${OLD_SHA:0:12}." >&2
+    return 1
+  fi
+  [[ "$rc" == 0 ]] || back="Rolled back, but AGOS did not come back by itself: agos logs core"
+  jq '.rolled_back = true' "$STATE" > "$STATE.tmp" && mv "$STATE.tmp" "$STATE"
+  state rolled-back "$back"
+  echo "$back."
+  [[ "$rc" == 0 ]]
+}
+
+# --------------------------------------------------------- after an update --------
+# A release can start fine and break minutes later. For AGOS_WATCH_MINUTES (10)
+# after a good update, every AGOS_WATCH_EVERY_S (60) s: the core's deep health
+# (database, disk, loops), the web, and each gateway that ran before the update.
+# AGOS_WATCH_FAILS (3) failed checks in a row = the update's own rollback.
+stop_watch() { # the last update's watch (its user service, or the nohup fallback's pid)
+  local pid cmdline=""
+  if [[ "$ME" == "$AGOS_USER" || $EUID -eq 0 ]]; then
+    user_systemctl stop agos-update-watch >/dev/null 2>&1 || true
+  else
+    sudo -n -u "$AGOS_USER" -H -- env XDG_RUNTIME_DIR="/run/user/$(id -u "$AGOS_USER")" \
+      systemctl --user stop agos-update-watch >/dev/null 2>&1 || true
+  fi
+  pid="$(cat "$WATCH_PID" 2>/dev/null || true)"
+  # Read the whole command line first (2> before <: a gone pid stays quiet), then
+  # match it: `| grep -q` under pipefail fails when grep exits before tr is done.
+  [[ "$pid" =~ ^[0-9]+$ ]] && cmdline="$(tr '\0' ' ' 2>/dev/null < "/proc/$pid/cmdline" || true)"
+  if [[ "$cmdline" == *update-watch* ]]; then
+    kill "$pid" 2>/dev/null || sudo -n -u "$AGOS_USER" kill "$pid" 2>/dev/null || true
+  fi
+  return 0
+}
+start_watch() { # start_watch <update stamp>: the watch as its own user service
+  local name="$1" copy uid
+  copy="$(mktemp "${TMPDIR:-/tmp}/agos-watch.XXXXXX")"; cp "$SELF" "$copy"
+  uid="$(id -u "$AGOS_USER")"
+  stop_watch
+  if as_agos env XDG_RUNTIME_DIR="/run/user/$uid" systemd-run --user --unit=agos-update-watch --collect \
+      -E AGOS_UPDATE_COPY=1 -E AGOS_COPY_FILE="$copy" -E AGOS_CONF="$CONF" /usr/bin/bash "$copy" update-watch "$name" >/dev/null 2>&1; then
+    echo "  Watching AGOS for ${AGOS_WATCH_MINUTES:-10} minutes (it rolls back by itself if the new release breaks)."
+  else
+    # No user systemd: the watch writes its pid ($WATCH_PID), so agos stop/restart/
+    # restore/rollback/update can stop it like the service.
+    AGOS_UPDATE_COPY=1 AGOS_COPY_FILE="$copy" nohup setsid bash "$copy" update-watch "$name" >/dev/null 2>&1 &
+    echo "  Watching AGOS for ${AGOS_WATCH_MINUTES:-10} minutes (pid $!)."
+  fi
+}
+gateway_root() { # gateway_root <unit>: the AGOS root a gateway serves (its folder name)
+  local line rest
+  line="$(user_systemctl cat "$1" 2>/dev/null | grep -F "$AGOS_DATA_DIR/hermes/" | head -1)" || true
+  [[ -n "$line" ]] || return 0
+  rest="${line#*"$AGOS_DATA_DIR/hermes/"}"
+  printf '%s\n' "${rest%%[/\"\' ]*}"
+}
+healthy() { # healthy <gateways>: prints what failed
+  local g body ids root prefix="${AGOS_PROFILE_PREFIX:-agos-}"
+  # Deep health without -f: a 503 still has its answer. A full disk alone is the ops
+  # watch's alert, never a reason to roll back (a rollback needs room itself).
+  body="$(curl -sS -m 10 "$CORE/health?deep=1" 2>/dev/null)" || { echo "core health"; return 1; }
+  jq -e '.ok == true or (.database == true and .loops == true)' >/dev/null 2>&1 <<<"$body" || { echo "core health"; return 1; }
+  curl -fsS -m 15 -o /dev/null "$WEB/" 2>/dev/null || { echo "web"; return 1; }
+  # Gateways of workspaces archived or trashed since the update are not the release's.
+  ids="$(api GET /workspaces 2>/dev/null | jq -r '.[].id' 2>/dev/null || true)"
+  for g in $1; do
+    if [[ -n "$ids" ]]; then
+      root="$(gateway_root "$g")"
+      if [[ -n "$root" && "$root" == "$prefix"* ]] && ! grep -qxF "${root#"$prefix"}" <<<"$ids"; then continue; fi
+    fi
+    user_systemctl is-active --quiet "$g" 2>/dev/null || { echo "gateway $g"; return 1; }
+  done
+  return 0
+}
+stopped_by_hand() { # agos-core stopped cleanly (agos stop): not a release breaking
+  [[ "$(systemctl is-active agos-core 2>/dev/null || true)" == inactive ]]
+}
+cmd_update_watch() {
+  local name="${1:-}" snap minutes="${AGOS_WATCH_MINUTES:-10}" every="${AGOS_WATCH_EVERY_S:-60}"
+  local need="${AGOS_WATCH_FAILS:-3}" fails=0 end what gateways
+  become_agos update-watch "$name"
+  run_from_copy update-watch "$name"
+  snap="$(snapshot_dir "$name")" || die "No such update to watch: $name"
+  gateways="$(tr '\n' ' ' 2>/dev/null < "$snap/gateways" || true)"
+  end=$(( $(date +%s) + ${AGOS_WATCH_SECONDS:-$(( minutes * 60 ))} ))
+  printf '%s\n' "$$" > "$WATCH_PID" 2>/dev/null || true
+  jq '.watch = "on"' "$STATE" > "$STATE.tmp" 2>/dev/null && mv "$STATE.tmp" "$STATE"
+  while (( $(date +%s) < end )); do
+    if stopped_by_hand; then
+      echo "AGOS was stopped by hand: the watch ends (no rollback)." >&2
+      jq '.watch = "stopped"' "$STATE" > "$STATE.tmp" 2>/dev/null && mv "$STATE.tmp" "$STATE"
+      rm -f "$WATCH_PID"; return 0
+    fi
+    if what="$(healthy "$gateways")"; then fails=0
+    else
+      fails=$((fails + 1)); echo "check failed ($fails/$need): $what" >&2
+      if (( fails >= need )); then
+        exec 9>"$AGOS_DATA_DIR/system/agos-update.lock"
+        flock -w 600 9 || die "An update is running; not rolling back."
+        rm -f "$WATCH_PID"
+        OLD_SHA="$(git -C "$AGOS_APP" rev-parse HEAD)"; NEW_SHA="$(cat "$snap/agos.sha")"
+        # Another update or a rollback ran meanwhile: this watch is not its.
+        if [[ -f "$snap/to.sha" && "$(cat "$snap/to.sha")" != "$OLD_SHA" ]]; then
+          echo "AGOS moved to ${OLD_SHA:0:12} since this update: not rolling back." >&2; return 0
+        fi
+        if stopped_by_hand; then echo "AGOS was stopped by hand: not rolling back." >&2; return 0; fi
+        echo "The new release failed its health checks ($what). Rolling back to ${NEW_SHA:0:12}." >&2
+        state rollback "health checks failed after the update: $what"
+        local back="AGOS is back on ${NEW_SHA:0:12}" rc=0
+        roll_back "$snap" "$gateways" || rc=$?
+        if [[ "$rc" == 2 ]]; then
+          jq '.watch = "rollback-refused"' "$STATE" > "$STATE.tmp" && mv "$STATE.tmp" "$STATE"
+          state failed "the new release failed its health checks after the update ($what), and the rollback did not start (not enough free disk, or today's data could not be kept aside). Free some space, then agos rollback."
+          exit 1
+        fi
+        [[ "$rc" == 0 ]] || back="AGOS did not come back by itself: agos logs core"
+        jq '.rolled_back = true | .watch = "rolled-back"' "$STATE" > "$STATE.tmp" && mv "$STATE.tmp" "$STATE"
+        state failed "the new release failed its health checks after the update ($what). $back."
+        exit 1
+      fi
+    fi
+    sleep "$every"
+  done
+  rm -f "$WATCH_PID"
+  jq '.watch = "ok"' "$STATE" > "$STATE.tmp" 2>/dev/null && mv "$STATE.tmp" "$STATE"
+  return 0
+}
+
+# --------------------------------------------------------------- doctor ----------
+cmd_doctor() {
+  local bundle=0 out=""
+  [[ "${1:-}" == --bundle ]] && { bundle=1; out="${2:-}"; }
+  [[ -z "$out" || "$out" == /* ]] || out="$PWD/$out"
+  if [[ "$bundle" == 1 && "$ME" != "$AGOS_USER" ]]; then
+    # The report is made as the AGOS user; the file is written by whoever asked (in
+    # their own home by default), so they can read it and attach it.
+    local who="${SUDO_USER:-$ME}" home report
+    home="$(getent passwd "$who" | cut -d: -f6)"
+    [[ -n "$out" ]] || out="${home:-$PWD}/agos-diagnostics-$(date -u +%Y%m%d-%H%M%S).md"
+    report="$(as_agos bash "$SELF" doctor)" || die "The core is not answering (agos status, agos logs core)."
+    (umask 077 && printf '%s\n' "$report" > "$out")
+    chmod 600 "$out"
+    if [[ $EUID -eq 0 && -n "${SUDO_USER:-}" ]]; then chown "$SUDO_USER": "$out" 2>/dev/null || true; fi
+    echo "Diagnostics written to $out"
+    echo "It holds no keys and none of your workspaces' content; read it before you attach it to an issue."
+    return 0
+  fi
+  if [[ "$bundle" == 1 ]]; then become_agos doctor --bundle ${out:+"$out"}; else become_agos doctor; fi
+  local text s
+  text="$(api GET /diagnostics | jq -r .text)" || die "The core is not answering (agos status, agos logs core)."
+  text+=$'\n### Machine\n\n'
+  for s in "${SERVICES[@]}"; do text+="- $s: $(systemctl is-active "$s" 2>/dev/null || true)"$'\n'; done
+  text+="- gateways running: $(agos_gateways | wc -l)"$'\n'
+  # The gateways' cage, checked from this side too (the core's own check is in its
+  # "Workspace isolation" section above): the same kind of bwrap run, as this user.
+  if bwrap --dev-bind / / --die-with-parent --tmpfs /tmp -- true >/dev/null 2>&1; then
+    text+="- cage self-test (bwrap as $(id -un)): ok"$'\n'
+  else
+    text+="- cage self-test (bwrap as $(id -un)): FAILED (cage_refused): sudo bash $AGOS_APP/deploy/cage-setup.sh self-test $(id -un) prints the fix"$'\n'
+  fi
+  text+="$(version_line | sed 's/^/- /')"$'\n'
+  if [[ "$bundle" != 1 ]]; then printf '%s\n' "$text"; return 0; fi
+  [[ -n "$out" ]] || out="$AGOS_HOME/agos-diagnostics-$(date -u +%Y%m%d-%H%M%S).md"
+  (umask 077 && printf '%s\n' "$text" > "$out")
+  chmod 600 "$out"
+  echo "Diagnostics written to $out"
+  echo "It holds no keys and none of your workspaces' content; read it before you attach it to an issue."
+}
+
+# ------------------------------------------------------------- uninstall ----------
+# Before the data is deleted: one last backup, copied OUT of AGOS's folders (they go
+# too) into the home of the person running the uninstall. No backup = nothing removed.
+last_backup() {
+  local who="${SUDO_USER:-}" dir file newest
+  if [[ -z "$who" || "$who" == root || ( "$who" == "$AGOS_USER" && "${AGOS_DEDICATED_USER:-no}" == yes ) ]]; then
+    who=root
+  fi
+  dir="$(getent passwd "$who" | cut -d: -f6)"
+  [[ -n "$dir" && -d "$dir" ]] || die "No home folder for $who to keep the last backup in. Nothing removed."
+  say "A last backup before the data is deleted"
+  curl -fsS -m 3 -o /dev/null "$CORE/health" 2>/dev/null || { services start; wait_up || die "AGOS does not start, so no last backup can be made. Nothing removed (agos backup, then agos uninstall)."; }
+  as_agos bash "$SELF" backup || die "The last backup failed. Nothing removed."
+  newest="$(find "$AGOS_BACKUP_DIR" -maxdepth 1 -name '*.agosb' -printf '%T@ %p\n' 2>/dev/null | sort -n | tail -1 | cut -d' ' -f2-)"
+  [[ -n "$newest" && -s "$newest" ]] || die "The last backup is missing. Nothing removed."
+  file="$dir/agos-last-backup-$(date -u +%Y%m%d-%H%M%S).agosb"
+  cp "$newest" "$file" || die "Could not copy the last backup to $file. Nothing removed."
+  chown "$who": "$file" 2>/dev/null || true
+  chmod 600 "$file"
+  echo "  Last backup kept: $file (open it with agos restore and its backup password)"
+}
+
+cmd_uninstall() {
+  local keep="" a
+  for a in "$@"; do case "$a" in --keep-data) keep=yes ;; --delete-data) keep=no ;; --yes|-y) AGOS_YES=1 ;; esac; done
+  if [[ $EUID -ne 0 ]]; then exec sudo -- bash "$SELF" uninstall "$@"; fi
+  if [[ -z "$keep" ]]; then
+    if [[ "${AGOS_YES:-0}" == 1 || ! -t 0 ]]; then keep=yes
+    else
+      read -r -p "Keep your AGOS data ($AGOS_DATA_DIR and $AGOS_BACKUP_DIR)? [Y/n] " a
+      [[ "$a" =~ ^[Nn] ]] && keep=no || keep=yes
+    fi
+  fi
+  if [[ "$keep" == no ]]; then
+    # Deleting the data: typed out in full (--yes skips the typing, never the backup).
+    if [[ "${AGOS_YES:-0}" != 1 ]]; then
+      [[ -t 0 ]] || die "Deleting the data needs a terminal to type DELETE (or --delete-data --yes). Nothing removed."
+      echo "This removes AGOS AND all its data: workspaces, chats, files, agents and backups"
+      echo "($AGOS_DATA_DIR, $AGOS_BACKUP_DIR). A last backup is made first, outside them."
+      read -r -p "Type DELETE to go on: " a
+      [[ "$a" == DELETE ]] || { echo "Nothing removed."; exit 0; }
+    fi
+    last_backup
+  elif [[ "${AGOS_YES:-0}" != 1 && -t 0 ]]; then
+    read -r -p "Remove AGOS from this machine (your data stays)? [y/N] " a
+    [[ "$a" =~ ^[Yy] ]] || { echo "Nothing removed."; exit 0; }
+  fi
+  local uid; uid="$(id -u "$AGOS_USER")"
+  if [[ -f /etc/agos/staging.conf ]]; then
+    say "Removing the staging copy"
+    bash "$AGOS_APP/deploy/agos-staging.sh" down --purge || true
+  fi
+  say "Stopping AGOS and its workspaces"
+  stop_watch
+  local gw; gw="$(agos_gateways all | tr '\n' ' ')"
+  if [[ -n "$gw" ]]; then
+    # shellcheck disable=SC2086
+    user_systemctl disable --now $gw 2>/dev/null || true
+    for a in $gw; do as_agos rm -f "$AGOS_HOME/.config/systemd/user/$a"; done
+    user_systemctl daemon-reload 2>/dev/null || true
+  fi
+  systemctl disable --now "${SERVICES[@]}" agos-deadman.timer 2>/dev/null || true
+  rm -f /etc/systemd/system/agos-core.service /etc/systemd/system/agos-hooks.service /etc/systemd/system/agos-web.service
+  rm -f /etc/systemd/system/agos-deadman.service /etc/systemd/system/agos-deadman.timer
+  rm -rf /etc/systemd/system/agos-web.service.d /etc/systemd/system/agos-core.service.d
+  systemctl daemon-reload
+  say "Removing AGOS's containers, networks and images"
+  local ids=()
+  mapfile -t ids < <(docker ps -aq --filter 'name=agos-' 2>/dev/null || true)
+  [[ ${#ids[@]} -eq 0 ]] || docker rm -f "${ids[@]}" >/dev/null || true
+  mapfile -t ids < <(docker network ls -q --filter 'name=agos-' 2>/dev/null || true)
+  [[ ${#ids[@]} -eq 0 ]] || docker network rm "${ids[@]}" >/dev/null || true
+  docker image rm agos-sandbox:desktop agos-sandbox:1 >/dev/null 2>&1 || true
+  say "Removing the program files"
+  rm -f /usr/local/bin/agos /etc/sudoers.d/agos
+  rm -rf "$AGOS_APP"
+  # A user the installer made for AGOS is removed too. Your own user stays.
+  local dedicated="${AGOS_DEDICATED_USER:-no}"
+  if [[ "$dedicated" == yes ]]; then
+    # Its processes end first: one still writing in the data folder (a workspace's
+    # Hermes, its user services) would make the delete below fail half-way.
+    loginctl disable-linger "$AGOS_USER" 2>/dev/null || true
+    loginctl terminate-user "$AGOS_USER" 2>/dev/null || true
+    pkill -u "$AGOS_USER" 2>/dev/null || true; sleep 2; pkill -9 -u "$AGOS_USER" 2>/dev/null || true
+  fi
+  if [[ "$keep" == no ]]; then
+    rm -rf "$AGOS_DATA_DIR" "$AGOS_BACKUP_DIR" 2>/dev/null || { sleep 3; rm -rf "$AGOS_DATA_DIR" "$AGOS_BACKUP_DIR"; }
+  fi
+  if [[ "$dedicated" == yes ]]; then
+    if [[ "$keep" == yes ]]; then
+      userdel "$AGOS_USER" 2>/dev/null || true
+      # Only the data stays; Hermes (its program and the shared settings) goes.
+      # (agos-data* also keeps a copy `agos restore` put aside.)
+      find "$AGOS_HOME" -mindepth 1 -maxdepth 1 ! -path "$AGOS_DATA_DIR*" ! -path "$AGOS_BACKUP_DIR" -exec rm -rf {} +
+      echo "  User $AGOS_USER removed; your data stays in $AGOS_DATA_DIR and $AGOS_BACKUP_DIR (owned by uid $uid)."
+    else
+      userdel -r "$AGOS_USER" 2>/dev/null || true
+      rm -rf "$AGOS_HOME"
+    fi
+  else
+    echo "  $AGOS_USER is your own user: it stays, and so does its Hermes (~/.hermes)."
+    loginctl disable-linger "$AGOS_USER" 2>/dev/null || true
+  fi
+  # Tailscale stays, but no longer answers to the AGOS user.
+  if command -v tailscale >/dev/null && [[ "$(tailscale debug prefs 2>/dev/null | jq -r .OperatorUser 2>/dev/null)" == "$AGOS_USER" ]]; then
+    tailscale set --operator= || true
+  fi
+  rm -rf /etc/agos
+  echo
+  echo "AGOS is removed. Docker, Node.js and Tailscale stay installed (other programs may use them)."
+  [[ "$keep" == yes && "$dedicated" == no ]] && echo "Your data stays in $AGOS_DATA_DIR."
+  return 0
+}
+
+cmd="${1:-help}"; shift || true
+case "$cmd" in
+  start|stop|restart)
+    # A hand stop or restart inside an update's watch is not the release breaking.
+    [[ "$cmd" == start ]] || stop_watch
+    services "$cmd"
+    if [[ "$cmd" == stop ]]; then echo "AGOS is stopped."
+    else wait_up || die "AGOS is not answering yet: agos logs core"; echo "AGOS is running: $WEB"; fi ;;
+  status) cmd_status ;;
+  logs) cmd_logs "$@" ;;
+  open) cmd_open ;;
+  update) cmd_update "$@" ;;
+  channel) cmd_channel "$@" ;;
+  update-watch) cmd_update_watch "$@" ;;
+  rollback) cmd_rollback "$@" ;;
+  doctor) cmd_doctor "$@" ;;
+  staging) exec bash "$AGOS_APP/deploy/agos-staging.sh" "$@" ;;
+  backup) cmd_backup "$@" ;;
+  restore) cmd_restore "$@" ;;
+  uninstall) cmd_uninstall "$@" ;;
+  version|--version) version_line ;;
+  check) if [[ $EUID -eq 0 ]]; then exec bash "$AGOS_APP/deploy/install-server.sh" --check; fi
+         exec sudo bash "$AGOS_APP/deploy/install-server.sh" --check ;;
+  help|-h|--help) sed -n '2,/^set -euo/p' "$SELF" | sed '$d; s/^# \{0,1\}//' ;;
+  *) die "Unknown command '$cmd' (agos help)." ;;
+esac

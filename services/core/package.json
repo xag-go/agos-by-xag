@@ -1,0 +1,12 @@
+{
+  "name": "@agos/service-core",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Python core; these scripts let Turborepo run its checks with the rest.",
+  "scripts": {
+    "lint": "../../scripts/uv.sh run ruff check . && ../../scripts/uv.sh run ruff format --check .",
+    "typecheck": "../../scripts/uv.sh run mypy",
+    "test": "../../scripts/uv.sh run pytest -q",
+    "dev": "AGOS_DATA_DIR=\"$(cd ../.. && pwd)/agos-data\" ../../scripts/uv.sh run uvicorn agos_core.api.app:create_app --factory --host 127.0.0.1 --port 8765 --reload"
+  }
+}

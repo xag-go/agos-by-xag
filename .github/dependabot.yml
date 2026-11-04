@@ -1,0 +1,68 @@
+# Weekly dependency PRs. Each one passes the full CI gate like any other PR.
+# Supply-chain note: services/core/pyproject.toml pins `[tool.uv] exclude-newer`, so a
+# Python PR newer than that date fails `uv sync --frozen` until the date moves in the
+# same PR; pnpm-workspace.yaml's minimumReleaseAge (3 days) is matched by the
+# `cooldown` below (docs/CI.md, "Dependency updates").
+version: 2
+updates:
+  - package-ecosystem: uv
+    directory: /services/core
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Etc/UTC
+    open-pull-requests-limit: 5
+    labels: [dependencies, skip-changelog]
+    groups:
+      python-runtime:
+        dependency-type: production
+        update-types: [minor, patch]
+      python-dev:
+        dependency-type: development
+        update-types: [minor, patch]
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Etc/UTC
+    open-pull-requests-limit: 5
+    labels: [dependencies, skip-changelog]
+    cooldown:
+      default-days: 3
+    groups:
+      # React Three Fiber and three move together.
+      three:
+        patterns: ["three", "@types/three", "@react-three/*"]
+      web-runtime:
+        dependency-type: production
+        update-types: [minor, patch]
+      web-dev:
+        dependency-type: development
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Etc/UTC
+    labels: [dependencies, skip-changelog]
+    groups:
+      actions:
+        patterns: ["*"]
+
+  # The sandbox's base image is pinned by digest (docs/releases.md, "Base images"):
+  # this proposes the new digest as a PR, which rebuilds the image in CI like any other.
+  - package-ecosystem: docker
+    directory: /docker/sandbox
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Etc/UTC
+    labels: [dependencies, skip-changelog]

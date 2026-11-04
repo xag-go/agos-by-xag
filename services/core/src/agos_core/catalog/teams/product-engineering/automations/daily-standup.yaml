@@ -1,0 +1,14 @@
+name: Daily standup
+instructions:
+  "Read the board: what moved yesterday, what is blocked and why, what each engineer takes
+  today. Post a five-line summary for the owner."
+schedule: 0 9 * * 1-5
+"on": false
+agent: tech-lead
+model: null
+steps: []
+check_first: false
+variables: []
+policy: skip_if_active
+ticket: null
+hook: null

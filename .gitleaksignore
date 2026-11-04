@@ -1,0 +1,19 @@
+# Known fakes and false positives for gitleaks (fingerprint = file:rule:line).
+# Test files hold made-up keys on purpose; the source lines are cache names,
+# not keys. A finding that is not listed here fails CI and scripts/publish-public.sh.
+# When one of these lines moves, update its line number here.
+services/core/src/agos_core/actions/key_pools.py:generic-api-key:59
+services/core/src/agos_core/actions/key_pools.py:generic-api-key:62
+services/core/src/agos_core/actions/services/library/github_token.py:generic-api-key:55
+services/core/tests/test_automation_hooks.py:generic-api-key:30
+services/core/tests/test_templates.py:generic-api-key:23
+services/core/tests/test_tool_keys.py:generic-api-key:27
+services/core/tests/test_tool_keys.py:generic-api-key:28
+services/core/tests/test_web_db_guards.py:generic-api-key:316
+services/core/tests/test_web_push.py:generic-api-key:29
+services/core/tests/test_workspace_log.py:generic-api-key:100
+services/core/tests/test_workspace_log.py:generic-api-key:29
+# Made-up keys in redaction tests (the test asserts they are scrubbed from logs/reports):
+apps/web/scripts/error-report.test.mjs:generic-api-key:11
+services/core/tests/test_error_issues.py:generic-api-key:158
+services/core/tests/test_hermes_gateway.py:generic-api-key:215

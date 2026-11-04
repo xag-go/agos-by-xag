@@ -1,0 +1,10 @@
+name: video-editor
+title: Video Editor
+summary: Cuts footage into finished reels from the scripts.
+reports_to: content-lead
+model: null
+skills: []
+reads: []
+"on": true
+heartbeat: ""
+notes: ""

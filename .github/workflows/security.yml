@@ -1,0 +1,153 @@
+name: Security
+
+# Supply chain and static security checks. On PRs and main they gate; the weekly run
+# re-checks the locked dependencies against advisories published since.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "17 5 * * 1" # Mondays 05:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit-python:
+    name: Python dependencies (pip-audit)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: services/core
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+      # Every locked package (runtime and dev tools), exact versions from uv.lock.
+      - name: pip-audit uv.lock
+        run: |
+          uv export --frozen --all-groups --no-hashes --no-emit-project > "$RUNNER_TEMP/requirements.txt"
+          uvx pip-audit==2.10.1 -r "$RUNNER_TEMP/requirements.txt" --no-deps --disable-pip --strict --desc
+
+  audit-node:
+    name: Node dependencies (pnpm audit --prod, high+)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .nvmrc
+      # Reads pnpm-lock.yaml; no install needed. Fails on high or critical.
+      - run: pnpm audit --prod --audit-level=high
+
+  # What the product is made of, as CycloneDX: every locked Python package (uv.lock)
+  # and every Node package (pnpm-lock.yaml), kept as the run's artifact.
+  sbom:
+    name: SBOM (CycloneDX, Python + pnpm)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .nvmrc
+      - name: Python (uv export, CycloneDX 1.5)
+        working-directory: services/core
+        run: |
+          mkdir -p "$RUNNER_TEMP/sbom"
+          uv export --frozen --all-groups --format cyclonedx1.5 -o "$RUNNER_TEMP/sbom/agos-core.cdx.json"
+      # cdxgen reads the lockfile; no install, no install scripts.
+      - name: Node (cdxgen, pnpm-lock.yaml)
+        run: >-
+          npx --yes @cyclonedx/cdxgen@12.9.0 -t pnpm --no-install-deps --spec-version 1.5
+          -o "$RUNNER_TEMP/sbom/agos-web.cdx.json" .
+      - name: Both are CycloneDX with components
+        run: |
+          for f in "$RUNNER_TEMP"/sbom/agos-core.cdx.json "$RUNNER_TEMP"/sbom/agos-web.cdx.json; do
+            python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); assert d["bomFormat"]=="CycloneDX" and d["components"], sys.argv[1]; print(sys.argv[1], len(d["components"]), "components")' "$f"
+          done
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: sbom-cyclonedx
+          path: ${{ runner.temp }}/sbom/*.cdx.json
+          retention-days: 90
+
+  semgrep:
+    name: SAST (Semgrep, new findings fail)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+          fetch-depth: 0 # baseline mode diffs against the base commit
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+      # Registry packs plus the AGOS rules in .semgrep/ (no shell=True, no SQL built
+      # from strings, the web reaches the core only through src/server). Findings that
+      # exist on the base commit are reported by the weekly run, never fail a PR.
+      - name: semgrep
+        env:
+          SEMGREP_SEND_METRICS: "off"
+          BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          set -- --config p/python --config p/typescript --config p/secrets --config .semgrep/ \
+            --metrics=off --disable-version-check
+          if [ "$EVENT" = schedule ] || [ "$EVENT" = workflow_dispatch ] || [ -z "$BASE" ] \
+            || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then
+            uvx --python 3.12 semgrep==1.183.0 scan "$@"   # full report, not a gate
+          else
+            uvx --python 3.12 semgrep==1.183.0 scan "$@" --baseline-commit "$BASE" --error
+          fi
+
+  gitleaks:
+    name: Secrets (gitleaks)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      GITLEAKS_VERSION: 8.30.1
+      GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Install gitleaks
+        run: |
+          curl -fsSL -o gitleaks.tgz \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  gitleaks.tgz" | sha256sum -c -
+          tar -xzf gitleaks.tgz gitleaks
+          sudo install -m 755 gitleaks /usr/local/bin/gitleaks
+          rm -f gitleaks gitleaks.tgz
+      # Known test fakes are listed in .gitleaksignore.
+      - name: Scan the files
+        run: gitleaks dir . --no-banner --redact --exit-code 1
+      - name: Scan the new commits
+        if: github.event_name != 'schedule' && github.event_name != 'workflow_dispatch'
+        env:
+          BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          HEAD: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then
+            range="$HEAD"
+          else
+            range="$BASE..$HEAD"
+          fi
+          gitleaks git . --no-banner --redact --exit-code 1 --log-opts="$range"

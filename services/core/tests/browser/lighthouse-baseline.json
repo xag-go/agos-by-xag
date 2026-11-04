@@ -1,0 +1,65 @@
+{
+  "about": "Lighthouse budgets: performance, accessibility and best-practices scores of the main\nscreens on the light rig, as a ratchet.",
+  "metrics": {
+    "lighthouse.settings-general.accessibility.missing_pts": {
+      "value": 4,
+      "unit": "pts"
+    },
+    "lighthouse.settings-general.best-practices.missing_pts": {
+      "value": 4,
+      "unit": "pts"
+    },
+    "lighthouse.settings-general.performance.missing_pts": {
+      "value": 0,
+      "unit": "pts"
+    },
+    "lighthouse.ws-dashboard.accessibility.missing_pts": {
+      "value": 8,
+      "unit": "pts"
+    },
+    "lighthouse.ws-dashboard.best-practices.missing_pts": {
+      "value": 0,
+      "unit": "pts"
+    },
+    "lighthouse.ws-dashboard.performance.missing_pts": {
+      "value": 0,
+      "unit": "pts"
+    },
+    "lighthouse.ws-inbox.accessibility.missing_pts": {
+      "value": 8,
+      "unit": "pts"
+    },
+    "lighthouse.ws-inbox.best-practices.missing_pts": {
+      "value": 0,
+      "unit": "pts"
+    },
+    "lighthouse.ws-inbox.performance.missing_pts": {
+      "value": 0,
+      "unit": "pts"
+    },
+    "lighthouse.ws-kanban.accessibility.missing_pts": {
+      "value": 4,
+      "unit": "pts"
+    },
+    "lighthouse.ws-kanban.best-practices.missing_pts": {
+      "value": 0,
+      "unit": "pts"
+    },
+    "lighthouse.ws-kanban.performance.missing_pts": {
+      "value": 0,
+      "unit": "pts"
+    },
+    "lighthouse.ws-vision.accessibility.missing_pts": {
+      "value": 4,
+      "unit": "pts"
+    },
+    "lighthouse.ws-vision.best-practices.missing_pts": {
+      "value": 0,
+      "unit": "pts"
+    },
+    "lighthouse.ws-vision.performance.missing_pts": {
+      "value": 0,
+      "unit": "pts"
+    }
+  }
+}

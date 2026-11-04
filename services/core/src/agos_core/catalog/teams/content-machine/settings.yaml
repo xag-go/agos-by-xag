@@ -1,0 +1,7 @@
+schema: agos/bundle-v1
+env_requires:
+  - name: OPENROUTER_API_KEY
+    description: Transcribing reels with OpenRouter
+    required: false
+    kind: tool_key
+    app: OpenRouter

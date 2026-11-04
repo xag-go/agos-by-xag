@@ -1,0 +1,10 @@
+pnpm-lock.yaml
+dist
+.next
+.turbo
+agos-data
+
+services/**/.venv
+services/**/uv.lock
+services/core/openapi.json
+apps/web/src/data/core-api.d.ts

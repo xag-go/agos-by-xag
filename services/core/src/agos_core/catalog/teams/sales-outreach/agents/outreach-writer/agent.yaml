@@ -1,0 +1,11 @@
+name: outreach-writer
+title: Outreach Writer
+summary: Writes short, personal first messages and follow-ups.
+reports_to: sales-lead
+model: null
+skills:
+  - outreach-sequence
+reads: []
+"on": true
+heartbeat: ""
+notes: ""

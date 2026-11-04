@@ -1,0 +1,11 @@
+name: sales-lead
+title: Sales Lead
+summary: Owns the pipeline and the weekly targets.
+reports_to: ""
+model: null
+skills:
+  - outreach-sequence
+reads: []
+"on": true
+heartbeat: ""
+notes: ""

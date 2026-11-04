@@ -1,0 +1,19 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+  - "services/*"
+
+# Supply-chain protection: refuse package versions published less than
+# 3 days ago (in minutes). Most malicious releases are caught within that window.
+minimumReleaseAge: 4320
+
+# Install scripts are blocked by default in pnpm 10. Only packages listed
+# here may run them — review before adding anything.
+onlyBuiltDependencies:
+  - esbuild
+  - sharp
+  - unrs-resolver
+
+# Security floors for transitive packages (pnpm audit --prod must stay clean).
+overrides:
+  source-map-js: ">=1.2.2"

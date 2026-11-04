@@ -1,0 +1,12 @@
+name: Morning briefing
+instructions: Write the owner's morning briefing with the daily-briefing skill and post it to him.
+schedule: 0 8 * * *
+"on": false
+agent: executive-assistant
+model: null
+steps: []
+check_first: false
+variables: []
+policy: skip_if_active
+ticket: null
+hook: null

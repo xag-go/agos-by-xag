@@ -1,0 +1,5 @@
+# actionlint config: the nightly job runs on the self-hosted runner labelled `hermes`
+# (docs/CI.md, "Nightly self-hosted runner").
+self-hosted-runner:
+  labels:
+    - hermes

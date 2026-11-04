@@ -1,0 +1,42 @@
+{
+  "name": "@agos/web",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev -H 127.0.0.1",
+    "build": "next build",
+    "start": "next start -H 127.0.0.1",
+    "lint": "eslint .",
+    "typecheck": "next typegen && pnpm gen:api && tsc -p tsconfig.json",
+    "gen:api": "openapi-typescript ../../services/core/openapi.json -o src/data/core-api.d.ts --alphabetize",
+    "test": "node --test --import ./scripts/tsx-loader.mjs scripts/unused-exports.test.mjs scripts/board-optimistic.test.mjs scripts/board-views.test.mjs scripts/no-login.test.mjs scripts/error-report.test.mjs scripts/security-report.test.mjs scripts/design-tokens.test.mjs scripts/panel.test.mjs scripts/update-cards.test.mjs scripts/features.test.mjs scripts/idempotency.test.mjs",
+    "test:coverage": "node --test --experimental-test-coverage --test-coverage-include=src/** --import ./scripts/tsx-loader.mjs scripts/features.test.mjs scripts/update-cards.test.mjs scripts/board-optimistic.test.mjs scripts/board-views.test.mjs"
+  },
+  "dependencies": {
+    "@agos/core": "workspace:*",
+    "@react-three/drei": "^10.7.9",
+    "@react-three/fiber": "^9.8.1",
+    "next": "^16.4.3",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "server-only": "^0.0.1",
+    "three": "^0.180.0",
+    "uqr": "^0.1.3",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^24.13.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@types/three": "0.180.0",
+    "axe-core": "4.13.0",
+    "eslint-config-next": "16.4.3",
+    "eslint-plugin-jsx-a11y": "6.10.2",
+    "lighthouse": "13.6.0",
+    "openapi-typescript": "7.13.0",
+    "tailwindcss": "^4.3.3"
+  }
+}

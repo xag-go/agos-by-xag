@@ -1,0 +1,1279 @@
+{
+  "limits": {
+    "python": {
+      "C901": 10,
+      "PLR0912": 12,
+      "PLR0915": 50,
+      "length": 80
+    },
+    "web": {
+      "complexity": 10,
+      "lines": 80
+    }
+  },
+  "python": {
+    "services/core/src/agos_core/actions/agent_profiles.py::_make": {
+      "length": 83
+    },
+    "services/core/src/agos_core/actions/automation_variables.py::check_value": {
+      "C901": 12
+    },
+    "services/core/src/agos_core/actions/browse.py::list_folders": {
+      "C901": 11
+    },
+    "services/core/src/agos_core/actions/capabilities.py::decide": {
+      "C901": 12,
+      "PLR0912": 14
+    },
+    "services/core/src/agos_core/actions/chat_store.py::keep": {
+      "C901": 11
+    },
+    "services/core/src/agos_core/actions/docs.py::_walk": {
+      "C901": 12
+    },
+    "services/core/src/agos_core/actions/error_issues.py::record": {
+      "length": 93
+    },
+    "services/core/src/agos_core/actions/folders.py::apply_import": {
+      "C901": 12
+    },
+    "services/core/src/agos_core/actions/heartbeat.py::set_heartbeat": {
+      "C901": 12
+    },
+    "services/core/src/agos_core/actions/held_writes.py::decide_group": {
+      "C901": 12
+    },
+    "services/core/src/agos_core/actions/hermes_health.py::read": {
+      "C901": 11
+    },
+    "services/core/src/agos_core/actions/hermes_managed.py::_commands": {
+      "C901": 11
+    },
+    "services/core/src/agos_core/actions/hermes_managed.py::move_once": {
+      "C901": 12
+    },
+    "services/core/src/agos_core/actions/hermes_managed.py::settle": {
+      "C901": 13
+    },
+    "services/core/src/agos_core/actions/hermes_settings.py::write": {
+      "C901": 11
+    },
+    "services/core/src/agos_core/actions/hooks.py::set_hook": {
+      "C901": 11,
+      "length": 94
+    },
+    "services/core/src/agos_core/actions/inbox.py::items": {
+      "C901": 19,
+      "PLR0912": 15,
+      "length": 171
+    },
+    "services/core/src/agos_core/actions/key_pools.py::move_once": {
+      "C901": 16,
+      "PLR0912": 15
+    },
+    "services/core/src/agos_core/actions/pipelines.py::_checked": {
+      "C901": 12,
+      "PLR0912": 14
+    },
+    "services/core/src/agos_core/actions/scorecard.py::from_board": {
+      "C901": 18,
+      "PLR0912": 17
+    },
+    "services/core/src/agos_core/actions/scorecard.py::scorecards": {
+      "C901": 12
+    },
+    "services/core/src/agos_core/actions/search.py::_board_hits": {
+      "C901": 11
+    },
+    "services/core/src/agos_core/actions/search.py::_document_hits": {
+      "C901": 11
+    },
+    "services/core/src/agos_core/actions/services/automation/cron.py::automation_view": {
+      "C901": 13,
+      "PLR0912": 13,
+      "length": 81
+    },
+    "services/core/src/agos_core/actions/services/automation/jobs.py::sync_job": {
+      "C901": 12,
+      "length": 81
+    },
+    "services/core/src/agos_core/actions/services/automation/owner.py::save": {
+      "C901": 16,
+      "PLR0912": 16,
+      "PLR0915": 60,
+      "length": 143
+    },
+    "services/core/src/agos_core/actions/services/automation/sync_loop.py::keep_in_step": {
+      "C901": 15,
+      "PLR0912": 16
+    },
+    "services/core/src/agos_core/actions/services/board/review_verdicts.py::check": {
+      "C901": 12
+    },
+    "services/core/src/agos_core/actions/services/board/review_verdicts.py::verdict": {
+      "C901": 17,
+      "PLR0912": 16,
+      "length": 84
+    },
+    "services/core/src/agos_core/actions/services/board/status_defs.py::_check": {
+      "C901": 12
+    },
+    "services/core/src/agos_core/actions/services/chat/gateway_turns.py::close_unanswered": {
+      "C901": 12
+    },
+    "services/core/src/agos_core/actions/services/chat/history.py::edit_message": {
+      "C901": 14,
+      "PLR0912": 13
+    },
+    "services/core/src/agos_core/actions/services/chat/room_asks.py::told": {
+      "C901": 11
+    },
+    "services/core/src/agos_core/actions/services/chat/room_turns.py::_take_event": {
+      "C901": 11
+    },
+    "services/core/src/agos_core/actions/services/chat/room_turns.py::done": {
+      "C901": 12
+    },
+    "services/core/src/agos_core/actions/services/chat/view.py::_turns": {
+      "length": 87
+    },
+    "services/core/src/agos_core/actions/services/chat/view.py::_view": {
+      "C901": 22,
+      "PLR0912": 21,
+      "PLR0915": 75,
+      "length": 138
+    },
+    "services/core/src/agos_core/actions/services/cofounder/agent_tools.py::run_actions": {
+      "C901": 13,
+      "PLR0912": 13,
+      "length": 85
+    },
+    "services/core/src/agos_core/actions/services/cofounder/dispatch.py::_do": {
+      "C901": 35,
+      "PLR0912": 34,
+      "PLR0915": 70,
+      "length": 140
+    },
+    "services/core/src/agos_core/actions/services/cofounder/dispatch.py::_undo": {
+      "C901": 23,
+      "PLR0912": 25,
+      "PLR0915": 55,
+      "length": 81
+    },
+    "services/core/src/agos_core/actions/services/cofounder/skill_kinds.py::save_library_item": {
+      "C901": 14,
+      "PLR0912": 14,
+      "length": 122
+    },
+    "services/core/src/agos_core/actions/services/cofounder/snapshots.py::_slim": {
+      "C901": 12
+    },
+    "services/core/src/agos_core/actions/services/hire/onboarding.py::choose": {
+      "C901": 12
+    },
+    "services/core/src/agos_core/actions/services/hire/readiness.py::_items": {
+      "length": 146
+    },
+    "services/core/src/agos_core/actions/services/library/apply.py::_write": {
+      "length": 87
+    },
+    "services/core/src/agos_core/actions/services/library/catalog.py::_save_mcp": {
+      "C901": 14
+    },
+    "services/core/src/agos_core/actions/services/library/catalog.py::_save_template": {
+      "C901": 11
+    },
+    "services/core/src/agos_core/actions/services/library/catalog.py::save_item": {
+      "C901": 17,
+      "PLR0912": 16,
+      "length": 86
+    },
+    "services/core/src/agos_core/actions/services/library/connectors.py::set_connector": {
+      "C901": 17
+    },
+    "services/core/src/agos_core/actions/services/library/growth_candidates.py::candidate": {
+      "C901": 13,
+      "PLR0912": 13,
+      "length": 122
+    },
+    "services/core/src/agos_core/actions/services/library/lifecycle.py::delete_item": {
+      "C901": 15,
+      "PLR0912": 13
+    },
+    "services/core/src/agos_core/actions/services/library/skills_hub.py::check_updates": {
+      "C901": 11
+    },
+    "services/core/src/agos_core/actions/services/library/workspace_state.py::profile_settings": {
+      "length": 108
+    },
+    "services/core/src/agos_core/actions/services/portability/import_steps.py::import_agents": {
+      "C901": 12
+    },
+    "services/core/src/agos_core/actions/services/portability/import_steps.py::import_automations": {
+      "length": 93
+    },
+    "services/core/src/agos_core/actions/services/portability/import_steps.py::import_vision": {
+      "C901": 11
+    },
+    "services/core/src/agos_core/actions/services/proposals/decisions.py::decide": {
+      "C901": 17,
+      "PLR0912": 16,
+      "PLR0915": 58,
+      "length": 91
+    },
+    "services/core/src/agos_core/actions/services/proposals/hiring.py::hire": {
+      "C901": 12,
+      "PLR0915": 54,
+      "length": 100
+    },
+    "services/core/src/agos_core/actions/services/settings/hermes_rows.py::_env_rows": {
+      "C901": 15,
+      "PLR0912": 13,
+      "length": 139
+    },
+    "services/core/src/agos_core/actions/services/settings/hermes_writes.py::give_new_profile": {
+      "C901": 13,
+      "PLR0912": 13
+    },
+    "services/core/src/agos_core/actions/services/settings/hermes_writes.py::restore": {
+      "C901": 11
+    },
+    "services/core/src/agos_core/actions/services/settings/hermes_writes.py::write": {
+      "C901": 17,
+      "PLR0912": 15,
+      "PLR0915": 54,
+      "length": 81
+    },
+    "services/core/src/agos_core/actions/services/vision/plan_changes.py::apply_change": {
+      "C901": 14,
+      "PLR0912": 14,
+      "length": 133
+    },
+    "services/core/src/agos_core/actions/services/vision/plan_edits.py::update_item": {
+      "C901": 13
+    },
+    "services/core/src/agos_core/actions/skill_tests.py::refresh": {
+      "C901": 11
+    },
+    "services/core/src/agos_core/actions/skill_writes.py::ops_for": {
+      "C901": 11
+    },
+    "services/core/src/agos_core/actions/skills_move.py::move_old_shared_skills": {
+      "C901": 17,
+      "PLR0912": 17,
+      "PLR0915": 56
+    },
+    "services/core/src/agos_core/actions/staging.py::quiet": {
+      "C901": 11
+    },
+    "services/core/src/agos_core/actions/team.py::save": {
+      "C901": 13
+    },
+    "services/core/src/agos_core/actions/team_files.py::adopt": {
+      "C901": 11
+    },
+    "services/core/src/agos_core/actions/work_hours.py::apply": {
+      "C901": 11
+    },
+    "services/core/src/agos_core/api/app.py::create_app": {
+      "length": 107
+    },
+    "services/core/src/agos_core/db/agent_revisions.py::_shown": {
+      "C901": 11
+    },
+    "services/core/src/agos_core/db/automation_revisions.py::_shown": {
+      "C901": 12
+    },
+    "services/core/src/agos_core/db/chats.py::search_chats": {
+      "C901": 11
+    },
+    "services/core/src/agos_core/db/connection.py::_migrate": {
+      "C901": 12
+    },
+    "services/core/src/agos_core/db/hermes_chats.py::owner_words": {
+      "C901": 11
+    },
+    "services/core/src/agos_core/engine/cage.py::policy": {
+      "C901": 13
+    },
+    "services/core/src/agos_core/engine/card_docs.py::_fuzzy": {
+      "C901": 12
+    },
+    "services/core/src/agos_core/engine/chat.py::LiveTurn.apply": {
+      "C901": 18,
+      "PLR0912": 19
+    },
+    "services/core/src/agos_core/engine/cofounder_actions.py::_clean": {
+      "C901": 19,
+      "PLR0912": 18
+    },
+    "services/core/src/agos_core/engine/cofounder_actions.py::instructions": {
+      "length": 328
+    },
+    "services/core/src/agos_core/engine/contract/tree.py::Tree.find": {
+      "C901": 18,
+      "PLR0912": 17
+    },
+    "services/core/src/agos_core/engine/contract/tree.py::Tree.member": {
+      "C901": 15,
+      "PLR0912": 14
+    },
+    "services/core/src/agos_core/engine/contract/tree.py::_dataclass_fields": {
+      "C901": 12
+    },
+    "services/core/src/agos_core/engine/contract/tree.py::check_one": {
+      "C901": 29,
+      "PLR0912": 27,
+      "PLR0915": 53
+    },
+    "services/core/src/agos_core/engine/docs.py::_duplicates": {
+      "C901": 12
+    },
+    "services/core/src/agos_core/engine/docs.py::check": {
+      "C901": 15,
+      "PLR0912": 14
+    },
+    "services/core/src/agos_core/engine/goals.py::prompt": {
+      "C901": 13
+    },
+    "services/core/src/agos_core/engine/hermes/__init__.py::HermesEngine.apply": {
+      "C901": 15,
+      "PLR0912": 14,
+      "PLR0915": 61,
+      "length": 192
+    },
+    "services/core/src/agos_core/engine/hermes/commands.py::_config_writes": {
+      "C901": 11
+    },
+    "services/core/src/agos_core/engine/hire_kit.py::resolve_model": {
+      "C901": 15,
+      "PLR0912": 14,
+      "length": 90
+    },
+    "services/core/src/agos_core/engine/library.py::check_mcp": {
+      "C901": 14,
+      "PLR0912": 13
+    },
+    "services/core/src/agos_core/engine/mcp_runner.py::ensure": {
+      "C901": 11,
+      "length": 105
+    },
+    "services/core/src/agos_core/engine/proposals.py::_goal_problems": {
+      "C901": 15,
+      "PLR0912": 14
+    },
+    "services/core/src/agos_core/engine/proposals.py::clean": {
+      "C901": 21,
+      "PLR0912": 21,
+      "PLR0915": 65,
+      "length": 89
+    },
+    "services/core/src/agos_core/engine/proposals.py::decision_text": {
+      "C901": 11
+    },
+    "services/core/src/agos_core/engine/proposals.py::problems": {
+      "C901": 16,
+      "PLR0912": 15
+    },
+    "services/core/src/agos_core/engine/provider_login.py::ProviderLogins._follow": {
+      "C901": 12
+    },
+    "services/core/src/agos_core/engine/questions.py::check_answer": {
+      "C901": 16,
+      "PLR0912": 17
+    },
+    "services/core/src/agos_core/engine/reviews.py::derive": {
+      "C901": 12
+    },
+    "services/core/src/agos_core/engine/rules.py::profile_config": {
+      "length": 105
+    },
+    "services/core/src/agos_core/engine/sandboxd.py::Sandboxd.one_request": {
+      "C901": 19,
+      "PLR0912": 19,
+      "PLR0915": 56
+    },
+    "services/core/src/agos_core/engine/sandboxd.py::route_segments": {
+      "C901": 18,
+      "PLR0912": 17
+    },
+    "services/core/src/agos_core/engine/sandboxd_http.py::parse_head": {
+      "C901": 20,
+      "PLR0912": 19
+    },
+    "services/core/src/agos_core/engine/sandboxd_rules.py::validate_create": {
+      "C901": 37,
+      "PLR0912": 36,
+      "length": 85
+    },
+    "services/core/src/agos_core/engine/settings_schema/extras.py::_platform_extras": {
+      "C901": 13
+    },
+    "services/core/src/agos_core/engine/settings_schema/fields.py::comments": {
+      "C901": 15
+    },
+    "services/core/src/agos_core/engine/team_steps.py::parse_plan": {
+      "C901": 20,
+      "PLR0912": 19
+    },
+    "services/core/src/agos_core/engine/threads.py::wake_plan": {
+      "C901": 11
+    },
+    "services/core/src/agos_core/engine/wall.py::allow_list": {
+      "C901": 17,
+      "PLR0912": 15
+    },
+    "services/core/src/agos_core/hermes_plugin/agos_guard/__init__.py::_verdict": {
+      "C901": 18,
+      "PLR0912": 17
+    },
+    "services/core/src/agos_core/hermes_plugin/agos_guard/__init__.py::register": {
+      "C901": 19,
+      "PLR0915": 79,
+      "length": 177
+    },
+    "services/core/src/agos_core/hermes_plugin/agos_guard/bridge_platform.py::_agos_adapter": {
+      "C901": 33,
+      "length": 192
+    },
+    "services/core/src/agos_core/hermes_plugin/agos_guard/bridge_platform.py::_platform_items": {
+      "C901": 12
+    },
+    "services/core/src/agos_core/hermes_plugin/agos_guard/consent.py::target_of": {
+      "C901": 12
+    },
+    "services/core/src/agos_core/hermes_plugin/agos_guard/review.py::_step": {
+      "C901": 11
+    },
+    "services/core/src/agos_core/hermes_plugin/agos_guard/services.py::service_tool": {
+      "C901": 15,
+      "PLR0912": 14
+    },
+    "services/core/src/agos_core/hermes_plugin/agos_guard/taint_sources.py::source_of": {
+      "C901": 12
+    }
+  },
+  "web": {
+    "apps/web/src/app/(app)/connectors/callback/page.tsx::(anonymous)": {
+      "complexity": 17
+    },
+    "apps/web/src/app/(app)/settings/[section]/page.tsx::(anonymous)": {
+      "complexity": 18,
+      "lines": 180
+    },
+    "apps/web/src/app/(app)/w/[id]/automations/page.tsx::(anonymous)": {
+      "complexity": 28,
+      "lines": 185
+    },
+    "apps/web/src/app/(app)/w/[id]/kanban/page.tsx::(anonymous)": {
+      "complexity": 38,
+      "lines": 100
+    },
+    "apps/web/src/app/(app)/w/[id]/sessions/page.tsx::(anonymous)": {
+      "complexity": 11
+    },
+    "apps/web/src/app/preview/[ws]/[card]/[port]/[[...path]]/route.ts::(anonymous)": {
+      "complexity": 13
+    },
+    "apps/web/src/features/artifacts/artifacts-view.tsx::(anonymous)": {
+      "complexity": 11
+    },
+    "apps/web/src/features/artifacts/artifacts-view.tsx::ArtifactPanel": {
+      "complexity": 14,
+      "lines": 133
+    },
+    "apps/web/src/features/artifacts/artifacts-view.tsx::ArtifactsView": {
+      "lines": 173
+    },
+    "apps/web/src/features/artifacts/artifacts-view.tsx::Preview": {
+      "complexity": 14,
+      "lines": 85
+    },
+    "apps/web/src/features/channels/chat-where.tsx::AddAddress": {
+      "complexity": 13,
+      "lines": 95
+    },
+    "apps/web/src/features/channels/chat-where.tsx::ChatWhere": {
+      "lines": 82
+    },
+    "apps/web/src/features/channels/chat-where.tsx::PlacePicker": {
+      "lines": 100
+    },
+    "apps/web/src/features/channels/workspace-bot.tsx::BotRow": {
+      "lines": 102
+    },
+    "apps/web/src/features/channels/workspace-bot.tsx::QrSetup": {
+      "complexity": 19,
+      "lines": 116
+    },
+    "apps/web/src/features/chats/access-switch.tsx::AccessSwitch": {
+      "lines": 114
+    },
+    "apps/web/src/features/chats/action-card.tsx::ActionCard": {
+      "complexity": 19,
+      "lines": 88
+    },
+    "apps/web/src/features/chats/capability-card.tsx::CapabilityCard": {
+      "complexity": 19,
+      "lines": 99
+    },
+    "apps/web/src/features/chats/chat-header.tsx::ChatHeader": {
+      "complexity": 12,
+      "lines": 109
+    },
+    "apps/web/src/features/chats/chat-header.tsx::ModelMenu": {
+      "lines": 129
+    },
+    "apps/web/src/features/chats/chats-view.tsx::ChatsView": {
+      "lines": 148
+    },
+    "apps/web/src/features/chats/composer.tsx::(anonymous)": {
+      "complexity": 14
+    },
+    "apps/web/src/features/chats/composer.tsx::(anonymous)#2": {
+      "complexity": 21
+    },
+    "apps/web/src/features/chats/composer.tsx::Composer": {
+      "complexity": 42,
+      "lines": 521
+    },
+    "apps/web/src/features/chats/conversation.tsx::(anonymous)": {
+      "complexity": 11
+    },
+    "apps/web/src/features/chats/conversation.tsx::(anonymous)#2": {
+      "complexity": 14
+    },
+    "apps/web/src/features/chats/conversation.tsx::Conversation": {
+      "complexity": 14,
+      "lines": 332
+    },
+    "apps/web/src/features/chats/edit-message-dialog.tsx::EditMessageDialog": {
+      "lines": 101
+    },
+    "apps/web/src/features/chats/message-agent.tsx::AgentReply": {
+      "complexity": 20
+    },
+    "apps/web/src/features/chats/message-agent.tsx::statusLine": {
+      "complexity": 11
+    },
+    "apps/web/src/features/chats/message-owner.tsx::OwnerMessage": {
+      "lines": 101
+    },
+    "apps/web/src/features/chats/selection-reply.tsx::(anonymous)": {
+      "complexity": 12
+    },
+    "apps/web/src/features/chats/selection-reply.tsx::SelectionReply": {
+      "lines": 94
+    },
+    "apps/web/src/features/chats/use-voice-note.ts::(anonymous)": {
+      "lines": 86
+    },
+    "apps/web/src/features/chats/use-voice-note.ts::useVoiceNote": {
+      "lines": 131
+    },
+    "apps/web/src/features/chats/voice-note.tsx::VoiceNote": {
+      "lines": 98
+    },
+    "apps/web/src/features/connections/mcp-card.tsx::McpCard": {
+      "lines": 124
+    },
+    "apps/web/src/features/connectors/connector-add.tsx::AddPanel": {
+      "complexity": 11,
+      "lines": 166
+    },
+    "apps/web/src/features/connectors/connector-add.tsx::AddRow": {
+      "complexity": 16
+    },
+    "apps/web/src/features/connectors/connector-composio.tsx::AppSetup": {
+      "lines": 94
+    },
+    "apps/web/src/features/connectors/connector-composio.tsx::ComposioApps": {
+      "lines": 83
+    },
+    "apps/web/src/features/connectors/connector-composio.tsx::ComposioKey": {
+      "lines": 82
+    },
+    "apps/web/src/features/connectors/connectors-catalog.tsx::ConnectorsCatalog": {
+      "lines": 108
+    },
+    "apps/web/src/features/connectors/workspace-apps.tsx::ConnectedRow": {
+      "complexity": 11,
+      "lines": 83
+    },
+    "apps/web/src/features/dashboard/dashboard.tsx::(anonymous)": {
+      "complexity": 14
+    },
+    "apps/web/src/features/dashboard/dashboard.tsx::Dashboard": {
+      "lines": 91
+    },
+    "apps/web/src/features/docs/docs-view.tsx::DocsView": {
+      "lines": 138
+    },
+    "apps/web/src/features/docs/docs-view.tsx::Editor": {
+      "complexity": 13,
+      "lines": 213
+    },
+    "apps/web/src/features/feedback/vote-buttons.tsx::VoteButtons": {
+      "lines": 110
+    },
+    "apps/web/src/features/folders/folder-list.tsx::(anonymous)": {
+      "complexity": 19,
+      "lines": 101
+    },
+    "apps/web/src/features/folders/folder-list.tsx::FolderList": {
+      "complexity": 22,
+      "lines": 334
+    },
+    "apps/web/src/features/folders/folder-move.tsx::MoveToFolder": {
+      "lines": 82
+    },
+    "apps/web/src/features/inbox/held-card.tsx::HeldCard": {
+      "complexity": 20,
+      "lines": 119
+    },
+    "apps/web/src/features/inbox/hire-model.tsx::ModelPicker": {
+      "complexity": 18,
+      "lines": 116
+    },
+    "apps/web/src/features/inbox/hire-model.tsx::modelLine": {
+      "complexity": 11
+    },
+    "apps/web/src/features/inbox/inbox-item.tsx::BlockedCardItem": {
+      "complexity": 14
+    },
+    "apps/web/src/features/inbox/inbox-item.tsx::Item": {
+      "complexity": 35,
+      "lines": 240
+    },
+    "apps/web/src/features/inbox/inbox-view.tsx::InboxView": {
+      "lines": 150
+    },
+    "apps/web/src/features/inbox/proposal-card.tsx::(anonymous)": {
+      "complexity": 13
+    },
+    "apps/web/src/features/inbox/proposal-card.tsx::ProposalCard": {
+      "complexity": 35,
+      "lines": 229
+    },
+    "apps/web/src/features/inbox/proposal-details/goal.tsx::GoalDetails": {
+      "complexity": 24,
+      "lines": 110
+    },
+    "apps/web/src/features/inbox/proposal-details/goal.tsx::GoalParts": {
+      "lines": 145
+    },
+    "apps/web/src/features/inbox/proposal-details/hire.tsx::HireDetails": {
+      "complexity": 46,
+      "lines": 211
+    },
+    "apps/web/src/features/inbox/question-card.tsx::QuestionCard": {
+      "complexity": 26,
+      "lines": 213
+    },
+    "apps/web/src/features/kanban/board-toolbar.tsx::Toolbar": {
+      "complexity": 17,
+      "lines": 375
+    },
+    "apps/web/src/features/kanban/bulk-bar.tsx::BulkBar": {
+      "lines": 136
+    },
+    "apps/web/src/features/kanban/card-doc-open.tsx::OpenDocument": {
+      "lines": 208
+    },
+    "apps/web/src/features/kanban/card-doc-text.tsx::AnnotatedText": {
+      "lines": 108
+    },
+    "apps/web/src/features/kanban/card-facts.tsx::CardFacts": {
+      "lines": 124
+    },
+    "apps/web/src/features/kanban/card-modal.tsx::CardModal": {
+      "complexity": 58,
+      "lines": 456
+    },
+    "apps/web/src/features/kanban/card-review.tsx::ReviewDecisions": {
+      "lines": 108
+    },
+    "apps/web/src/features/kanban/card-review.tsx::ReviewTab": {
+      "complexity": 16,
+      "lines": 103
+    },
+    "apps/web/src/features/kanban/card-review.tsx::RulesEditor": {
+      "complexity": 13,
+      "lines": 129
+    },
+    "apps/web/src/features/kanban/card-review.tsx::reviewChipText": {
+      "complexity": 11
+    },
+    "apps/web/src/features/kanban/card-subtree.tsx::SubtreeControls": {
+      "complexity": 16,
+      "lines": 134
+    },
+    "apps/web/src/features/kanban/card-tabs.tsx::CommentsTab": {
+      "complexity": 17,
+      "lines": 115
+    },
+    "apps/web/src/features/kanban/kanban-board.tsx::KanbanBoardView": {
+      "lines": 149
+    },
+    "apps/web/src/features/kanban/kanban-card.tsx::KanbanCardView": {
+      "complexity": 47,
+      "lines": 150
+    },
+    "apps/web/src/features/kanban/list-view.tsx::(anonymous)": {
+      "complexity": 16
+    },
+    "apps/web/src/features/kanban/list-view.tsx::ListView": {
+      "lines": 112
+    },
+    "apps/web/src/features/kanban/new-card-modal.tsx::NewCardModal": {
+      "lines": 176
+    },
+    "apps/web/src/features/kanban/views.ts::(anonymous)": {
+      "complexity": 16
+    },
+    "apps/web/src/features/kanban/views.ts::groupCards": {
+      "complexity": 17
+    },
+    "apps/web/src/features/kanban/views.ts::queryFrom": {
+      "complexity": 17
+    },
+    "apps/web/src/features/kanban/views.ts::queryOfView": {
+      "complexity": 14
+    },
+    "apps/web/src/features/kanban/views.ts::queryString": {
+      "complexity": 15
+    },
+    "apps/web/src/features/library/github-token.tsx::GithubTokenCard": {
+      "lines": 124
+    },
+    "apps/web/src/features/library/item-editor.tsx::ItemEditor": {
+      "complexity": 60,
+      "lines": 447
+    },
+    "apps/web/src/features/library/item-editor.tsx::ReadsPicker": {
+      "lines": 93
+    },
+    "apps/web/src/features/library/item-editor.tsx::draft": {
+      "complexity": 14
+    },
+    "apps/web/src/features/library/library-list.tsx::(anonymous)": {
+      "complexity": 11
+    },
+    "apps/web/src/features/library/library-list.tsx::LibraryList": {
+      "complexity": 11,
+      "lines": 119
+    },
+    "apps/web/src/features/library/library-sources.tsx::Install": {
+      "complexity": 11,
+      "lines": 108
+    },
+    "apps/web/src/features/library/library-sources.tsx::LibrarySources": {
+      "complexity": 19
+    },
+    "apps/web/src/features/library/skill-tests.tsx::RunRow": {
+      "complexity": 15,
+      "lines": 101
+    },
+    "apps/web/src/features/library/skill-tests.tsx::TestsTab": {
+      "lines": 126
+    },
+    "apps/web/src/features/library/skill-versions.tsx::VersionsTab": {
+      "lines": 173
+    },
+    "apps/web/src/features/library/tool-service.tsx::ToolService": {
+      "complexity": 23,
+      "lines": 128
+    },
+    "apps/web/src/features/log/workspace-log.tsx::WorkspaceLog": {
+      "complexity": 15,
+      "lines": 150
+    },
+    "apps/web/src/features/models/model-picker.tsx::ModelPicker": {
+      "complexity": 17,
+      "lines": 128
+    },
+    "apps/web/src/features/office/model.ts::(anonymous)": {
+      "complexity": 22
+    },
+    "apps/web/src/features/office3d/character.tsx::(anonymous)": {
+      "complexity": 63,
+      "lines": 165
+    },
+    "apps/web/src/features/office3d/character.tsx::Person": {
+      "lines": 411
+    },
+    "apps/web/src/features/office3d/controller.ts::tick": {
+      "complexity": 35,
+      "lines": 120
+    },
+    "apps/web/src/features/office3d/crew.tsx::(anonymous)": {
+      "complexity": 12
+    },
+    "apps/web/src/features/office3d/crew.tsx::Crew": {
+      "lines": 151
+    },
+    "apps/web/src/features/office3d/furniture-base.tsx::Walls": {
+      "lines": 93
+    },
+    "apps/web/src/features/office3d/nav.ts::(anonymous)": {
+      "complexity": 19
+    },
+    "apps/web/src/features/office3d/nav.ts::findPath": {
+      "complexity": 30,
+      "lines": 111
+    },
+    "apps/web/src/features/office3d/office-hud.tsx::Inspector": {
+      "complexity": 19,
+      "lines": 236
+    },
+    "apps/web/src/features/office3d/office3d.tsx::Office3D": {
+      "complexity": 33,
+      "lines": 422
+    },
+    "apps/web/src/features/office3d/pet.tsx::(anonymous)": {
+      "complexity": 11
+    },
+    "apps/web/src/features/office3d/pet.tsx::Pet": {
+      "complexity": 14,
+      "lines": 206
+    },
+    "apps/web/src/features/office3d/room-areas.tsx::Lounge": {
+      "lines": 141
+    },
+    "apps/web/src/features/office3d/room-areas.tsx::OutputCorner": {
+      "lines": 84
+    },
+    "apps/web/src/features/office3d/stage.tsx::Rig": {
+      "lines": 113
+    },
+    "apps/web/src/features/office3d/workstation.tsx::RoleProps": {
+      "complexity": 12,
+      "lines": 149
+    },
+    "apps/web/src/features/pipelines/pipelines-settings.tsx::RuleForm": {
+      "complexity": 11,
+      "lines": 184
+    },
+    "apps/web/src/features/pipelines/pipelines-settings.tsx::says": {
+      "complexity": 14
+    },
+    "apps/web/src/features/proactive/proactive-settings.tsx::(anonymous)": {
+      "complexity": 11
+    },
+    "apps/web/src/features/proactive/proactive-settings.tsx::AutonomyTable": {
+      "lines": 95
+    },
+    "apps/web/src/features/proactive/proactive-settings.tsx::LearnedList": {
+      "lines": 133
+    },
+    "apps/web/src/features/screen/live-screen.tsx::LiveScreen": {
+      "complexity": 13,
+      "lines": 95
+    },
+    "apps/web/src/features/search/command-palette.tsx::(anonymous)": {
+      "complexity": 16
+    },
+    "apps/web/src/features/search/command-palette.tsx::(anonymous)#2": {
+      "complexity": 26,
+      "lines": 164
+    },
+    "apps/web/src/features/search/command-palette.tsx::CommandPalette": {
+      "lines": 105
+    },
+    "apps/web/src/features/search/command-palette.tsx::Palette": {
+      "lines": 290
+    },
+    "apps/web/src/features/search/palette-actions.ts::(anonymous)": {
+      "complexity": 11
+    },
+    "apps/web/src/features/search/search-view.tsx::SearchView": {
+      "lines": 119
+    },
+    "apps/web/src/features/settings/agos-update-card.tsx::AgosUpdateCard": {
+      "complexity": 25,
+      "lines": 84
+    },
+    "apps/web/src/features/settings/errors-view.tsx::ErrorsView": {
+      "lines": 132
+    },
+    "apps/web/src/features/settings/errors-view.tsx::Issue": {
+      "complexity": 12
+    },
+    "apps/web/src/features/settings/fallback-card.tsx::FallbackCard": {
+      "lines": 248
+    },
+    "apps/web/src/features/settings/general-settings.tsx::GeneralSettings": {
+      "lines": 211
+    },
+    "apps/web/src/features/settings/helper-fields.tsx::(anonymous)": {
+      "complexity": 11
+    },
+    "apps/web/src/features/settings/helper-fields.tsx::RawFields": {
+      "lines": 121
+    },
+    "apps/web/src/features/settings/helper-models-shared.ts::differences": {
+      "complexity": 21
+    },
+    "apps/web/src/features/settings/helper-models.tsx::HelperRow": {
+      "complexity": 23,
+      "lines": 191
+    },
+    "apps/web/src/features/settings/helper-pictures.tsx::PicturesCard": {
+      "lines": 109
+    },
+    "apps/web/src/features/settings/hermes-edit-model-pair.tsx::EditModelPair": {
+      "complexity": 16,
+      "lines": 174
+    },
+    "apps/web/src/features/settings/hermes-edit-setting.tsx::EditSetting": {
+      "complexity": 24,
+      "lines": 242
+    },
+    "apps/web/src/features/settings/hermes-health.tsx::HermesHealthView": {
+      "lines": 87
+    },
+    "apps/web/src/features/settings/hermes-limits-card.tsx::HermesLimitsCard": {
+      "lines": 211
+    },
+    "apps/web/src/features/settings/hermes-setting-row.tsx::SettingRow": {
+      "complexity": 21,
+      "lines": 123
+    },
+    "apps/web/src/features/settings/hermes-settings-shared.ts::cardHref": {
+      "complexity": 23
+    },
+    "apps/web/src/features/settings/hermes-settings-shared.ts::shownValue": {
+      "complexity": 13
+    },
+    "apps/web/src/features/settings/hermes-settings.tsx::HermesSettingsPage": {
+      "lines": 137
+    },
+    "apps/web/src/features/settings/hermes-update-card.tsx::HermesUpdateCard": {
+      "complexity": 12
+    },
+    "apps/web/src/features/settings/key-pools-card.tsx::(anonymous)": {
+      "lines": 93
+    },
+    "apps/web/src/features/settings/key-pools-card.tsx::(anonymous)#2": {
+      "complexity": 13
+    },
+    "apps/web/src/features/settings/key-pools-card.tsx::KeyPoolsCard": {
+      "complexity": 14,
+      "lines": 232
+    },
+    "apps/web/src/features/settings/models-settings.tsx::ApiKeyBox": {
+      "complexity": 12,
+      "lines": 113
+    },
+    "apps/web/src/features/settings/other-settings.tsx::ServerSettings": {
+      "complexity": 15,
+      "lines": 192
+    },
+    "apps/web/src/features/settings/other-settings.tsx::UsageLimits": {
+      "lines": 146
+    },
+    "apps/web/src/features/settings/owner-rules.tsx::OwnerRules": {
+      "lines": 147
+    },
+    "apps/web/src/features/settings/provider-login-steps.tsx::SubscriptionLogin": {
+      "complexity": 11
+    },
+    "apps/web/src/features/settings/provider-login-steps.tsx::WorkspaceLoginRow": {
+      "complexity": 15,
+      "lines": 91
+    },
+    "apps/web/src/features/settings/push-devices.tsx::PushDevices": {
+      "complexity": 12,
+      "lines": 162
+    },
+    "apps/web/src/features/settings/push-devices.tsx::deviceLabel": {
+      "complexity": 12
+    },
+    "apps/web/src/features/settings/remote-access-card.tsx::RemoteAccessCard": {
+      "complexity": 15,
+      "lines": 136
+    },
+    "apps/web/src/features/settings/sign-in.tsx::SignIn": {
+      "lines": 85
+    },
+    "apps/web/src/features/settings/time-limits-card.tsx::(anonymous)": {
+      "complexity": 13
+    },
+    "apps/web/src/features/settings/time-limits-card.tsx::TimeLimitsCard": {
+      "lines": 168
+    },
+    "apps/web/src/features/settings/voice-card.tsx::VoiceCard": {
+      "complexity": 14,
+      "lines": 121
+    },
+    "apps/web/src/features/setup/actions.ts::(anonymous)": {
+      "complexity": 17
+    },
+    "apps/web/src/features/setup/actions.ts::parseVariables": {
+      "complexity": 12
+    },
+    "apps/web/src/features/setup/automation-hook.tsx::AutomationHookDialog": {
+      "complexity": 28,
+      "lines": 438
+    },
+    "apps/web/src/features/setup/automation-modal.tsx::AutomationModal": {
+      "complexity": 26,
+      "lines": 210
+    },
+    "apps/web/src/features/setup/automation-runs.tsx::RunCard": {
+      "complexity": 11
+    },
+    "apps/web/src/features/setup/automation-runs.tsx::RunNowButton": {
+      "lines": 109
+    },
+    "apps/web/src/features/setup/automations-list.tsx::(anonymous)": {
+      "complexity": 20,
+      "lines": 155
+    },
+    "apps/web/src/features/setup/automations-list.tsx::AutomationsList": {
+      "lines": 190
+    },
+    "apps/web/src/features/setup/connector-config.tsx::ConnectorConfig": {
+      "complexity": 12,
+      "lines": 171
+    },
+    "apps/web/src/features/setup/connector-config.tsx::SignInRow": {
+      "lines": 83
+    },
+    "apps/web/src/features/setup/connectors-list.tsx::ConnectorRow": {
+      "complexity": 26,
+      "lines": 129
+    },
+    "apps/web/src/features/setup/connectors-list.tsx::SkillsSection": {
+      "lines": 83
+    },
+    "apps/web/src/features/setup/ongoing-list.tsx::(anonymous)": {
+      "complexity": 11
+    },
+    "apps/web/src/features/setup/ongoing-list.tsx::OngoingList": {
+      "lines": 94
+    },
+    "apps/web/src/features/setup/routine-fields.tsx::TicketPresetField": {
+      "complexity": 13,
+      "lines": 86
+    },
+    "apps/web/src/features/setup/routine-fields.tsx::VariablesField": {
+      "lines": 126
+    },
+    "apps/web/src/features/setup/schedule-field.tsx::ScheduleField": {
+      "complexity": 15,
+      "lines": 144
+    },
+    "apps/web/src/features/setup/schedule.ts::describeCron": {
+      "complexity": 12
+    },
+    "apps/web/src/features/setup/schedule.ts::fromCron": {
+      "complexity": 26
+    },
+    "apps/web/src/features/setup/who-field.tsx::(anonymous)": {
+      "lines": 99
+    },
+    "apps/web/src/features/setup/who-field.tsx::WhoField": {
+      "lines": 228
+    },
+    "apps/web/src/features/shell/rail-order.ts::(anonymous)": {
+      "complexity": 13
+    },
+    "apps/web/src/features/shell/rail-order.ts::useRailOrder": {
+      "lines": 170
+    },
+    "apps/web/src/features/shell/workspace-rail.tsx::(anonymous)": {
+      "complexity": 25,
+      "lines": 104
+    },
+    "apps/web/src/features/shell/workspace-rail.tsx::WorkspaceRail": {
+      "lines": 166
+    },
+    "apps/web/src/features/status/status-view.tsx::CardForm": {
+      "complexity": 23,
+      "lines": 168
+    },
+    "apps/web/src/features/status/status-view.tsx::CardView": {
+      "complexity": 19,
+      "lines": 158
+    },
+    "apps/web/src/features/templates/agent-revisions.tsx::AgentRevisions": {
+      "lines": 100
+    },
+    "apps/web/src/features/templates/import-panel.tsx::ImportPanel": {
+      "complexity": 19,
+      "lines": 179
+    },
+    "apps/web/src/features/templates/team-catalog.tsx::TeamCatalog": {
+      "complexity": 11,
+      "lines": 134
+    },
+    "apps/web/src/features/vision/goal-card.tsx::GoalCard": {
+      "complexity": 22,
+      "lines": 297
+    },
+    "apps/web/src/features/vision/goal-card.tsx::ProjectCard": {
+      "complexity": 14
+    },
+    "apps/web/src/features/vision/goal-drafts.ts::projectChanges": {
+      "complexity": 14
+    },
+    "apps/web/src/features/vision/goal-drafts.ts::resultChanges": {
+      "complexity": 13
+    },
+    "apps/web/src/features/vision/goal-editor.tsx::(anonymous)": {
+      "complexity": 21
+    },
+    "apps/web/src/features/vision/goal-editor.tsx::GoalEditor": {
+      "lines": 309
+    },
+    "apps/web/src/features/vision/goal-new.tsx::NewResult": {
+      "lines": 100
+    },
+    "apps/web/src/features/vision/goals.tsx::GoalList": {
+      "lines": 102
+    },
+    "apps/web/src/features/vision/notes-box.tsx::NotesBox": {
+      "complexity": 23,
+      "lines": 199
+    },
+    "apps/web/src/features/vision/today.tsx::(anonymous)": {
+      "complexity": 12
+    },
+    "apps/web/src/features/vision/today.tsx::LaneEmpty": {
+      "complexity": 14,
+      "lines": 140
+    },
+    "apps/web/src/features/vision/today.tsx::OwnerHalf": {
+      "complexity": 14,
+      "lines": 165
+    },
+    "apps/web/src/features/vision/vision-form.tsx::VisionForm": {
+      "complexity": 20,
+      "lines": 91
+    },
+    "apps/web/src/features/vision/vision-form.tsx::VisionHero": {
+      "complexity": 15,
+      "lines": 152
+    },
+    "apps/web/src/features/vision/vision-view.tsx::VisionPage": {
+      "complexity": 18,
+      "lines": 102
+    },
+    "apps/web/src/features/workers/agent-card.tsx::AgentCard": {
+      "complexity": 27,
+      "lines": 233
+    },
+    "apps/web/src/features/workers/founder-box.tsx::FounderPanel": {
+      "lines": 139
+    },
+    "apps/web/src/features/workers/group-forms.tsx::GroupMembers": {
+      "lines": 85
+    },
+    "apps/web/src/features/workers/group-forms.tsx::NewGroup": {
+      "lines": 102
+    },
+    "apps/web/src/features/workers/heartbeat-field.tsx::HeartbeatField": {
+      "complexity": 15
+    },
+    "apps/web/src/features/workers/hierarchy-chart.tsx::(anonymous)": {
+      "complexity": 18
+    },
+    "apps/web/src/features/workers/hierarchy-chart.tsx::ChainBadge": {
+      "complexity": 13
+    },
+    "apps/web/src/features/workers/hierarchy-chart.tsx::Chart": {
+      "complexity": 13,
+      "lines": 327
+    },
+    "apps/web/src/features/workers/hierarchy-layout.ts::(anonymous)": {
+      "complexity": 13
+    },
+    "apps/web/src/features/workers/hierarchy-layout.ts::buildTree": {
+      "complexity": 21,
+      "lines": 109
+    },
+    "apps/web/src/features/workers/hierarchy.tsx::Hierarchy": {
+      "complexity": 33,
+      "lines": 363
+    },
+    "apps/web/src/features/workers/kit-chips.tsx::KitView": {
+      "complexity": 21
+    },
+    "apps/web/src/features/workers/kit-editor.tsx::KitEditor": {
+      "complexity": 11,
+      "lines": 233
+    },
+    "apps/web/src/features/workers/messages-view.tsx::MessagesView": {
+      "complexity": 12,
+      "lines": 145
+    },
+    "apps/web/src/features/workers/readiness.tsx::(anonymous)": {
+      "complexity": 17,
+      "lines": 99
+    },
+    "apps/web/src/features/workers/readiness.tsx::ReadinessPanel": {
+      "complexity": 35,
+      "lines": 345
+    },
+    "apps/web/src/features/workers/scorecard.tsx::ScoreChip": {
+      "complexity": 11
+    },
+    "apps/web/src/features/workers/shift-chip.tsx::ShiftChip": {
+      "complexity": 11
+    },
+    "apps/web/src/features/workspaces/folder-picker.tsx::FolderPicker": {
+      "complexity": 29,
+      "lines": 220
+    },
+    "apps/web/src/features/workspaces/identity-settings.tsx::MemoryEditor": {
+      "lines": 138
+    },
+    "apps/web/src/features/workspaces/labels-settings.tsx::Folder": {
+      "lines": 97
+    },
+    "apps/web/src/features/workspaces/labels-settings.tsx::LabelRow": {
+      "lines": 99
+    },
+    "apps/web/src/features/workspaces/new-workspace-form.tsx::NewWorkspaceForm": {
+      "lines": 87
+    },
+    "apps/web/src/features/workspaces/review-settings.tsx::ReviewSettingsCard": {
+      "complexity": 11,
+      "lines": 135
+    },
+    "apps/web/src/features/workspaces/tool-keys.tsx::AddKey": {
+      "complexity": 12,
+      "lines": 102
+    },
+    "apps/web/src/features/workspaces/tool-keys.tsx::KeyRow": {
+      "complexity": 13,
+      "lines": 115
+    },
+    "apps/web/src/features/workspaces/work-hours-settings.tsx::WeekCard": {
+      "lines": 127
+    },
+    "apps/web/src/features/workspaces/workspace-folders.tsx::(anonymous)": {
+      "complexity": 13
+    },
+    "apps/web/src/features/workspaces/workspace-folders.tsx::Folders": {
+      "lines": 151
+    },
+    "apps/web/src/features/workspaces/workspace-settings.tsx::WorkspaceSettings": {
+      "lines": 101
+    },
+    "apps/web/src/shared/ui/markdown.tsx::(anonymous)": {
+      "lines": 88
+    },
+    "apps/web/src/shared/ui/markdown.tsx::Markdown": {
+      "lines": 101
+    },
+    "apps/web/src/shared/ui/markdown.tsx::inline": {
+      "complexity": 21
+    },
+    "apps/web/src/shared/ui/markdown.tsx::parseBlocks": {
+      "complexity": 55,
+      "lines": 105
+    }
+  }
+}

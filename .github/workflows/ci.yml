@@ -1,0 +1,325 @@
+name: CI
+
+# The gate every PR passes. Jobs run in parallel; each one names what it checks.
+# Gates that hold today's debt are ratchets: their baseline files may only shrink
+# (docs/CI.md lists every gate, its baseline and how to update it).
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web:
+    name: Web (format, lint, typecheck, tests, API types drift)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0, version from package.json
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm format:check
+      # Every Node dependency's licence is one an MIT project can ship with
+      # (scripts/ci/licenses-allowed.json: allowed ids + reviewed exceptions).
+      - name: Dependency licences (Node)
+        run: python3 scripts/ci/licenses.py node
+      # The Python core has its own jobs below.
+      - run: pnpm exec turbo run lint typecheck test --filter='!@agos/service-core'
+      # Ratchet: no new function over the complexity / length limits; baselined ones
+      # may not get worse (scripts/ci/complexity-baseline.json, the web part).
+      - run: python3 scripts/ci/complexity.py --part web
+      # Ratchet: no new jsx-a11y finding per file (scripts/ci/a11y-baseline.json).
+      - run: python3 scripts/ci/a11y_lint.py
+      # typecheck regenerated core-api.d.ts from the committed openapi.json.
+      - name: core-api.d.ts matches openapi.json
+        run: |
+          git diff --exit-code -- apps/web/src/data/core-api.d.ts || {
+            echo "::error::apps/web/src/data/core-api.d.ts is stale: run 'pnpm --filter @agos/web gen:api' and commit it"
+            exit 1
+          }
+
+  web-build:
+    name: Web production build (next build)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # next build refuses things tsc and eslint pass (server/client boundaries,
+      # route segment exports); the ship builds the web the same way.
+      - run: pnpm --filter @agos/web build
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+          NEXT_TELEMETRY_DISABLED: "1"
+
+  web-budgets:
+    name: Web page bundle sizes (budget ratchet)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @agos/web build
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+          NEXT_TELEMETRY_DISABLED: "1"
+      # Ratchet: each page's first-load JavaScript (gzipped) may not grow more than 20%
+      # over scripts/ci/web-budget-baseline.json; lighter pages are recorded with --update.
+      - run: python3 scripts/ci/web_budgets.py --report web-budgets.json
+      - name: Bundle sizes in the job summary
+        if: always()
+        run: |
+          python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          m = json.load(open("web-budgets.json"))["metrics"]
+          print("| Page | First-load JS (gzip) |\n| --- | --- |")
+          for k, v in m.items():
+              print(f"| {k.removeprefix('web.page.').removesuffix('.gzip_kB')} | {v['value']} kB |")
+          PY
+
+  core-static:
+    name: Core static (ruff, mypy, layer rules, function complexity)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: services/core
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+        with:
+          python-version: "3.14"
+      - run: uv sync --frozen
+      - name: Dependency licences (Python)
+        run: uv run python ../../scripts/ci/licenses.py python
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run mypy
+      # Layer rules (ARCHITECTURE.md §11), direct and indirect chains, lazy imports
+      # included; today's breaks are its ignore_imports and may only shrink.
+      - name: import-linter (.importlinter)
+        run: |
+          uv run python scripts/importlinter_ignores.py --check
+          uv run lint-imports --no-cache
+      # Ratchet: the per-statement count of today's breaks (layer-baseline.json).
+      - run: uv run python scripts/layer_ratchet.py
+      # Expand/contract: every migration since 140 only adds; a removal is its own
+      # named contract step (docs/operations.md, "Schema changes").
+      - run: uv run python scripts/migration_check.py
+      # Ratchet: no new function over C901/PLR0912/PLR0915 or 80 lines; baselined ones
+      # may not get worse (scripts/ci/complexity-baseline.json, the python part).
+      - run: uv run python ../../scripts/ci/complexity.py --part python
+
+  core-tests:
+    name: Core tests (pytest -m "not hermes", parallel, diff coverage)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: services/core
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+          fetch-depth: 0 # diff-cover compares with the PR's base commit
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+        with:
+          python-version: "3.14"
+      - run: uv sync --frozen
+      # The tests that need neither a real Hermes Agent install (~/.hermes) nor
+      # Docker. Files that read Hermes's own source or run the real `hermes` carry
+      # the `hermes` marker (tests/conftest.py HERMES_FILES) and run nightly on the
+      # self-hosted runner; other Hermes tests skip themselves when it is missing.
+      # One file per worker (--dist loadfile): tests in a file share module state.
+      - name: pytest
+        env:
+          COVERAGE_CORE: sysmon
+        run: >-
+          uv run pytest -q -p no:cacheprovider -m "not hermes"
+          -n auto --dist loadfile --timeout=120 --durations=15
+          --cov=agos_core --cov-report=xml:coverage.xml --cov-report=term:skip-covered
+          --junitxml=pytest.xml
+      - name: Test counts in the job summary
+        if: always()
+        run: python3 ../../scripts/ci/junit_summary.py pytest.xml >> "$GITHUB_STEP_SUMMARY"
+      # 80% of the changed lines in services/core/src must run under the tests. Code
+      # only the real-Hermes tests reach may carry the label 'coverage-exempt' (say
+      # which nightly test covers it in the PR).
+      - name: Diff coverage (changed lines >= 80%)
+        if: github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'coverage-exempt')
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          uv run diff-cover coverage.xml --compare-branch="$BASE_SHA" --fail-under=80 \
+            --markdown-report diff-cover.md
+          cat diff-cover.md >> "$GITHUB_STEP_SUMMARY"
+
+  contract:
+    name: API contract (openapi.json fresh, no breaking change)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: services/core
+    env:
+      OASDIFF_VERSION: 1.35.0
+      OASDIFF_SHA256: a8023002fcb2eaa7f5758148a9303cb63d33b939886df312268bc0fc7b939140
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+        with:
+          python-version: "3.14"
+      - run: uv sync --frozen
+      - name: openapi.json matches the code
+        run: |
+          uv run python scripts/export_openapi.py
+          git diff --exit-code -- openapi.json || {
+            echo "::error::services/core/openapi.json is stale: run 'uv run python scripts/export_openapi.py' and commit it"
+            exit 1
+          }
+      - name: Install oasdiff
+        run: |
+          curl -fsSL -o oasdiff.tgz \
+            "https://github.com/oasdiff/oasdiff/releases/download/v${OASDIFF_VERSION}/oasdiff_${OASDIFF_VERSION}_linux_amd64.tar.gz"
+          echo "${OASDIFF_SHA256}  oasdiff.tgz" | sha256sum -c -
+          tar -xzf oasdiff.tgz oasdiff
+          sudo install -m 755 oasdiff /usr/local/bin/oasdiff
+          rm -f oasdiff oasdiff.tgz
+      # A route or field the web (or a script) uses must not vanish or change type
+      # under it. Label the PR 'api-breaking' when the break is intended and the web
+      # changes in the same PR. oasdiff-levels.txt (no comments allowed in it) makes a
+      # new value in a response enum a warning: the web ships with the core.
+      - name: No breaking change against the base
+        if: github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'api-breaking')
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          git show "$BASE_SHA:services/core/openapi.json" > "$RUNNER_TEMP/base-openapi.json"
+          oasdiff breaking "$RUNNER_TEMP/base-openapi.json" openapi.json --fail-on ERR \
+            --severity-levels oasdiff-levels.txt --format githubactions
+
+  hygiene:
+    name: Repo hygiene (file size, docs, changelog, shellcheck)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      # Ratchet: no new file over 800 lines; baselined files may not grow.
+      - run: python3 scripts/ci/file_size.py
+      # Docs: every relative link and every repository path they name exists.
+      - run: python3 scripts/check-docs.py
+      - name: CHANGELOG entry for product changes
+        if: github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'skip-changelog')
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: python3 scripts/ci/changelog_check.py "$BASE_SHA" HEAD
+      # shellcheck ships on the ubuntu-24.04 image.
+      - name: shellcheck (installer, deploy and helper scripts)
+        run: shellcheck --version && shellcheck -S warning install.sh deploy/*.sh scripts/*.sh
+
+  workflows:
+    name: Workflow lint (actionlint, zizmor)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      ACTIONLINT_VERSION: 1.7.12
+      ACTIONLINT_SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+      - name: actionlint
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/actionlint.tgz" \
+            "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+          echo "${ACTIONLINT_SHA256}  $RUNNER_TEMP/actionlint.tgz" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/actionlint.tgz" -C "$RUNNER_TEMP" actionlint
+          "$RUNNER_TEMP/actionlint" -color
+      # Every action pinned by commit SHA, no template injection, least privilege.
+      - run: uvx zizmor==1.31.1 --offline .github/workflows
+
+  browser:
+    name: Browser (Playwright clicks + screenshots on the web build)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # The standalone server the tests start (services/core/tests/browser/rig.py).
+      - run: pnpm --filter @agos/web build
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+          NEXT_TELEMETRY_DISABLED: "1"
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+        with:
+          python-version: "3.14"
+      - run: uv sync --frozen
+        working-directory: services/core
+      # Playwright's own Chromium (the screenshot baselines are keyed by its build).
+      - run: uv run playwright install --with-deps chromium
+        working-directory: services/core
+      # The owner's main flows clicked on the real web build, ~40 screens compared
+      # with tests/browser/screens, axe-core on the main screens and their Lighthouse
+      # scores as a ratchet (services/core/tests/browser/README.md).
+      - name: pytest tests/browser
+        working-directory: services/core
+        env:
+          AGOS_BROWSER_OUT: ${{ runner.temp }}/browser
+        run: uv run pytest -q -p no:cacheprovider tests/browser --junitxml="$RUNNER_TEMP/browser/pytest.xml"
+      - name: Test counts in the job summary
+        if: always()
+        run: python3 scripts/ci/junit_summary.py "$RUNNER_TEMP/browser/pytest.xml" >> "$GITHUB_STEP_SUMMARY"
+      # Screens, pixel diffs and the rig's logs, to look at a red run.
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: failure()
+        with:
+          name: browser-screens
+          path: |
+            ${{ runner.temp }}/browser/screens
+            ${{ runner.temp }}/browser/lighthouse
+            ${{ runner.temp }}/browser/*.log
+          retention-days: 7

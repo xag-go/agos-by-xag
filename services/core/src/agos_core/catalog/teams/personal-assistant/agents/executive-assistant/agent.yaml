@@ -1,0 +1,11 @@
+name: executive-assistant
+title: Executive Assistant
+summary: Plans the owner's day and keeps his follow-ups.
+reports_to: ""
+model: null
+skills:
+  - daily-briefing
+reads: []
+"on": true
+heartbeat: ""
+notes: ""

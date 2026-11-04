@@ -1,0 +1,84 @@
+[project]
+name = "agos-core"
+version = "0.0.0"
+description = "AGOS core: data, rules, agents, schedules and channels. The web app is only its interface."
+license = "MIT"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn>=0.30",
+  "pydantic>=2.8",
+  "cryptography>=43",
+  "httpx>=0.27",
+  "pyyaml>=6",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "ruff>=0.6",
+    "mypy>=1.11",
+    "types-pyyaml>=6.0.12.20260906",
+    "pytest-xdist>=3.8.0",
+    "pytest-timeout>=2.4.0",
+    "pytest-cov>=7.1.0",
+    "diff-cover>=10.5.1",
+    "import-linter>=2.15",
+    "playwright>=1.64.1",
+    "pillow>=11",
+]
+
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/agos_core"]
+
+[tool.uv]
+# Supply chain: ignore releases younger than the cut-off (like pnpm's
+# minimumReleaseAge). Move the date forward when updating dependencies.
+exclude-newer = "2026-10-30T00:00:00Z"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S", "BLE", "RUF", "SIM", "PTH"]
+# E501: the formatter handles line length; long SQL strings stay readable whole.
+# S608: SQL is built only from constants. S101: pytest asserts.
+ignore = ["E501", "S101", "S608"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S106"]  # test configs, not real passwords
+
+[tool.mypy]
+strict = true
+plugins = ["pydantic.mypy"]
+python_version = "3.11"
+files = ["src", "tests", "scripts"]
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["tests"]
+addopts = "--strict-markers"
+markers = [
+  "hermes: needs a real Hermes Agent install or runs the real `hermes` (tests/conftest.py HERMES_FILES); CI runs -m 'not hermes'",
+]
+# pytest-timeout: a hung test fails with its stack instead of blocking the run. The
+# real-Hermes tests wait up to 300 s on a subprocess; CI passes a tighter --timeout.
+timeout = 600
+
+[tool.coverage.run]
+source = ["agos_core"]
+branch = true
+parallel = true
+relative_files = true
+
+[tool.coverage.report]
+skip_empty = true

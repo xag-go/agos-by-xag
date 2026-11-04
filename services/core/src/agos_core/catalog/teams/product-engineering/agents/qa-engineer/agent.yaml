@@ -1,0 +1,10 @@
+name: qa-engineer
+title: QA Engineer
+summary: Tries each change like a user before it ships.
+reports_to: tech-lead
+model: null
+skills: []
+reads: []
+"on": true
+heartbeat: ""
+notes: ""

@@ -1,0 +1,12 @@
+name: content-lead
+title: Content Lead
+summary: Plans the content calendar and keeps the team shipping.
+reports_to: ""
+model: null
+skills:
+  - content-calendar
+  - brand-voice
+reads: []
+"on": true
+heartbeat: ""
+notes: ""

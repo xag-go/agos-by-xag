@@ -1,0 +1,58 @@
+# Local checks before each commit: `pipx install pre-commit` (or `uvx pre-commit`),
+# then `pre-commit install` once per clone. The hooks use the repo's own locked tools
+# (services/core/.venv via uv, node_modules via pnpm) and a gitleaks binary on PATH,
+# so the result matches CI. Run everything: `pre-commit run --all-files`.
+default_install_hook_types: [pre-commit]
+fail_fast: false
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # frozen: v6.0.0
+    hooks:
+      - id: check-merge-conflict
+      - id: check-yaml
+        exclude: ^pnpm-lock\.yaml$
+      - id: check-json
+        exclude: ^(apps/web/tsconfig.*|packages/.*/tsconfig.*|tsconfig\.base)\.json$
+      - id: check-added-large-files
+        args: [--maxkb=1024]
+      # Whitespace and end-of-file: ruff format and prettier own them.
+
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check (services/core)
+        language: system
+        entry: scripts/uv.sh run --project services/core ruff check --fix
+        types: [python]
+        files: ^services/core/
+      - id: ruff-format
+        name: ruff format (services/core)
+        language: system
+        entry: scripts/uv.sh run --project services/core ruff format
+        types: [python]
+        files: ^services/core/
+      - id: prettier
+        name: prettier
+        language: system
+        entry: pnpm exec prettier --write --ignore-unknown
+        types: [text]
+        exclude: ^(pnpm-lock\.yaml|services/.*/uv\.lock|services/core/openapi\.json|apps/web/src/data/core-api\.d\.ts)$
+      - id: gitleaks
+        name: gitleaks (staged changes)
+        language: system
+        entry: gitleaks git --pre-commit --staged --redact --no-banner
+        pass_filenames: false
+      - id: file-size
+        name: file-size ratchet (800 lines)
+        language: system
+        entry: python3 scripts/ci/file_size.py
+        types_or: [python, ts, tsx]
+        pass_filenames: false
+      - id: layer-ratchet
+        name: layer rules ratchet (services/core)
+        language: system
+        entry: scripts/uv.sh run --project services/core python services/core/scripts/layer_ratchet.py
+        files: ^services/core/src/
+        types: [python]
+        pass_filenames: false

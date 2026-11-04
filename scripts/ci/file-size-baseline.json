@@ -1,0 +1,9 @@
+{
+  "limit": 800,
+  "files": {
+    "services/core/src/agos_core/db/migrations.py": 2925,
+    "services/core/tests/conftest.py": 918,
+    "services/core/tests/e2e/rooms_e2e_run.py": 3048,
+    "services/core/tests/test_engine_sync.py": 1549
+  }
+}

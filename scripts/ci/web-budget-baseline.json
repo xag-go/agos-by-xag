@@ -1,0 +1,201 @@
+{
+  "about": "scripts/ci/web_budgets.py: each page's first-load JS after next build, gzipped (kB), measured at eng/w6 8e7011db; more than 20% heavier fails (scripts/ci/budget_ratchet.py)",
+  "metrics": {
+    "web.all_js.gzip_kB": {
+      "value": 493.9,
+      "unit": "kB"
+    },
+    "web.page./.gzip_kB": {
+      "value": 191.0,
+      "unit": "kB"
+    },
+    "web.page./connectors/callback.gzip_kB": {
+      "value": 191.0,
+      "unit": "kB"
+    },
+    "web.page./new.gzip_kB": {
+      "value": 196.2,
+      "unit": "kB"
+    },
+    "web.page./settings.gzip_kB": {
+      "value": 192.7,
+      "unit": "kB"
+    },
+    "web.page./settings/[section].gzip_kB": {
+      "value": 243.9,
+      "unit": "kB"
+    },
+    "web.page./settings/agents.gzip_kB": {
+      "value": 192.7,
+      "unit": "kB"
+    },
+    "web.page./settings/mcp.gzip_kB": {
+      "value": 192.7,
+      "unit": "kB"
+    },
+    "web.page./settings/security.gzip_kB": {
+      "value": 192.7,
+      "unit": "kB"
+    },
+    "web.page./w/[id].gzip_kB": {
+      "value": 195.5,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/artifacts.gzip_kB": {
+      "value": 201.7,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/automations.gzip_kB": {
+      "value": 216.7,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/chats.gzip_kB": {
+      "value": 195.5,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/docs.gzip_kB": {
+      "value": 202.2,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/goals.gzip_kB": {
+      "value": 195.5,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/hierarchy.gzip_kB": {
+      "value": 224.4,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/inbox.gzip_kB": {
+      "value": 217.8,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/kanban.gzip_kB": {
+      "value": 237.9,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/log.gzip_kB": {
+      "value": 196.0,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/messages.gzip_kB": {
+      "value": 221.2,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/office.gzip_kB": {
+      "value": 208.0,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/screen.gzip_kB": {
+      "value": 196.6,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/search.gzip_kB": {
+      "value": 195.5,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/sessions.gzip_kB": {
+      "value": 220.4,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/settings.gzip_kB": {
+      "value": 207.9,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/settings/ahead.gzip_kB": {
+      "value": 196.2,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/settings/automations.gzip_kB": {
+      "value": 196.2,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/settings/autonomy.gzip_kB": {
+      "value": 196.2,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/settings/capabilities.gzip_kB": {
+      "value": 216.8,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/settings/capabilities/skills/[itemId].gzip_kB": {
+      "value": 202.2,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/settings/channels.gzip_kB": {
+      "value": 205.0,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/settings/connections.gzip_kB": {
+      "value": 198.0,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/settings/connectors.gzip_kB": {
+      "value": 196.2,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/settings/export.gzip_kB": {
+      "value": 200.1,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/settings/held-writes.gzip_kB": {
+      "value": 196.2,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/settings/identity.gzip_kB": {
+      "value": 200.9,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/settings/keys.gzip_kB": {
+      "value": 199.2,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/settings/labels.gzip_kB": {
+      "value": 198.6,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/settings/learned.gzip_kB": {
+      "value": 202.2,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/settings/pipelines.gzip_kB": {
+      "value": 196.2,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/settings/review.gzip_kB": {
+      "value": 200.2,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/settings/skill-growth.gzip_kB": {
+      "value": 199.4,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/settings/telegram.gzip_kB": {
+      "value": 196.2,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/settings/work-hours.gzip_kB": {
+      "value": 199.1,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/setup/[[...rest]].gzip_kB": {
+      "value": 195.5,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/status.gzip_kB": {
+      "value": 201.7,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/vision.gzip_kB": {
+      "value": 215.0,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/workers.gzip_kB": {
+      "value": 195.5,
+      "unit": "kB"
+    },
+    "web.page./w/[id]/workers/messages.gzip_kB": {
+      "value": 195.5,
+      "unit": "kB"
+    }
+  }
+}

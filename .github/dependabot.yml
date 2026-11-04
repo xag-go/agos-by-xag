@@ -43,6 +43,13 @@ updates:
       # once those labels contain their visible text.
       - dependency-name: axe-core
         versions: [">=4.14.0"]
+      # three 0.187 crashes Chrome's page (Lighthouse "Session closed") on the office
+      # screen /w/<workspace> on GitHub's runner (tests/browser/test_lighthouse.py):
+      # held at 0.180 until that screen is checked on the new three.
+      - dependency-name: three
+        versions: [">=0.181.0"]
+      - dependency-name: "@types/three"
+        versions: [">=0.181.0"]
     groups:
       # React Three Fiber and three move together.
       three:

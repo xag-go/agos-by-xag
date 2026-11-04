@@ -41,12 +41,6 @@ export const settingsSections = [
     description: "Every tool Hermes has, from Hermes's own list.",
   },
   {
-    slug: "hermes",
-    label: "Hermes settings",
-    description:
-      "Every setting of Hermes, the engine every workspace runs on: Hermes's own list, its words and its defaults, with each workspace's value. Change one here and it is written into every workspace's Hermes (its Co-Founder and each member).",
-  },
-  {
     slug: "health",
     label: "Health",
     description:

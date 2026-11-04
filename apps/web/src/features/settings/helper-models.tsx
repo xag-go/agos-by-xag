@@ -9,7 +9,6 @@ import { ModelPicker } from "@/features/models/model-picker";
 import { Button } from "@/shared/ui/button";
 import { cn } from "@/shared/ui/cn";
 import { useAsk } from "@/shared/ui/confirm";
-import { AllHermesSettingsLink } from "./hermes-settings";
 import { saveHermesHelperModels } from "./preferences-actions";
 import { PicturesCard } from "./helper-pictures";
 import {
@@ -70,7 +69,6 @@ export function HelperModelsPage({
           ))}
         </ul>
       </PanelSection>
-      <AllHermesSettingsLink search="auxiliary" />
     </div>
   );
 }

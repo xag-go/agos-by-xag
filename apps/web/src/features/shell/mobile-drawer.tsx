@@ -1,7 +1,13 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+  type RefObject,
+} from "react";
 import { MenuIcon } from "@/shared/ui/icons";
 
 /**
@@ -27,31 +33,7 @@ export function MobileTopBar({ menu }: { menu: ReactNode }) {
     setOpen(false);
   }
 
-  // The page behind the drawer must not scroll.
-  useEffect(() => {
-    if (!open) return;
-    const was = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    drawer.current?.focus();
-    return () => {
-      document.body.style.overflow = was;
-    };
-  }, [open]);
-
-  // Escape closes, back to the button that opened it.
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setOpen(false);
-        opener.current?.focus();
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => {
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [open]);
+  useDrawerKeys(open, setOpen, opener, drawer);
 
   return (
     <div className="border-b border-line lg:hidden">
@@ -106,4 +88,39 @@ export function MobileTopBar({ menu }: { menu: ReactNode }) {
       )}
     </div>
   );
+}
+
+/** While the drawer is open: the page behind it does not scroll, focus moves
+ * into it, and Escape closes it, back to the button that opened it. */
+function useDrawerKeys(
+  open: boolean,
+  setOpen: (open: boolean) => void,
+  opener: RefObject<HTMLButtonElement | null>,
+  drawer: RefObject<HTMLDivElement | null>,
+) {
+  // The page behind the drawer must not scroll.
+  useEffect(() => {
+    if (!open) return;
+    const was = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    drawer.current?.focus();
+    return () => {
+      document.body.style.overflow = was;
+    };
+  }, [open, drawer]);
+
+  // Escape closes, back to the button that opened it.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+        opener.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open, opener, setOpen]);
 }

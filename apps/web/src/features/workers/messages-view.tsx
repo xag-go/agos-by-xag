@@ -23,7 +23,7 @@ export function MessagesView({
   workspaceId,
   team,
   current,
-  asked = false,
+  asked,
   catalog,
   addresses = [],
   connections = [],
@@ -52,15 +52,7 @@ export function MessagesView({
       data-fill
       className="messages-panel grid min-h-112 flex-1 overflow-hidden rounded-xl border border-line bg-panel max-md:!grid-rows-1 md:grid-cols-[17rem_minmax(0,1fr)]"
     >
-      <nav
-        aria-label="Conversations"
-        className={cn(
-          "min-h-0 flex-col gap-4 overflow-y-auto border-b border-line bg-sunken/50 p-2 md:border-r md:border-b-0",
-          // One column on a phone: the list, or (when a chat is asked) the
-          // chat full-screen with a way back. Both side by side from md up.
-          asked ? "hidden md:flex" : "flex",
-        )}
-      >
+      <nav aria-label="Conversations" className={phonePanes(asked).list}>
         <section className="flex flex-col gap-0.5">
           <div className="flex items-center justify-between px-3 pt-1 pb-1">
             <h2 className="text-xs font-semibold tracking-wide text-ink-3 uppercase">
@@ -121,13 +113,7 @@ export function MessagesView({
       </nav>
 
       {current ? (
-        <section
-          aria-label={current.title}
-          className={cn(
-            "min-h-0 min-w-0 flex-col md:flex",
-            asked ? "flex" : "hidden",
-          )}
-        >
+        <section aria-label={current.title} className={phonePanes(asked).chat}>
           <ChatHeader
             workspaceId={workspaceId}
             chat={current}
@@ -247,4 +233,16 @@ function Row({
       </span>
     </Link>
   );
+}
+
+/** One column on a phone: the list, or (when a chat is asked) the chat
+ * full-screen with a way back. Both side by side from md up. */
+function phonePanes(asked: boolean | undefined) {
+  return {
+    list: cn(
+      "min-h-0 flex-col gap-4 overflow-y-auto border-b border-line bg-sunken/50 p-2 md:border-r md:border-b-0",
+      asked ? "hidden md:flex" : "flex",
+    ),
+    chat: cn("min-h-0 min-w-0 flex-col md:flex", asked ? "flex" : "hidden"),
+  };
 }

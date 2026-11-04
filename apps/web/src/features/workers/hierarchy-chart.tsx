@@ -12,6 +12,7 @@ import { cn } from "@/shared/ui/cn";
 import { founderInitial } from "./founder-box";
 import { KitChip, ReadinessChip } from "./kit-chips";
 import { ShiftChip } from "./shift-chip";
+import { phoneFit, rootXOf, useChartTouch, type Drag } from "./chart-touch";
 import { ScoreChip } from "./scorecard";
 import {
   BOX_H,
@@ -20,7 +21,6 @@ import {
   MAX_ZOOM,
   MIN_ZOOM,
   PAD,
-  READABLE_ZOOM,
   STATUS_WORDS,
   keyOf,
   type Node,
@@ -55,16 +55,11 @@ export function Chart({
 }) {
   const box = useRef<HTMLDivElement>(null);
   const [view, setView] = useState({ x: 0, y: 0, k: 1 });
-  const drag = useRef<{ x: number; y: number; vx: number; vy: number } | null>(
-    null,
-  );
-  // Fingers on the canvas (touch): two at once pinch-zoom the chart.
-  const touches = useRef(new Map<number, { x: number; y: number }>());
-  const pinch = useRef<{ d: number; cx: number; cy: number } | null>(null);
+  const drag = useRef<Drag | null>(null);
   const moved = useRef(false);
-
-  // The root box's centre (chart px): small screens centre the view on it.
-  const rootCx = (placed[0]?.x ?? (width - BOX_W) / 2) + BOX_W / 2;
+  // Fingers on the canvas (touch): one pans, two pinch-zoom the chart.
+  const touch = useChartTouch(drag, moved, view, setView);
+  const rootX = rootXOf(placed);
 
   const fit = useCallback(() => {
     const el = box.current;
@@ -72,15 +67,9 @@ export function Chart({
     const cw = el.clientWidth;
     const ch = el.clientHeight;
     const k = Math.min(1, (cw - PAD * 2) / width, (ch - PAD * 2) / height);
-    // A phone-sized pane: fitting the whole tree squeezes boxes into
-    // unreadable specks. Clamp to a readable scale, centred on the root;
-    // the rest is a pan/pinch away.
-    if (cw < 768 && k < READABLE_ZOOM) {
-      setView({
-        k: READABLE_ZOOM,
-        x: cw / 2 - rootCx * READABLE_ZOOM,
-        y: PAD / 2,
-      });
+    const phone = phoneFit(rootX, width, cw, k);
+    if (phone) {
+      setView(phone);
       return;
     }
     setView({
@@ -88,7 +77,7 @@ export function Chart({
       x: (cw - width * k) / 2,
       y: Math.max(PAD, (ch - height * k) / 2),
     });
-  }, [width, height, rootCx]);
+  }, [rootX, width, height]);
 
   useLayoutEffect(fit, [fit]);
   useEffect(() => {
@@ -140,104 +129,11 @@ export function Chart({
         "org-chart relative min-h-0 flex-1 touch-none overflow-hidden rounded-2xl border border-line bg-paper select-none",
         "cursor-grab active:cursor-grabbing",
       )}
-      onPointerDownCapture={(event) => {
-        // Seen before a box's stopPropagation: on touch, a pan or pinch must
-        // start even when the finger lands on a box (a tap still opens it:
-        // the box's click only fires when nothing moved).
-        if (event.pointerType !== "touch") return;
-        touches.current.set(event.pointerId, {
-          x: event.clientX,
-          y: event.clientY,
-        });
-        if (touches.current.size === 2) {
-          // Second finger: pan becomes a pinch-zoom.
-          const [a, b] = [...touches.current.values()];
-          if (a && b) {
-            drag.current = null;
-            moved.current = true;
-            const r = event.currentTarget.getBoundingClientRect();
-            pinch.current = {
-              d: Math.hypot(a.x - b.x, a.y - b.y),
-              cx: (a.x + b.x) / 2 - r.left,
-              cy: (a.y + b.y) / 2 - r.top,
-            };
-          }
-          return;
-        }
-        drag.current = {
-          x: event.clientX,
-          y: event.clientY,
-          vx: view.x,
-          vy: view.y,
-        };
-        moved.current = false;
-      }}
-      onPointerDown={(event) => {
-        if (event.pointerType === "touch") return;
-        if (event.button !== 0) return;
-        event.currentTarget.setPointerCapture(event.pointerId);
-        drag.current = {
-          x: event.clientX,
-          y: event.clientY,
-          vx: view.x,
-          vy: view.y,
-        };
-        moved.current = false;
-      }}
-      onPointerMove={(event) => {
-        const finger = touches.current.get(event.pointerId);
-        if (finger) {
-          finger.x = event.clientX;
-          finger.y = event.clientY;
-        }
-        const pz = pinch.current;
-        if (pz && touches.current.size === 2) {
-          const [a, b] = [...touches.current.values()];
-          if (!a || !b) return;
-          const r = event.currentTarget.getBoundingClientRect();
-          const d = Math.hypot(a.x - b.x, a.y - b.y);
-          const cx = (a.x + b.x) / 2 - r.left;
-          const cy = (a.y + b.y) / 2 - r.top;
-          // Captured now: the updater runs batched, after pz is mutated.
-          const grow = d > 0 && pz.d > 0 ? d / pz.d : 1;
-          const px = pz.cx;
-          const py = pz.cy;
-          setView((v) => {
-            const k = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, v.k * grow));
-            const ratio = k / v.k;
-            return {
-              k,
-              x: cx - (px - v.x) * ratio,
-              y: cy - (py - v.y) * ratio,
-            };
-          });
-          pz.d = d;
-          pz.cx = cx;
-          pz.cy = cy;
-          return;
-        }
-        const d = drag.current;
-        if (!d) return;
-        const dx = event.clientX - d.x;
-        const dy = event.clientY - d.y;
-        if (Math.abs(dx) + Math.abs(dy) > 3) moved.current = true;
-        setView((v) => ({ ...v, x: d.vx + dx, y: d.vy + dy }));
-      }}
-      onPointerUp={(event) => {
-        touches.current.delete(event.pointerId);
-        pinch.current = null;
-        drag.current = null;
-        // One finger stays down: go on panning from where it is.
-        if (touches.current.size === 1) {
-          const [p] = [...touches.current.values()];
-          if (p) drag.current = { x: p.x, y: p.y, vx: view.x, vy: view.y };
-        }
-      }}
-      onPointerCancel={(event) => {
-        touches.current.delete(event.pointerId);
-        pinch.current = null;
-        drag.current = null;
-      }}
+      onPointerDownCapture={touch.down}
+      onPointerDown={touch.mouseDown}
+      onPointerMove={touch.move}
+      onPointerUp={touch.up}
+      onPointerCancel={touch.cancel}
     >
       <div
         className="absolute top-0 left-0 origin-top-left"

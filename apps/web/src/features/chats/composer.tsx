@@ -455,7 +455,6 @@ export function Composer({
                 <IconButton
                   label="Add context"
                   active={menu}
-                  className="max-md:size-11"
                   onClick={() => {
                     setMenu((m) => !m);
                   }}
@@ -528,7 +527,6 @@ export function Composer({
               {!recorder.recording && recorder.supported && (
                 <IconButton
                   label="Record a voice note"
-                  className="max-md:size-11"
                   onClick={recorder.start}
                 >
                   <rect x="7.25" y="2.75" width="5.5" height="9.5" rx="2.75" />

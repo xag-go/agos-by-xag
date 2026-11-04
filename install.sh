@@ -142,7 +142,9 @@ linux_install() {
     command -v sudo >/dev/null || die "Run this as root, or install sudo first."
     echo "AGOS installs system services, so it needs your admin (sudo) password once."
     # shellcheck disable=SC2024  # the password comes from the keyboard, also under a pipe
-    sudo -v </dev/tty 2>/dev/null || sudo -v || die "sudo did not work."
+    # The braces: with no terminal (ssh without -t, cloud-init) bash's own "/dev/tty:
+    # No such device" goes to /dev/null too, not onto the installer's output.
+    { sudo -v </dev/tty; } 2>/dev/null || sudo -v || die "sudo did not work."
   fi
   if [[ -n "$here" && -f "$here/deploy/install-server.sh" && -f "$here/deploy/hermes.pin" ]]; then
     src="$here"  # run from a copy of the repository

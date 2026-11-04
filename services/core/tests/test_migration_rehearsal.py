@@ -189,10 +189,39 @@ def test_old_versions_come_from_git_history() -> None:
     assert len(rehearsal.migrations_at(sha, CORE)) == n
 
 
-@pytest.mark.skipif(_shallow(), reason="needs the git history (not a shallow checkout)")
-def test_the_command_rehearses_old_versions_and_writes_a_report(tmp_path: Path) -> None:
+def _history_repo(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, sizes: list[int]) -> Path:
+    """A throwaway git repository whose db/migrations.py had `sizes` migrations, one
+    commit each, and the rehearsal pointed at it. The test then needs no history of
+    its own checkout (the public repository is one export commit)."""
+
+    def git(*args: str) -> None:
+        subprocess.run(["git", *args], cwd=repo, check=True, capture_output=True)  # noqa: S603, S607
+
+    repo = tmp_path / "repo"
+    core = repo / "services" / "core"
+    file = core / "src" / "agos_core" / "db" / "migrations.py"
+    file.parent.mkdir(parents=True)
+    git("init", "-q")
+    for n in sizes:
+        body = "".join(f"    {m!r},\n" for m in MIGRATIONS[:n])
+        file.write_text(f"MIGRATIONS: tuple[str, ...] = (\n{body})\n")
+        git("add", "-A")
+        git("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", f"v{n}")
+    history, migrations_at = rehearsal.history, rehearsal.migrations_at
+    monkeypatch.setattr(rehearsal, "MIGRATIONS_FILE", file)
+    monkeypatch.setattr(rehearsal, "is_shallow", lambda repo=core: False)
+    monkeypatch.setattr(rehearsal, "history", lambda repo=core, **kw: history(repo, **kw))
+    monkeypatch.setattr(rehearsal, "migrations_at", lambda rev, repo=core: migrations_at(rev, repo))
+    return repo
+
+
+def test_the_command_rehearses_old_versions_and_writes_a_report(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     import json
 
+    n = len(MIGRATIONS)
+    _history_repo(tmp_path, monkeypatch, [n // 3, 2 * n // 3, n])
     report = tmp_path / "report.json"
     rc = rehearsal.main(["--git", "2", "--work", str(tmp_path / "w"), "--report", str(report)])
     assert rc == 0
@@ -217,6 +246,17 @@ def test_a_shallow_checkout_says_why_it_has_no_old_versions(
     assert rehearsal.main(["--git", "12", "--work", str(tmp_path)]) == 1
     out = capsys.readouterr().out
     assert "shallow" in out and "fetch-depth: 0" in out
+
+
+def test_a_one_commit_history_says_why_it_has_no_old_versions(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    # The public repository is one export commit: a full clone, with only today's list.
+    monkeypatch.setattr(rehearsal, "history", lambda **_: [("abc", len(MIGRATIONS))])
+    monkeypatch.setattr(rehearsal, "is_shallow", lambda repo=CORE: False)
+    assert rehearsal.main(["--git", "12", "--work", str(tmp_path)]) == 1
+    out = capsys.readouterr().out
+    assert "no older migrations list" in out and "--db" in out
 
 
 def test_a_shallow_clone_is_told_apart_from_a_full_one(tmp_path: Path) -> None:

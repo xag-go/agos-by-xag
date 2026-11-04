@@ -21,6 +21,7 @@ import json
 import os
 import subprocess
 import sys
+import time
 from pathlib import Path
 from types import ModuleType
 from typing import Any
@@ -66,7 +67,12 @@ def metrics(screen: str, report: dict[str, Any]) -> dict[str, dict[str, Any]]:
 
 # Lighthouse sometimes loses its own page-load trace ("NO_NAVSTART ... Please run
 # Lighthouse again", seen on a 2-CPU runner): that run is made again.
-TRIES = 3
+# On GitHub's ubuntu-24.04 image 20261101 Chrome's page also dies under Lighthouse at
+# random ("Page.enable: Session closed"); Lighthouse then exits on an uncaught error
+# and leaves its Chrome running, and those leftovers slow every later screen into
+# timeouts. Each failed try ends its Chrome, waits, and tries again.
+TRIES = 5
+RETRY_WAIT = 5.0
 # GitHub's ubuntu-24.04 image 20261101 kills the workspace dashboard's page under
 # Lighthouse ("Page.enable: Session closed", 3 tries in a row; image 20261025 passed):
 # shared memory goes to /tmp instead of the runner's small /dev/shm, and WebGL keeps
@@ -88,10 +94,22 @@ def _run(url: str, chrome: str, out: Path) -> dict[str, Any]:
             _lighthouse(url, chrome, out)
             break
         except subprocess.CalledProcessError:
+            _end_lighthouse_chrome()
             if attempt == TRIES:
                 raise
+            time.sleep(RETRY_WAIT)
     report: dict[str, Any] = json.loads(out.read_text(encoding="utf-8"))
     return report
+
+
+def _end_lighthouse_chrome() -> None:
+    """End the Chrome a crashed Lighthouse left behind (its profile is a
+    `lighthouse.XXXX` temp folder, so the test's own Playwright browser is kept)."""
+    subprocess.run(
+        ["/usr/bin/pkill", "-f", r"user-data-dir=\S*/lighthouse\.[A-Za-z0-9]+"],
+        check=False,
+        capture_output=True,
+    )
 
 
 def _lighthouse(url: str, chrome: str, out: Path) -> None:

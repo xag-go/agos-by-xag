@@ -275,6 +275,15 @@ def test_hermes_health_is_hermess_own_status_and_doctor(env: Any) -> None:  # no
     assert "Managed scope active" in card["detail"]
 
 
+def test_the_health_card_title_never_names_the_engine() -> None:
+    """Spec 2026-11-04 (no engine name): the card's title the owner sees says
+    "Engine checks", not the engine's name."""
+    from agos_core.engine.cofounder_actions import Action, title_of
+
+    title = title_of(Action(do="hermes_health"))
+    assert "Engine checks" in title and "Hermes" not in title
+
+
 def test_doctors_exit_code_decides_yes_or_no_not_the_marks(env: Any) -> None:  # noqa: F811
     client, core, _runner, _home = env
     ws(client, "Alpha")

@@ -75,6 +75,24 @@ def test_soul_is_written_on_create_with_the_fixed_rules(env: Any) -> None:
     assert "Kanban" in text and "needs_input" in text and "/workspace" in text
 
 
+def test_every_agent_is_told_not_to_name_the_engine_to_the_owner(env: Any) -> None:
+    """Spec 2026-11-04 (no engine name): the fixed rules every agent gets (the
+    workspace's SOUL.md and each member's) tell it to say "the engine" or "AGOS",
+    never "Hermes", except for the "Import from Hermes" screens."""
+    fragments = (
+        'Never say "Hermes" to the owner',
+        'call it "the engine" or "AGOS"',
+        '"Import from Hermes" screens',
+    )
+    client, _core, home = env
+    ws = create(client, "Argan Store", "Online shop for argan oil.")
+    text = soul(home, ws)
+    member = identity.member_soul("Writer", "Argan Store", "shop", "You write posts.")
+    for fragment in fragments:
+        assert fragment in identity.RULES
+        assert fragment in text and fragment in member
+
+
 def test_rename_and_description_rewrite_soul(env: Any) -> None:
     client, _core, home = env
     ws = create(client, "Argan", "Old text")

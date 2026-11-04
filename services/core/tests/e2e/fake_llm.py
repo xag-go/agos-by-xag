@@ -48,6 +48,14 @@ def _tool_call(name: str, args: dict[str, Any]) -> dict[str, Any]:
     return {"tool_call": {"name": name, "arguments": json.dumps(args)}}
 
 
+def _echo(words: str) -> str:
+    """The owner's words for a DM answer: the last 300 characters, and the first 120
+    too when there is more. On a workspace's very first message Hermes adds a long note
+    AFTER the owner's text, so the tail alone would miss what he wrote."""
+    joined = " / ".join(words.strip().splitlines())
+    return joined if len(joined) <= 300 else joined[:120] + " … " + joined[-300:]
+
+
 def decide(messages: list[dict[str, Any]]) -> dict[str, Any]:
     """{"text": …} or {"tool_call": {name, arguments}} for the next assistant step."""
     users = [m for m in messages if m.get("role") == "user"]
@@ -102,12 +110,7 @@ def decide(messages: list[dict[str, Any]]) -> dict[str, Any]:
         # The owner's words, without agos-guard's language note (pre_llm_call, Step 38b)
         # after them: echoing the note's tail would cut his words out of the answer.
         owner_words = re.sub(r"\s*\[Language: [^\]]*\]\s*$", "", prompt)
-        return {
-            "slow": slow,
-            "text": "DM answer: " + " / ".join(owner_words.strip().splitlines())[-300:]
-            if prompt
-            else "ok",
-        }
+        return {"slow": slow, "text": "DM answer: " + _echo(owner_words) if prompt else "ok"}
     # What is new in this room turn (Hermes's delta lines "  @who: text" / "  User (user): …").
     lines = [ln.strip() for ln in prompt.splitlines() if ln.startswith("  ")]
     # Only the owner's latest message counts (earlier ones are history).

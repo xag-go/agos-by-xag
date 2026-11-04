@@ -208,7 +208,9 @@ uninstall() {
     command -v agos >/dev/null && echo "  [FAIL] agos still on PATH" || echo "  [ok] agos command removed"
     sudo test -f /home/agos/agos-data/system/agos.db && echo "  [ok] data kept" || echo "  [FAIL] data gone"
     sudo test -d /home/agos/agos && echo "  [FAIL] program files still there" || echo "  [ok] program files removed"
-    curl -s -m 3 -o /dev/null http://127.0.0.1:3000/ && echo "  [FAIL] web still answers" || echo "  [ok] nothing on :3000"'
+    curl -s -m 3 -o /dev/null http://127.0.0.1:3000/ && echo "  [FAIL] web still answers" || echo "  [ok] nothing on :3000"
+    n=$(sudo docker ps -aq 2>/dev/null | wc -l); [[ $n -eq 0 ]] && echo "  [ok] no container left" || echo "  [FAIL] $n container(s) left: $(sudo docker ps -a --format "{{.Names}}" | tr "\n" " ")"
+    [[ -z "$(sudo docker network ls -q --filter name=agos- 2>/dev/null)" ]] && echo "  [ok] no AGOS network left" || echo "  [FAIL] AGOS network left"'
 }
 
 purge() { # agos uninstall --delete-data must leave nothing of AGOS behind

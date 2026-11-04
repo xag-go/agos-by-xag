@@ -857,6 +857,25 @@ last_backup() {
   echo "  Last backup kept: $file (open it with agos restore and its backup password)"
 }
 
+# AGOS's containers, networks and images. Hermes names the sandbox containers it starts
+# for a workspace `hermes-<hex>` (not `agos-*`), so containers are also found by the AGOS
+# networks they sit on and by the AGOS sandbox images they run: one left running keeps
+# the workspace's files mounted and the network in use.
+remove_docker_leftovers() {
+  local ids=() nets=() net
+  mapfile -t ids < <(docker ps -aq --filter 'name=agos-' 2>/dev/null || true)
+  mapfile -t nets < <(docker network ls -q --filter 'name=agos-' 2>/dev/null || true)
+  for net in "${nets[@]}"; do
+    [[ -n "$net" ]] && mapfile -t -O "${#ids[@]}" ids < <(docker ps -aq --filter "network=$net" 2>/dev/null || true)
+  done
+  mapfile -t -O "${#ids[@]}" ids < <(docker ps -aq --filter ancestor=agos-sandbox:1 2>/dev/null || true)
+  mapfile -t -O "${#ids[@]}" ids < <(docker ps -aq --filter ancestor=agos-sandbox:desktop 2>/dev/null || true)
+  mapfile -t ids < <(printf '%s\n' "${ids[@]}" | grep . | sort -u)
+  [[ ${#ids[@]} -eq 0 ]] || docker rm -f "${ids[@]}" >/dev/null || true
+  [[ ${#nets[@]} -eq 0 || -z "${nets[0]}" ]] || docker network rm "${nets[@]}" >/dev/null || true
+  docker image rm agos-sandbox:desktop agos-sandbox:1 >/dev/null 2>&1 || true
+}
+
 cmd_uninstall() {
   local keep="" a
   for a in "$@"; do case "$a" in --keep-data) keep=yes ;; --delete-data) keep=no ;; --yes|-y) AGOS_YES=1 ;; esac; done
@@ -902,12 +921,7 @@ cmd_uninstall() {
   rm -rf /etc/systemd/system/agos-web.service.d /etc/systemd/system/agos-core.service.d
   systemctl daemon-reload
   say "Removing AGOS's containers, networks and images"
-  local ids=()
-  mapfile -t ids < <(docker ps -aq --filter 'name=agos-' 2>/dev/null || true)
-  [[ ${#ids[@]} -eq 0 ]] || docker rm -f "${ids[@]}" >/dev/null || true
-  mapfile -t ids < <(docker network ls -q --filter 'name=agos-' 2>/dev/null || true)
-  [[ ${#ids[@]} -eq 0 ]] || docker network rm "${ids[@]}" >/dev/null || true
-  docker image rm agos-sandbox:desktop agos-sandbox:1 >/dev/null 2>&1 || true
+  remove_docker_leftovers
   say "Removing the program files"
   rm -f /usr/local/bin/agos /etc/sudoers.d/agos
   rm -rf "$AGOS_APP"

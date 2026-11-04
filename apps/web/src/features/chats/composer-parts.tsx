@@ -22,7 +22,8 @@ export function IconButton({
       title={label}
       onClick={onClick}
       className={cn(
-        "flex size-9 items-center justify-center rounded-full text-ink-2 hover:bg-canvas hover:text-ink",
+        // 44px touch target on a phone.
+        "flex size-9 items-center justify-center rounded-full text-ink-2 hover:bg-canvas hover:text-ink max-md:size-11",
         active && "bg-canvas text-ink",
         className,
       )}

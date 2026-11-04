@@ -15,6 +15,17 @@ import { cn } from "@/shared/ui/cn";
 import { deleteChat, renameChat, setChatAgent, setChatModel } from "./actions";
 import { withSelection } from "@/features/models/model-picker";
 
+type ChatHeaderProps = {
+  workspaceId: string;
+  chat: Chat;
+  catalog: CatalogProvider[];
+  agents?: { name: string; title: string }[];
+  addresses?: ChatAddress[];
+  connections?: ChannelConnection[];
+  /** On a phone the chat is full-screen: a way back to the list (below md only). */
+  backHref?: string;
+};
+
 /** Title (click to rename), the chat's model (click to change), and a menu. */
 export function ChatHeader({
   workspaceId,
@@ -24,44 +35,14 @@ export function ChatHeader({
   addresses = [],
   connections = [],
   backHref,
-}: {
-  workspaceId: string;
-  chat: Chat;
-  catalog: CatalogProvider[];
-  agents?: { name: string; title: string }[];
-  addresses?: ChatAddress[];
-  connections?: ChannelConnection[];
-  /** On a phone the chat is full-screen: a way back to the list (md-:only). */
-  backHref?: string;
-}) {
+}: ChatHeaderProps) {
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, start] = useTransition();
 
   return (
     <header className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-line px-4 py-2.5 sm:px-6">
-      {backHref && (
-        <Link
-          href={backHref}
-          aria-label="Back to the list"
-          className="-ml-2.5 flex size-11 shrink-0 items-center justify-center rounded-full text-ink-2 hover:bg-sunken hover:text-ink md:hidden"
-        >
-          <svg
-            viewBox="0 0 20 20"
-            className="size-5"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={1.75}
-            aria-hidden
-          >
-            <path
-              d="M12.5 4.5 7 10l5.5 5.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </Link>
-      )}
+      <BackLink href={backHref} />
       {editing ? (
         <form
           className="flex items-center gap-2"
@@ -335,5 +316,32 @@ function DeleteChat({
         Cancel
       </button>
     </span>
+  );
+}
+
+/** The phone's way back from a full-screen chat to the list (hidden from md up). */
+function BackLink({ href }: { href: string | undefined }) {
+  if (!href) return null;
+  return (
+    <Link
+      href={href}
+      aria-label="Back to the list"
+      className="-ml-2.5 flex size-11 shrink-0 items-center justify-center rounded-full text-ink-2 hover:bg-sunken hover:text-ink md:hidden"
+    >
+      <svg
+        viewBox="0 0 20 20"
+        className="size-5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.75}
+        aria-hidden
+      >
+        <path
+          d="M12.5 4.5 7 10l5.5 5.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </Link>
   );
 }

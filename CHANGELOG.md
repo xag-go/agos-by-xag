@@ -8,6 +8,11 @@ Every notable change to AGOS is written here. The format follows
 
 ### Fixed
 
+- AGOS works on a phone: the side menu opens as a drawer, chats show the list
+  then the conversation full screen, the board, its toolbar and card windows fit
+  a small screen, buttons are big enough to tap, and the dashboard banner, Office
+  and org chart are readable at phone width. Nothing changes on a computer.
+
 - `agos uninstall` now also removes the sandbox containers Hermes started for your
   workspaces (named `hermes-…`). They kept running after the uninstall with the
   workspace files mounted, and the workspace network could not be removed.

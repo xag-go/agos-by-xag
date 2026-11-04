@@ -51,6 +51,8 @@ export const GAP_Y = 76;
 export const PAD = 40;
 export const MIN_ZOOM = 0.3;
 export const MAX_ZOOM = 2;
+/** Small screens never fit below this: a box stays ≥ ~200px wide. */
+export const READABLE_ZOOM = 200 / BOX_W;
 
 /**
  * The org chart: the Co-Founder on top; each member under who it reports to

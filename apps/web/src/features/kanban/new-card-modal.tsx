@@ -180,12 +180,12 @@ export function NewCardModal({
           </div>
         </div>
 
-        <footer className="flex flex-wrap items-center gap-2 border-t border-line px-5 py-3">
+        <footer className="flex flex-wrap items-center gap-2 border-t border-line px-5 py-3 max-md:pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <FormStatus error={state.error} className="mr-auto" />
           <Button
             type="submit"
             variant="primary"
-            className="ml-auto"
+            className="ml-auto max-md:!h-11"
             disabled={pending}
           >
             {pending ? "Creating…" : "Create card"}

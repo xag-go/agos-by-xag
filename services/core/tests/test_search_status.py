@@ -300,10 +300,16 @@ def test_search_is_fast_on_a_big_board(env: Any, capsys: pytest.CaptureFixture[s
         (files / f"t_{i:05d}").mkdir(parents=True, exist_ok=True)
         (files / f"t_{i:05d}" / "notes.md").write_text(f"# Notes {i}\n\n" + "Some words. " * 200)
     timings = []
-    for q in ("needle", "budget client", "caption", "needle"):
-        started = time.perf_counter()
-        found = _find(client, ws, q)
-        timings.append((q, round((time.perf_counter() - started) * 1000, 1), found["tookMs"]))
+    for n, q in enumerate(("needle", "budget client", "caption", "needle")):
+        # The fastest of 3 (the first answer once): a shared 2-CPU CI runner stalls a
+        # single call now and then (650 ms once on GitHub, ~30 ms here); a slow search
+        # is slow every time, so the budget below still catches it.
+        tries = []
+        for _ in range(1 if n == 0 else 3):
+            started = time.perf_counter()
+            found = _find(client, ws, q)
+            tries.append((round((time.perf_counter() - started) * 1000, 1), found["tookMs"]))
+        timings.append((q, *min(tries)))
     with capsys.disabled():
         print(
             f"\nsearch timings on 5000 cards / 10000 comments / 1000 docs (q, http ms, core ms): {timings}"

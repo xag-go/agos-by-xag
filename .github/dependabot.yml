@@ -1,4 +1,5 @@
-# Weekly dependency PRs. Each one passes the full CI gate like any other PR.
+# Weekly dependency PRs, few at a time: minor/patch updates come grouped, a major one
+# alone. Each one passes the full CI gate like any other PR.
 # Supply-chain note: services/core/pyproject.toml pins `[tool.uv] exclude-newer`, so a
 # Python PR newer than that date fails `uv sync --frozen` until the date moves in the
 # same PR; pnpm-workspace.yaml's minimumReleaseAge (3 days) is matched by the
@@ -12,7 +13,7 @@ updates:
       day: monday
       time: "06:00"
       timezone: Etc/UTC
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 2
     labels: [dependencies, skip-changelog]
     groups:
       python-runtime:
@@ -29,10 +30,19 @@ updates:
       day: monday
       time: "06:00"
       timezone: Etc/UTC
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 2
     labels: [dependencies, skip-changelog]
     cooldown:
       default-days: 3
+    ignore:
+      # Typings follow the Node.js AGOS runs on (package.json engines), not the newest.
+      - dependency-name: "@types/node"
+        update-types: [version-update:semver-major]
+      # axe-core 4.14's new rule (label-content-name-mismatch) flags the side panel's
+      # labelled links/buttons on 8 screens (tests/browser/test_a11y.py): remove this
+      # once those labels contain their visible text.
+      - dependency-name: axe-core
+        versions: [">=4.14.0"]
     groups:
       # React Three Fiber and three move together.
       three:
@@ -51,6 +61,7 @@ updates:
       day: monday
       time: "06:00"
       timezone: Etc/UTC
+    open-pull-requests-limit: 1
     labels: [dependencies, skip-changelog]
     groups:
       actions:
@@ -65,4 +76,5 @@ updates:
       day: monday
       time: "06:00"
       timezone: Etc/UTC
+    open-pull-requests-limit: 1
     labels: [dependencies, skip-changelog]

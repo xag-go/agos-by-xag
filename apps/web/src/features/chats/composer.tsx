@@ -191,7 +191,7 @@ export function Composer({
   }
 
   return (
-    <div className="shrink-0 px-4 pb-4 sm:px-8">
+    <div className="shrink-0 px-4 pb-4 max-md:pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-8">
       <div className="w-full">
         {error && (
           <p role="alert" className="mb-2 px-1 text-sm text-danger">
@@ -455,6 +455,7 @@ export function Composer({
                 <IconButton
                   label="Add context"
                   active={menu}
+                  className="max-md:size-11"
                   onClick={() => {
                     setMenu((m) => !m);
                   }}
@@ -527,6 +528,7 @@ export function Composer({
               {!recorder.recording && recorder.supported && (
                 <IconButton
                   label="Record a voice note"
+                  className="max-md:size-11"
                   onClick={recorder.start}
                 >
                   <rect x="7.25" y="2.75" width="5.5" height="9.5" rx="2.75" />
@@ -542,7 +544,7 @@ export function Composer({
                   onClick={onStop}
                   disabled={stopping}
                   aria-label="Stop the answer"
-                  className="flex size-9 items-center justify-center rounded-full bg-ink text-canvas hover:opacity-90 disabled:opacity-50"
+                  className="flex size-9 items-center justify-center rounded-full bg-ink text-canvas hover:opacity-90 disabled:opacity-50 max-md:size-11"
                 >
                   <span className="size-3 rounded-3 bg-current" />
                 </button>
@@ -552,7 +554,7 @@ export function Composer({
                   onClick={recorder.recording ? recorder.finish : submit}
                   disabled={recorder.recording ? false : !canSend}
                   aria-label={recorder.recording ? "Send voice note" : "Send"}
-                  className="flex size-9 items-center justify-center rounded-full bg-accent text-accent-ink transition-opacity hover:opacity-90 disabled:bg-line disabled:text-ink-3"
+                  className="flex size-9 items-center justify-center rounded-full bg-accent text-accent-ink transition-opacity hover:opacity-90 disabled:bg-line disabled:text-ink-3 max-md:size-11"
                 >
                   <svg
                     viewBox="0 0 20 20"
@@ -573,7 +575,7 @@ export function Composer({
             </div>
           </div>
         </div>
-        <p className="mt-2 px-1 text-center text-caption-sm text-ink-3">
+        <p className="mt-2 px-1 text-center text-caption-sm text-ink-3 max-md:hidden">
           Enter to send · Shift+Enter for a new line · paste or drop screenshots
         </p>
       </div>

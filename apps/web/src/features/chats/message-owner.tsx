@@ -179,7 +179,7 @@ export function OwnerMessage({
         ),
       )}
       {message.body && (
-        <div className="flex max-w-[85%] flex-col items-end gap-1 rounded-3xl rounded-br-lg bg-accent px-4 py-2.5 text-body leading-relaxed whitespace-pre-wrap text-accent-ink sm:max-w-[75%]">
+        <div className="flex max-w-[85%] flex-col items-end gap-1 rounded-3xl rounded-br-lg bg-accent px-4 py-2.5 text-body leading-relaxed whitespace-pre-wrap text-accent-ink max-md:[overflow-wrap:anywhere] sm:max-w-[75%]">
           {message.replyPreview && (
             <Quote
               from={quotedFrom}
@@ -204,7 +204,7 @@ export function OwnerMessage({
               Edited
             </span>
           )}
-          <div className="flex items-center gap-3 opacity-0 transition-opacity group-hover/owner:opacity-100 focus-within:opacity-100">
+          <div className="flex items-center gap-3 opacity-0 transition-opacity group-hover/owner:opacity-100 pointer-coarse:opacity-100 focus-within:opacity-100">
             <ReplyButton onReply={onReply} />
             {message.body && <SmallAction label="Edit" onClick={onEdit} />}
             <SmallAction label="Delete" onClick={onDelete} />

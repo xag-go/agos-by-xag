@@ -38,6 +38,7 @@ export default async function MessagesPage({
       workspaceId={workspace.id}
       team={team}
       current={current}
+      asked={current !== null}
       catalog={catalog}
       addresses={
         current ? await getChatAddresses(workspace.id, current.id) : []

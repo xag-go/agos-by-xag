@@ -102,7 +102,7 @@ export function Inspector({
         </button>
       </div>
 
-      <dl className="mt-4 grid min-w-0 grid-cols-[minmax(0,1fr)] gap-3 text-sm [&>div]:min-w-0">
+      <dl className="mt-4 grid min-w-0 grid-cols-1 gap-3 text-sm [&>div]:min-w-0">
         <div>
           <dt className="office3d-dt">State</dt>
           <dd className="flex flex-wrap items-center gap-1.5 text-hud-cream">

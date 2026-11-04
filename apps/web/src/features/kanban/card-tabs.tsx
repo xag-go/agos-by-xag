@@ -317,7 +317,7 @@ export function ChatTab({
       </p>
     );
   return (
-    <div className="-mx-5 -my-5 flex h-full min-h-[24rem] flex-col">
+    <div className="-mx-5 -my-5 flex h-full min-h-96 flex-col">
       <Conversation
         key={chat.id}
         workspaceId={workspaceId}

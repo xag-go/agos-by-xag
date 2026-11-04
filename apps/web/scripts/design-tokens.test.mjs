@@ -11,7 +11,7 @@ import { test } from "node:test";
 const WEB = new URL("..", import.meta.url).pathname;
 const SRC = join(WEB, "src");
 // Arbitrary layout values left today; lower it when you remove some (never raise it).
-const GEOMETRY_BASELINE = 167;
+const GEOMETRY_BASELINE = 166;
 // `/[0.07]` stays: Tailwind writes `/7` as 7% but `/[0.07]` as 7.000000000000001%, so the
 // token would not be byte-identical CSS.
 const KEPT = new Set(["bg-ink/[0.07]", "border-white/[0.07]"]);

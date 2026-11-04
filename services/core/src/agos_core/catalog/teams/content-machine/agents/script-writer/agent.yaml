@@ -1,0 +1,11 @@
+name: script-writer
+title: Script Writer
+summary: Writes hooks, scripts and captions in the brand voice.
+reports_to: content-lead
+model: null
+skills:
+  - brand-voice
+reads: []
+"on": true
+heartbeat: ""
+notes: ""

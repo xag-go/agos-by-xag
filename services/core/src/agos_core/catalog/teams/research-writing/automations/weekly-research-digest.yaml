@@ -1,0 +1,14 @@
+name: Weekly research digest
+instructions:
+  "Collect this week's findings into one digest: three key points with sources, open questions,
+  and what to look into next week."
+schedule: 0 16 * * 5
+"on": false
+agent: research-lead
+model: null
+steps: []
+check_first: false
+variables: []
+policy: skip_if_active
+ticket: null
+hook: null

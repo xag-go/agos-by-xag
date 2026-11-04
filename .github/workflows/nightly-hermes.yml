@@ -1,0 +1,222 @@
+name: Nightly (real Hermes, e2e, agent evals, migrations, speed budgets)
+
+# What GitHub's runners cannot do: the core suite against a REAL Hermes Agent install
+# (the `hermes` marker plus every test that skips itself without Hermes), the e2e rig
+# (tests/e2e/rooms_e2e.py: real gateways, fake LLM, fake Telegram), the agent evals
+# (tests/evals/run.py: scored scenarios on real Hermes), the migrations on old
+# databases (scripts/migration_rehearsal.py) and the core's speed / RAM budgets
+# (tests/perf/budgets.py, measured on this machine). A second job, after it, runs the
+# security scans on throwaway rigs: API fuzzing with Schemathesis against openapi.json
+# (per operation, chained through real rows) and an OWASP ZAP baseline scan of the web build.
+#
+# Runs on a self-hosted runner labelled `hermes` (one job at a time), installed by
+# deploy/register-ci-runner.sh. Disabled until one is registered: set the repository
+# variable HERMES_RUNNER=on afterwards. Setup: docs/CI.md, "Nightly self-hosted
+# runner". Never triggered by pull_request: a self-hosted runner must not run code
+# from a fork (tests/test_ci_runner.py checks it).
+
+on:
+  schedule:
+    - cron: "23 2 * * *" # 02:23 UTC
+  workflow_dispatch:
+    inputs:
+      stage:
+        description: "Which stage to run"
+        type: choice
+        options: [all, hermes-tests, e2e, evals, migrations, perf, security]
+        default: all
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nightly-hermes
+  cancel-in-progress: false
+
+env:
+  STAGE: ${{ inputs.stage || 'all' }}
+
+jobs:
+  hermes:
+    name: Real Hermes tests, e2e, evals
+    if: vars.HERMES_RUNNER == 'on'
+    runs-on: [self-hosted, linux, hermes]
+    timeout-minutes: 240
+    defaults:
+      run:
+        working-directory: services/core
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+          # The whole history: the migration rehearsal rebuilds old versions from it.
+          fetch-depth: 0
+      # Keep pytest's temp dirs on disk AND inside ~/.hermes: every throwaway Hermes
+      # home then borrows ~/.hermes's dependency env instead of a 2-3 min `uv sync`
+      # per test (docs/CI.md explains why). /tmp is RAM on the runner machine.
+      - name: Temp dirs and tools
+        run: |
+          {
+            echo "TMPDIR=$HOME/.hermes/cache/scratch/agos-nightly-tmp"
+            echo "AGOS_E2E=$HOME/agos-nightly-e2e"
+            # The evals' and the budgets' rigs: inside ~/.hermes, like TMPDIR.
+            echo "RIGS=$HOME/.hermes/cache/scratch"
+          } >> "$GITHUB_ENV"
+          mkdir -p "$HOME/.hermes/cache/scratch/agos-nightly-tmp"
+          # uv and Hermes live in the runner account's ~/.local/bin, which the runner
+          # service's PATH lacks: add it for the next steps, and stop here if a tool is
+          # missing (deploy/register-ci-runner.sh installs them).
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.local/bin:$PATH"
+          for tool in uv hermes; do
+            command -v "$tool" || { echo "::error::$tool not found on the runner"; exit 1; }
+          done
+          hermes --version
+          free -m
+      - run: uv sync --frozen
+      # Serial on purpose: the real-Hermes tests share ~/.hermes (install locks) and
+      # fixed roots (~/.cache/agos-wall-test), so two workers would wipe each other.
+      - name: Core suite with real Hermes (serial)
+        if: env.STAGE == 'all' || env.STAGE == 'hermes-tests'
+        run: >-
+          uv run pytest -q -p no:cacheprovider -p no:xdist
+          --timeout=900 -o faulthandler_timeout=600 -rs --durations=25
+          --junitxml=nightly-pytest.xml
+      - name: Test counts in the job summary
+        if: always()
+        run: python3 ../../scripts/ci/junit_summary.py nightly-pytest.xml >> "$GITHUB_STEP_SUMMARY"
+      - name: e2e rig (rooms_e2e.py all)
+        if: env.STAGE == 'all' || env.STAGE == 'e2e'
+        env:
+          AGOS_E2E_PORTS: "28766,28991,28993"
+        run: |
+          rc=0
+          uv run python tests/e2e/rooms_e2e.py all || rc=$?
+          # Stop the processes, keep the rig's logs for the artifact below.
+          uv run python tests/e2e/rooms_e2e.py down --keep || true
+          exit "$rc"
+      # Every migration on old databases (each old version from git history, given rows
+      # in every table): integrity, links, row counts, same shape as a fresh install.
+      - name: Migrations on old databases
+        if: env.STAGE == 'all' || env.STAGE == 'migrations'
+        run: uv run python scripts/migration_rehearsal.py --git 12 --report nightly-migrations.json
+      # Agent evals: scored scenarios on real Hermes with a scripted model (Co-Founder
+      # does it from chat, a tainted turn asks before a power, a card's review flow).
+      - name: Agent evals
+        if: env.STAGE == 'all' || env.STAGE == 'evals'
+        env:
+          AGOS_E2E: ${{ env.RIGS }}/agos-nightly-evals
+        run: >-
+          uv run python tests/evals/run.py --budget-tokens 200000 --min-score 1.0
+          --report nightly-evals.json --summary "$GITHUB_STEP_SUMMARY"
+      # Speed and RAM budgets (core start, the main pages' reads, RSS) against the
+      # baseline measured on this machine: more than 20% worse fails.
+      - name: Speed and RAM budgets
+        if: env.STAGE == 'all' || env.STAGE == 'perf'
+        env:
+          AGOS_E2E: ${{ env.RIGS }}/agos-nightly-perf
+        run: uv run python tests/perf/budgets.py --report nightly-perf.json
+      - name: Keep the reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: nightly-reports
+          retention-days: 30
+          if-no-files-found: ignore
+          path: |
+            services/core/nightly-pytest.xml
+            services/core/nightly-migrations.json
+            services/core/nightly-evals.json
+            services/core/nightly-perf.json
+      - name: Keep the e2e logs
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: nightly-logs
+          retention-days: 7
+          if-no-files-found: ignore
+          path: |
+            services/core/nightly-pytest.xml
+            ~/agos-nightly-e2e/**/*.log
+      - name: Clean the temp dirs
+        if: always()
+        run: rm -rf "$TMPDIR"/pytest-of-* "$RIGS/agos-nightly-evals" "$RIGS/agos-nightly-perf"
+
+  # After the job above (the runner takes one job at a time). Every rig is throwaway:
+  # a fresh data dir, fake Hermes/Docker, no real process, no outbound connection
+  # (tests/security/fuzz_rig.py; ZAP scans the browser tests' light core + web build).
+  # Ports: 9731 (pytest fuzz), 9733/9734 (ZAP's core/web).
+  security-scans:
+    name: Security scans (Schemathesis API fuzzing, ZAP baseline)
+    needs: hermes
+    if: >-
+      always() && vars.HERMES_RUNNER == 'on'
+      && (github.event_name == 'schedule' || inputs.stage == 'all' || inputs.stage == 'security')
+    runs-on: [self-hosted, linux, hermes]
+    timeout-minutes: 120
+    defaults:
+      run:
+        working-directory: services/core
+    env:
+      SCHEMATHESIS: schemathesis==4.32.7
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - name: Temp dirs and tools
+        run: |
+          {
+            echo "TMPDIR=$HOME/.hermes/cache/scratch/agos-nightly-tmp"
+            echo "SCANS=$HOME/.hermes/cache/scratch/agos-nightly-scans"
+          } >> "$GITHUB_ENV"
+          mkdir -p "$HOME/.hermes/cache/scratch/agos-nightly-tmp"
+          rm -rf "$HOME/.hermes/cache/scratch/agos-nightly-scans"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.local/bin:$PATH"
+          for tool in uv node pnpm; do
+            command -v "$tool" || { echo "::error::$tool not found on the runner"; exit 1; }
+          done
+          free -m
+      - run: uv sync --frozen
+      # Every operation of openapi.json with generated input (no 500 allowed; a 502/503
+      # only says the rig has no Hermes); the operations under a create run on the
+      # real row it made. Lists every finding.
+      - name: API fuzzing per operation (Schemathesis)
+        env:
+          AGOS_FUZZ: "1"
+          AGOS_FUZZ_EXAMPLES: "25"
+        run: >-
+          uv run --with "$SCHEMATHESIS" pytest -q -p no:cacheprovider -p no:xdist
+          --timeout=3600 tests/security/test_api_fuzz.py
+          --junitxml="$SCANS/api-fuzz.xml"
+      - name: Web build for the ZAP scan
+        if: always()
+        working-directory: .
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+          NEXT_TELEMETRY_DISABLED: "1"
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm --filter @agos/web build
+      # Spider + passive rules (zap-baseline's scan) on the web in front of the light
+      # core. ZAP and its Java are pinned downloads (SHA-256), kept in ~/.cache/agos-zap.
+      - name: OWASP ZAP baseline scan
+        if: always()
+        env:
+          PYTHONPATH: tests
+        run: uv run python tests/security/zap_baseline.py --out "$SCANS/zap" | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Keep the scan reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: nightly-security-scans
+          retention-days: 30
+          if-no-files-found: ignore
+          path: |
+            ${{ env.SCANS }}/api-fuzz.xml
+            ${{ env.SCANS }}/zap/zap.json
+            ${{ env.SCANS }}/zap/zap.html
+            ${{ env.SCANS }}/zap/rig/*.log
+      - name: Clean the temp dirs
+        if: always()
+        run: rm -rf "$TMPDIR"/pytest-of-* "$SCANS"

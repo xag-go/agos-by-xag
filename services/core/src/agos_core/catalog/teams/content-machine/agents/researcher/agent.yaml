@@ -1,0 +1,10 @@
+name: researcher
+title: Trend Researcher
+summary: Finds trends, references and ideas worth making.
+reports_to: content-lead
+model: null
+skills: []
+reads: []
+"on": true
+heartbeat: ""
+notes: ""

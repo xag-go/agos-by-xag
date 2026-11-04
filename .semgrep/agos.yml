@@ -1,0 +1,48 @@
+rules:
+  - id: agos-no-shell-true
+    languages: [python]
+    severity: ERROR
+    message: >-
+      subprocess with shell=True runs the string through /bin/sh (injection). Pass an
+      argument list instead.
+    pattern-either:
+      - pattern: subprocess.$F(..., shell=True, ...)
+      - pattern: asyncio.create_subprocess_shell(...)
+      - pattern: os.system(...)
+      - pattern: os.popen(...)
+
+  - id: agos-no-fstring-sql
+    languages: [python]
+    severity: ERROR
+    message: >-
+      SQL built with an f-string, % or .format(). Use ? placeholders for values; a
+      table or column name comes from a constant set, checked before the query.
+    patterns:
+      - pattern-either:
+          - pattern: $DB.execute(f"...", ...)
+          - pattern: $DB.executemany(f"...", ...)
+          - pattern: $DB.executescript(f"...")
+          - pattern: $DB.execute("..." % $X, ...)
+          - pattern: $DB.execute("...".format(...), ...)
+          - pattern: $DB.execute("..." + $X, ...)
+    paths:
+      include:
+        - /services/core/src/
+
+  - id: agos-web-core-only-through-server
+    languages: [typescript]
+    severity: ERROR
+    message: >-
+      The web reaches the core only through apps/web/src/server (core(), coreUpload()):
+      one place adds the internal token, timeouts and error mapping. Add a helper there
+      instead of reading AGOS_CORE_URL / AGOS_INTERNAL_TOKEN_FILE here.
+    pattern-either:
+      - pattern: webEnv().AGOS_CORE_URL
+      - pattern: webEnv().AGOS_INTERNAL_TOKEN_FILE
+      - pattern: process.env.AGOS_CORE_URL
+      - pattern: process.env.AGOS_INTERNAL_TOKEN_FILE
+    paths:
+      include:
+        - /apps/web/src/
+      exclude:
+        - /apps/web/src/server/

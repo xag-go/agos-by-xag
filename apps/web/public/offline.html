@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="robots" content="noindex" />
+    <title>AGOS · offline</title>
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <!-- Styles are attributes only: the site's Content Security Policy allows
+         no inline <style> or <script> without a nonce, and this page is served
+         from the service worker's cache. System colors follow light/dark. -->
+  </head>
+  <body
+    style="
+      margin: 0;
+      min-height: 100dvh;
+      display: grid;
+      place-items: center;
+      background: Canvas;
+      color: CanvasText;
+      font-family:
+        system-ui,
+        -apple-system,
+        &quot;Segoe UI&quot;,
+        Roboto,
+        sans-serif;
+      padding: 24px;
+      box-sizing: border-box;
+    "
+  >
+    <main style="width: 100%; max-width: 360px; text-align: center">
+      <img
+        src="/icons/agos-192.png"
+        alt=""
+        width="72"
+        height="72"
+        style="display: block; margin: 0 auto 20px; border-radius: 18px"
+      />
+      <h1
+        style="
+          margin: 0 0 8px;
+          font-size: 22px;
+          font-weight: 700;
+          letter-spacing: -0.01em;
+        "
+      >
+        AGOS can't be reached
+      </h1>
+      <p
+        style="
+          margin: 0 0 24px;
+          font-size: 15px;
+          line-height: 1.5;
+          opacity: 0.7;
+        "
+      >
+        Your phone is offline, or the server isn't reachable from here. Check
+        your connection (Tailscale on, Wi‑Fi or data) and try again.
+      </p>
+      <a
+        href="/"
+        style="
+          display: inline-block;
+          padding: 12px 22px;
+          border-radius: 12px;
+          background: CanvasText;
+          color: Canvas;
+          text-decoration: none;
+          font-weight: 600;
+          font-size: 15px;
+        "
+        >Try again</a
+      >
+    </main>
+  </body>
+</html>

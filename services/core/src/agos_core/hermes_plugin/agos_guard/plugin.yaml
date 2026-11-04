@@ -1,0 +1,3 @@
+name: agos-guard
+version: "1.0"
+description: AGOS Autonomy rules and read-only watcher, enforced before every tool call

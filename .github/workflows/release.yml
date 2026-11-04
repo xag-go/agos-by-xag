@@ -1,0 +1,106 @@
+# A release (docs/releases.md, ADR 0028): runs when the owner pushes a release tag
+# (vX.Y.Z, or vX.Y.Z-beta.N / -rc.N for the beta channel) made by
+# `scripts/release.py prepare`. It checks the tag against VERSION and CHANGELOG,
+# builds the release's files, signs them keyless with Sigstore (this workflow's
+# GitHub identity, no key to keep) and publishes a GitHub release:
+#
+#   agos-<version>.tar.gz      the tagged code (git archive)
+#   agos-<version>.cdx.json    SBOM of the code's dependencies (CycloneDX, Syft)
+#   release.json               {"tag", "version", "commit", "tree"} of the tagged commit
+#   SHA256SUMS                 sha256 of every file above
+#   SHA256SUMS.sigstore.json   SHA256SUMS signed by this workflow (cosign sign-blob)
+#
+# plus SLSA build provenance for every file (GitHub's attest action). The installer
+# and `agos update` refuse a release tag whose SHA256SUMS signature or release.json
+# does not match (deploy/release-verify.sh). Nothing here runs on pull requests.
+name: Release
+
+on:
+  push:
+    tags:
+      [
+        "v[0-9]+.[0-9]+.[0-9]+",
+        "v[0-9]+.[0-9]+.[0-9]+-beta.[0-9]+",
+        "v[0-9]+.[0-9]+.[0-9]+-rc.[0-9]+",
+      ]
+
+permissions: {}
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build, sign and publish the release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: write # the GitHub release and its files
+      id-token: write # Sigstore keyless signing and the provenance attestation
+      attestations: write # SLSA build provenance
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: The tag is a release (VERSION and CHANGELOG agree)
+        env:
+          TAG: ${{ github.ref_name }}
+        run: python3 scripts/release.py check "$TAG"
+
+      - name: Release files
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          version="${TAG#v}"
+          mkdir -p dist
+          git archive --format=tar.gz --prefix="agos-$version/" -o "dist/agos-$version.tar.gz" "$TAG"
+          python3 scripts/release.py manifest "$TAG" > dist/release.json
+          python3 scripts/release.py notes "$TAG" > notes.md
+
+      - name: SBOM (CycloneDX)
+        uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
+        with:
+          path: .
+          format: cyclonedx-json
+          output-file: dist/agos-${{ github.ref_name }}.cdx.json
+          upload-artifact: false
+          upload-release-assets: false
+
+      - name: Checksums
+        run: |
+          cd dist
+          # The SBOM's name carries the tag's v: name it like the archive.
+          for f in agos-v*.cdx.json; do mv "$f" "agos-${f#agos-v}"; done
+          sha256sum -- * > ../SHA256SUMS
+          mv ../SHA256SUMS .
+          cat SHA256SUMS
+
+      - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+        with:
+          cosign-release: v3.1.4
+
+      - name: Sign SHA256SUMS (Sigstore keyless)
+        working-directory: dist
+        run: |
+          cosign sign-blob --yes --bundle SHA256SUMS.sigstore.json SHA256SUMS
+          # The same check the installer makes, before anything is published.
+          cosign verify-blob --bundle SHA256SUMS.sigstore.json \
+            --certificate-identity "https://github.com/${GITHUB_REPOSITORY}/.github/workflows/release.yml@${GITHUB_REF}" \
+            --certificate-oidc-issuer https://token.actions.githubusercontent.com SHA256SUMS
+
+      - name: SLSA build provenance
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-checksums: dist/SHA256SUMS
+
+      - name: Publish the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          pre=()
+          [[ "$TAG" == *-* ]] && pre=(--prerelease)
+          gh release create "$TAG" --verify-tag --title "AGOS ${TAG#v}" --notes-file notes.md "${pre[@]}" dist/*

@@ -1,0 +1,11 @@
+name: tech-lead
+title: Tech Lead
+summary: Turns goals into small, reviewed changes.
+reports_to: ""
+model: null
+skills:
+  - code-review
+reads: []
+"on": true
+heartbeat: ""
+notes: ""

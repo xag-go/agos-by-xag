@@ -1,0 +1,11 @@
+name: social-media-manager
+title: Social Media Manager
+summary: Schedules posts and reports what worked.
+reports_to: content-lead
+model: null
+skills:
+  - content-calendar
+reads: []
+"on": true
+heartbeat: ""
+notes: ""

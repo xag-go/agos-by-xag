@@ -1,0 +1,10 @@
+name: prospect-researcher
+title: Prospect Researcher
+summary: Builds lists of the right people, with a reason for each.
+reports_to: sales-lead
+model: null
+skills: []
+reads: []
+"on": true
+heartbeat: ""
+notes: ""

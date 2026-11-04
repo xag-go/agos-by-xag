@@ -1,0 +1,30 @@
+# Who reviews what. GitHub requests these reviewers on every PR that touches the
+# paths (enforced once branch protection is on: docs/CI.md, "Branch protection").
+# Later lines win over earlier ones.
+
+*                                                   @xag-go
+
+# The Hermes boundary: most past defects sit here, and CI cannot run its real tests.
+/services/core/src/agos_core/engine/hermes*.py      @xag-go
+/services/core/src/agos_core/actions/hermes_*.py    @xag-go
+/services/core/src/agos_core/api/hermes_bridge.py   @xag-go
+/services/core/src/agos_core/hermes_plugin/         @xag-go
+/deploy/hermes.pin                                  @xag-go
+
+# Schema and registries: a shipped migration is frozen; ownership decides who writes.
+/services/core/src/agos_core/db/migrations.py       @xag-go
+/services/core/src/agos_core/db/ownership/              @xag-go
+/services/core/openapi.json                         @xag-go
+
+# The gate itself and its ratchet baselines (they may only shrink).
+/.github/                                           @xag-go
+/.semgrep/                                          @xag-go
+/.pre-commit-config.yaml                            @xag-go
+/scripts/ci/                                        @xag-go
+/services/core/.importlinter                        @xag-go
+/services/core/layer-baseline.json                  @xag-go
+
+# Installer and server scripts run as root on the owner's machines.
+/install.sh                                         @xag-go
+/install.ps1                                        @xag-go
+/deploy/                                            @xag-go

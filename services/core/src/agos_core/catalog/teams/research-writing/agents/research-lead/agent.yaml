@@ -1,0 +1,11 @@
+name: research-lead
+title: Research Lead
+summary: Sets the questions and signs off the findings.
+reports_to: ""
+model: null
+skills:
+  - cite-sources
+reads: []
+"on": true
+heartbeat: ""
+notes: ""

@@ -1,0 +1,19 @@
+{
+  "_doc": "Layer breaks allowed today (scripts/layer_ratchet.py). Counts may only shrink.",
+  "totals": {
+    "layers": 0,
+    "api-only-via-actions": 0,
+    "core-not-plugin": 0,
+    "plugin-standalone": 0,
+    "domain-pure": 0,
+    "shared-pure": 0
+  },
+  "pairs": {
+    "layers": {},
+    "api-only-via-actions": {},
+    "core-not-plugin": {},
+    "plugin-standalone": {},
+    "domain-pure": {},
+    "shared-pure": {}
+  }
+}

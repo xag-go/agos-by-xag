@@ -1,0 +1,12 @@
+{
+  "actions/chat_store.py::move_hidden": "one-off move at start (services/system/startup.py): walks chats_repo.hidden_by_agos rows itself and unhides each row it read; no id comes from a caller",
+  "actions/error_alerts.py::Alerts._run": "alert queue: ids are put by Alerts.__call__ from error_issues.record (the issue just recorded); error_alerts.py:tell tells the issue's own workspace (issue.workspace_id) or the owner's",
+  "actions/services/board/card_chats.py::move_card_chat_titles": "one-off move at start (services/system/startup.py): walks chats_repo.card_chats_titled rows grouped by their own workspace_id and clears each row it read",
+  "actions/services/chat/turns.py::close_pre_hermes": "one-off at start (services/system/startup.py): walks repo.live_turns rows itself and closes each turn it read; no id comes from a caller",
+  "actions/services/cofounder/snapshots.py::move_snapshots": "one-off move at start (actions/cofounder_move.py): walks cards_repo.with_results rows itself and rewrites each row's own result",
+  "actions/services/library/sharing.py::share_servers": "machine-wide sync (startup + library sources): walks repo.own_servers rows itself; each row's source is set by its own id (sharing.py:share_servers)",
+  "actions/team.py::move_dm_titles": "one-off move at start (services/system/startup.py): walks chats_repo.titled_dms rows and drops each row's own copied title",
+  "outbox/delivery.py::deliver_due": "delivery loop: walks rows.due itself and claims/marks each row it read (outbox/delivery.py:deliver_due); no id comes from a request",
+  "saga.py::Saga.__exit__": "the saga's own journal row (self.id from journal.start in saga.py:Saga.__enter__), finished by the same object",
+  "saga.py::Saga.resume": "saga ids come from sagas_repo.open_sagas(db, name, workspace_id), scoped by the workspace (actions/workspaces.py:finish_setup)"
+}

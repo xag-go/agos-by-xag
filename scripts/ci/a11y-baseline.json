@@ -1,0 +1,81 @@
+{
+  "about": "scripts/ci/a11y_lint.py: jsx-a11y findings per web file; only shrinks",
+  "total": 42,
+  "files": {
+    "apps/web/src/features/chats/chat-header.tsx": {
+      "no-autofocus": 1
+    },
+    "apps/web/src/features/chats/composer.tsx": {
+      "control-has-associated-label": 2
+    },
+    "apps/web/src/features/chats/edit-message-dialog.tsx": {
+      "click-events-have-key-events": 1,
+      "no-autofocus": 1,
+      "no-noninteractive-element-interactions": 1
+    },
+    "apps/web/src/features/chats/message-owner.tsx": {
+      "anchor-is-valid": 1
+    },
+    "apps/web/src/features/chats/voice-note.tsx": {
+      "media-has-caption": 1
+    },
+    "apps/web/src/features/feedback/vote-buttons.tsx": {
+      "no-autofocus": 1
+    },
+    "apps/web/src/features/inbox/proposal-card.tsx": {
+      "no-autofocus": 1
+    },
+    "apps/web/src/features/kanban/card-doc-text.tsx": {
+      "no-autofocus": 1,
+      "no-static-element-interactions": 1
+    },
+    "apps/web/src/features/kanban/card-modal.tsx": {
+      "no-autofocus": 1
+    },
+    "apps/web/src/features/search/search-view.tsx": {
+      "no-autofocus": 1
+    },
+    "apps/web/src/features/settings/voice-card.tsx": {
+      "control-has-associated-label": 1
+    },
+    "apps/web/src/features/vision/goal-editor.tsx": {
+      "no-autofocus": 1,
+      "no-noninteractive-element-interactions": 1
+    },
+    "apps/web/src/features/vision/goal-new.tsx": {
+      "no-autofocus": 3,
+      "no-noninteractive-element-interactions": 3
+    },
+    "apps/web/src/features/vision/today.tsx": {
+      "no-autofocus": 1
+    },
+    "apps/web/src/features/workers/group-forms.tsx": {
+      "click-events-have-key-events": 1,
+      "no-autofocus": 1,
+      "no-noninteractive-element-interactions": 1
+    },
+    "apps/web/src/features/workers/readiness.tsx": {
+      "no-autofocus": 1
+    },
+    "apps/web/src/features/workspaces/folder-picker.tsx": {
+      "click-events-have-key-events": 2,
+      "no-noninteractive-element-interactions": 1,
+      "no-static-element-interactions": 1
+    },
+    "apps/web/src/features/workspaces/identity-settings.tsx": {
+      "no-autofocus": 1
+    },
+    "apps/web/src/features/workspaces/labels-settings.tsx": {
+      "control-has-associated-label": 1
+    },
+    "apps/web/src/shared/ui/confirm.tsx": {
+      "click-events-have-key-events": 1,
+      "no-autofocus": 2,
+      "no-noninteractive-element-interactions": 1
+    },
+    "apps/web/src/shared/ui/dialog.tsx": {
+      "click-events-have-key-events": 2,
+      "no-noninteractive-element-interactions": 2
+    }
+  }
+}

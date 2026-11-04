@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Troubleshooting guide
+    url: https://github.com/xag-go/agos-by-xag/blob/main/docs/troubleshooting.md
+    about: The common problems (install, web page, model, updates, backups, the cage) with their fixes.
+  - name: Ideas and questions
+    url: https://github.com/xag-go/agos-by-xag/discussions
+    about: Share an idea or ask a question in GitHub Discussions.
+  - name: Report a security problem
+    url: https://github.com/xag-go/agos-by-xag/security/advisories/new
+    about: Report vulnerabilities privately, never in a public issue.

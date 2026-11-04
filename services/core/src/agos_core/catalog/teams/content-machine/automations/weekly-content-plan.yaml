@@ -1,0 +1,14 @@
+name: Weekly content plan
+instructions:
+  "Plan this week's content with the content-calendar skill: one card per piece for its owner,
+  then post the calendar for the owner."
+schedule: 0 9 * * 1
+"on": false
+agent: content-lead
+model: null
+steps: []
+check_first: false
+variables: []
+policy: skip_if_active
+ticket: null
+hook: null

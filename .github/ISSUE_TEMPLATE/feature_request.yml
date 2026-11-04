@@ -1,0 +1,45 @@
+name: Feature request
+description: A concrete change you would like in AGOS.
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Open ideas and questions are best in Discussions. Use this form for a concrete change.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does it solve?
+      description: What you are trying to do, and what gets in the way today.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Other ways you thought of
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Linux
+        - macOS (Lima VM)
+        - Windows (WSL 2)
+        - Does not matter
+  - type: textarea
+    id: version
+    attributes:
+      label: AGOS version
+      description: Optional. Paste the output of `agos version`.
+      render: text
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots or sketches
+      description: Optional. Drag images here.

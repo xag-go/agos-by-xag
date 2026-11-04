@@ -1,0 +1,7 @@
+schema: agos/bundle-v1
+env_requires:
+  - name: HUBSPOT_ACCESS_TOKEN
+    description: Your CRM, so the team can read and update contacts
+    required: false
+    kind: tool_key
+    app: HubSpot

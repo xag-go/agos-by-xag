@@ -1,0 +1,152 @@
+[
+  {
+    "name": "bug",
+    "color": "d73a4a",
+    "description": "Something does not work as it should"
+  },
+  {
+    "name": "enhancement",
+    "color": "a2eeef",
+    "description": "A new feature or a better way to do something"
+  },
+  {
+    "name": "documentation",
+    "color": "0075ca",
+    "description": "The docs are wrong, missing or unclear"
+  },
+  {
+    "name": "question",
+    "color": "d876e3",
+    "description": "A question (Discussions are often the better place)"
+  },
+  {
+    "name": "dependencies",
+    "color": "0366d6",
+    "description": "A library, action or image update (Dependabot)"
+  },
+  {
+    "name": "needs-triage",
+    "color": "fbca04",
+    "description": "New: nobody has looked at it yet"
+  },
+  {
+    "name": "needs-info",
+    "color": "fef2c0",
+    "description": "Waiting for the reporter: version, steps, logs or diagnostics"
+  },
+  {
+    "name": "confirmed",
+    "color": "0e8a16",
+    "description": "Reproduced, or clearly real: ready to be worked on"
+  },
+  {
+    "name": "duplicate",
+    "color": "cfd3d7",
+    "description": "Already reported (the comment links the first issue)"
+  },
+  {
+    "name": "wontfix",
+    "color": "ffffff",
+    "description": "Will not be changed (the comment says why)"
+  },
+  {
+    "name": "good first issue",
+    "color": "7057ff",
+    "description": "Small and well described: a good first contribution"
+  },
+  {
+    "name": "help wanted",
+    "color": "008672",
+    "description": "The maintainers would welcome a pull request"
+  },
+  {
+    "name": "P0",
+    "color": "b60205",
+    "description": "Data loss, a security hole or AGOS down for everyone: now"
+  },
+  {
+    "name": "P1",
+    "color": "d93f0b",
+    "description": "A main flow broken for many installs: next release"
+  },
+  {
+    "name": "P2",
+    "color": "fbca04",
+    "description": "Broken with a workaround, or a small group affected"
+  },
+  {
+    "name": "P3",
+    "color": "c2e0c6",
+    "description": "Minor: cosmetic, rare or nice to have"
+  },
+  {
+    "name": "area/install",
+    "color": "1d76db",
+    "description": "The installer, the hardware check, the first start"
+  },
+  {
+    "name": "area/update",
+    "color": "1d76db",
+    "description": "agos update, release channels, rollback, signatures"
+  },
+  {
+    "name": "area/web",
+    "color": "1d76db",
+    "description": "The web app (pages, buttons, screens)"
+  },
+  {
+    "name": "area/core",
+    "color": "1d76db",
+    "description": "The core service (API, data, rules, background work)"
+  },
+  {
+    "name": "area/hermes",
+    "color": "1d76db",
+    "description": "Hermes, the agents' engine, as AGOS uses it"
+  },
+  {
+    "name": "area/sandbox",
+    "color": "1d76db",
+    "description": "The agents' sandboxes, tools and walls between workspaces"
+  },
+  {
+    "name": "area/channels",
+    "color": "1d76db",
+    "description": "Telegram and the other chat channels"
+  },
+  {
+    "name": "area/backup",
+    "color": "1d76db",
+    "description": "Backups and restore"
+  },
+  {
+    "name": "os/linux",
+    "color": "5319e7",
+    "description": "Seen on Linux"
+  },
+  {
+    "name": "os/macos",
+    "color": "5319e7",
+    "description": "Seen on macOS (the Lima VM)"
+  },
+  {
+    "name": "os/windows",
+    "color": "5319e7",
+    "description": "Seen on Windows (WSL 2)"
+  },
+  {
+    "name": "skip-changelog",
+    "color": "ededed",
+    "description": "PR: no CHANGELOG line needed (refactor, tests, CI)"
+  },
+  {
+    "name": "coverage-exempt",
+    "color": "ededed",
+    "description": "PR: the diff-coverage gate is waived (the PR says why)"
+  },
+  {
+    "name": "api-breaking",
+    "color": "ededed",
+    "description": "PR: changes the core API on purpose (web types regenerated)"
+  }
+]

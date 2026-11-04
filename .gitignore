@@ -1,0 +1,50 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# builds
+dist/
+.next/
+out/
+build/
+.turbo/
+*.tsbuildinfo
+next-env.d.ts
+
+# secrets — never commit
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# runtime data (lives on the machine, never in git)
+agos-data/
+agos-backups/
+
+# personal Claude Code settings
+.claude/settings.local.json
+
+# logs & OS
+*.log
+.DS_Store
+coverage/
+
+# local browser screenshots
+.playwright-mcp/
+
+# python
+.venv/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.import_linter_cache/
+# CI reports (services/core: pytest --cov, --junitxml, diff-cover)
+.coverage
+.coverage.*
+coverage.xml
+pytest.xml
+diff-cover.md
+# The installer's note of the last good build (deploy/install-server.sh, agos update)
+.agos-built

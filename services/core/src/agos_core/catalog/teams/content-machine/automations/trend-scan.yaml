@@ -1,0 +1,14 @@
+name: Trend scan
+instructions:
+  Find three trends or references worth a piece today, each with its link and why it fits;
+  hand them to @content-lead.
+schedule: 0 10 * * 1-5
+"on": false
+agent: researcher
+model: null
+steps: []
+check_first: false
+variables: []
+policy: skip_if_active
+ticket: null
+hook: null

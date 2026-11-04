@@ -1,0 +1,50 @@
+{
+  "about": "scripts/ci/licenses.py: licences an MIT project may ship with, and reviewed exceptions (package -> its exact licence + why it is fine). A strong-copyleft (GPL/AGPL), source-available (SSPL, BUSL, FSL) or unknown licence is never added to 'allowed'; it is an exception only with a reason.",
+  "allowed": [
+    "MIT",
+    "MIT-0",
+    "MIT-CMU",
+    "ISC",
+    "0BSD",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "Apache-2.0",
+    "BlueOak-1.0.0",
+    "PSF-2.0",
+    "Python-2.0",
+    "CC0-1.0",
+    "Unlicense",
+    "MPL-2.0",
+    "CC-BY-4.0"
+  ],
+  "own": ["agos-core", "@agos/web", "@agos/service-core", "agos"],
+  "exceptions": {
+    "node": {
+      "@img/sharp-libvips-linux-x64": {
+        "license": "LGPL-3.0-or-later",
+        "why": "libvips, the image library of sharp (next's image optimisation): an unmodified, dynamically loaded binary fetched from npm at install; AGOS does not copy or change it, which the LGPL allows for MIT code"
+      },
+      "@img/sharp-libvips-linuxmusl-x64": {
+        "license": "LGPL-3.0-or-later",
+        "why": "same library as @img/sharp-libvips-linux-x64, another platform build"
+      },
+      "@img/sharp-libvips-linux-arm64": {
+        "license": "LGPL-3.0-or-later",
+        "why": "same library as @img/sharp-libvips-linux-x64, another platform build"
+      },
+      "@img/sharp-libvips-darwin-arm64": {
+        "license": "LGPL-3.0-or-later",
+        "why": "same library as @img/sharp-libvips-linux-x64, another platform build"
+      },
+      "@img/sharp-libvips-darwin-x64": {
+        "license": "LGPL-3.0-or-later",
+        "why": "same library as @img/sharp-libvips-linux-x64, another platform build"
+      },
+      "sentry": {
+        "license": "FSL-1.1-Apache-2.0",
+        "why": "dev-only: pulled by lighthouse 13 (@sentry/node -> @sentry/bundler-plugins) for the Lighthouse score test; never in the web build or the core, never redistributed by AGOS. Source-available (becomes Apache-2.0 two years after each release), not open source: drop it if lighthouse can be run without it"
+      }
+    },
+    "python": {}
+  }
+}

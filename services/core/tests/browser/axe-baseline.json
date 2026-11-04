@@ -1,0 +1,41 @@
+{
+  "about": "tests/browser/test_a11y.py: axe-core findings (elements per rule) on the main screens; only shrinks",
+  "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"],
+  "screens": {
+    "new-workspace": {
+      "color-contrast": 1
+    },
+    "settings-general": {
+      "color-contrast": 2
+    },
+    "settings-models": {
+      "color-contrast": 1
+    },
+    "ws-automations": {
+      "color-contrast": 3
+    },
+    "ws-dashboard": {
+      "color-contrast": 2,
+      "link-in-text-block": 1
+    },
+    "ws-hierarchy": {
+      "color-contrast": 4
+    },
+    "ws-inbox": {
+      "aria-prohibited-attr": 2,
+      "color-contrast": 5
+    },
+    "ws-kanban": {
+      "color-contrast": 2
+    },
+    "ws-messages": {
+      "color-contrast": 1
+    },
+    "ws-settings": {
+      "color-contrast": 12
+    },
+    "ws-vision": {
+      "color-contrast": 4
+    }
+  }
+}

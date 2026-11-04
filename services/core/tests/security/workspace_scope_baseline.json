@@ -1,0 +1,7 @@
+{
+  "actions/read_vs_act.py::_card_row::SELECT task_links by child_id": "low",
+  "actions/read_vs_act.py::_card_row::SELECT tasks by id": "low",
+  "db/channel_outbox.py::close_card::UPDATE channel_outbox by id": "low",
+  "db/workspaces.py::get_workspace::SELECT workspaces by id": "low",
+  "db/workspaces.py::mark_deleted::UPDATE workspaces by id": "low"
+}

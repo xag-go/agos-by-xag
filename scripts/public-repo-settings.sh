@@ -14,8 +14,8 @@
 #   - secret scanning + push protection, Dependabot alerts and security-update PRs
 #     (version-update PRs come from .github/dependabot.yml), private vulnerability
 #     reporting;
-#   - branch protection on main: changes through a pull request (1 approval, stale
-#     approvals dismissed, conversations resolved), every CI and Security job below
+#   - branch protection on main: changes through a pull request (0 approvals: a solo
+#     maintainer can't approve his own PR; conversations resolved), every CI and Security job below
 #     green on the PR's newest commit (reported by GitHub Actions only), no force-push, no deletion;
 #     admins may bypass, so the owner's `publish-public.sh --push` still lands;
 #   - a tag ruleset on v*: only admins create, move or delete release tags.
@@ -113,7 +113,7 @@ call PUT /branches/main/protection "$(jq -n --argjson app "$GITHUB_ACTIONS_APP" 
   },
   enforce_admins: false,
   required_pull_request_reviews: {
-    required_approving_review_count: 1,
+    required_approving_review_count: 0,
     dismiss_stale_reviews: true,
     require_code_owner_reviews: false
   },

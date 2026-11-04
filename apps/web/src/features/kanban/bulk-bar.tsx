@@ -55,7 +55,7 @@ export function BulkBar({
       </Button>
       <Select
         aria-label="Assign to"
-        className="w-40"
+        className="w-40 max-md:h-11 max-md:min-w-0 max-md:flex-1"
         disabled={busy || none}
         value=""
         onChange={(e) => {
@@ -76,7 +76,7 @@ export function BulkBar({
         <>
           <Select
             aria-label="Add label"
-            className="w-36"
+            className="w-36 max-md:h-11 max-md:min-w-0 max-md:flex-1"
             disabled={busy || none}
             value=""
             onChange={(e) => {
@@ -92,7 +92,7 @@ export function BulkBar({
           </Select>
           <Select
             aria-label="Remove label"
-            className="w-40"
+            className="w-40 max-md:h-11 max-md:min-w-0 max-md:flex-1"
             disabled={busy || none}
             value=""
             onChange={(e) => {
@@ -110,7 +110,7 @@ export function BulkBar({
       )}
       <Select
         aria-label="Move"
-        className="w-36"
+        className="w-36 max-md:h-11 max-md:min-w-0 max-md:flex-1"
         disabled={busy || none}
         value=""
         onChange={(e) => {
@@ -133,7 +133,7 @@ export function BulkBar({
       <Input
         aria-label="What was done (for Mark done)"
         placeholder="What was done (Mark done)"
-        className="w-56"
+        className="w-56 max-md:h-11 max-md:w-full"
         value={summary}
         onChange={(e) => {
           setSummary(e.target.value);

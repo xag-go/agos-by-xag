@@ -12,6 +12,7 @@ import { cn } from "@/shared/ui/cn";
 import { founderInitial } from "./founder-box";
 import { KitChip, ReadinessChip } from "./kit-chips";
 import { ShiftChip } from "./shift-chip";
+import { phoneFit, rootXOf, useChartTouch, type Drag } from "./chart-touch";
 import { ScoreChip } from "./scorecard";
 import {
   BOX_H,
@@ -54,10 +55,11 @@ export function Chart({
 }) {
   const box = useRef<HTMLDivElement>(null);
   const [view, setView] = useState({ x: 0, y: 0, k: 1 });
-  const drag = useRef<{ x: number; y: number; vx: number; vy: number } | null>(
-    null,
-  );
+  const drag = useRef<Drag | null>(null);
   const moved = useRef(false);
+  // Fingers on the canvas (touch): one pans, two pinch-zoom the chart.
+  const touch = useChartTouch(drag, moved, view, setView);
+  const rootX = rootXOf(placed);
 
   const fit = useCallback(() => {
     const el = box.current;
@@ -65,12 +67,17 @@ export function Chart({
     const cw = el.clientWidth;
     const ch = el.clientHeight;
     const k = Math.min(1, (cw - PAD * 2) / width, (ch - PAD * 2) / height);
+    const phone = phoneFit(rootX, width, cw, k);
+    if (phone) {
+      setView(phone);
+      return;
+    }
     setView({
       k,
       x: (cw - width * k) / 2,
       y: Math.max(PAD, (ch - height * k) / 2),
     });
-  }, [width, height]);
+  }, [rootX, width, height]);
 
   useLayoutEffect(fit, [fit]);
   useEffect(() => {
@@ -122,31 +129,11 @@ export function Chart({
         "org-chart relative min-h-0 flex-1 touch-none overflow-hidden rounded-2xl border border-line bg-paper select-none",
         "cursor-grab active:cursor-grabbing",
       )}
-      onPointerDown={(event) => {
-        if (event.button !== 0) return;
-        drag.current = {
-          x: event.clientX,
-          y: event.clientY,
-          vx: view.x,
-          vy: view.y,
-        };
-        moved.current = false;
-        event.currentTarget.setPointerCapture(event.pointerId);
-      }}
-      onPointerMove={(event) => {
-        const d = drag.current;
-        if (!d) return;
-        const dx = event.clientX - d.x;
-        const dy = event.clientY - d.y;
-        if (Math.abs(dx) + Math.abs(dy) > 3) moved.current = true;
-        setView((v) => ({ ...v, x: d.vx + dx, y: d.vy + dy }));
-      }}
-      onPointerUp={() => {
-        drag.current = null;
-      }}
-      onPointerCancel={() => {
-        drag.current = null;
-      }}
+      onPointerDownCapture={touch.down}
+      onPointerDown={touch.mouseDown}
+      onPointerMove={touch.move}
+      onPointerUp={touch.up}
+      onPointerCancel={touch.cancel}
     >
       <div
         className="absolute top-0 left-0 origin-top-left"
@@ -335,7 +322,7 @@ export function Chart({
           onClick={() => {
             zoomBy(1.25);
           }}
-          className="grid size-9 place-items-center rounded-lg border border-line bg-panel text-lg leading-none text-ink hover:bg-sunken"
+          className="grid size-9 place-items-center rounded-lg border border-line bg-panel text-lg leading-none text-ink hover:bg-sunken max-md:size-11"
         >
           +
         </button>
@@ -348,7 +335,7 @@ export function Chart({
           onClick={() => {
             zoomBy(0.8);
           }}
-          className="grid size-9 place-items-center rounded-lg border border-line bg-panel text-lg leading-none text-ink hover:bg-sunken"
+          className="grid size-9 place-items-center rounded-lg border border-line bg-panel text-lg leading-none text-ink hover:bg-sunken max-md:size-11"
         >
           −
         </button>
@@ -358,7 +345,7 @@ export function Chart({
             e.stopPropagation();
           }}
           onClick={fit}
-          className="grid h-9 place-items-center rounded-lg border border-line bg-panel px-2 text-xs font-semibold text-ink hover:bg-sunken"
+          className="grid h-9 place-items-center rounded-lg border border-line bg-panel px-2 text-xs font-semibold text-ink hover:bg-sunken max-md:h-11 max-md:min-w-11"
         >
           Fit
         </button>

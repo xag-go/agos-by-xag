@@ -120,7 +120,7 @@ export function CardModal({
         ]}
       >
         <div className="flex h-[min(92dvh,58rem)] flex-col">
-          <header className="flex items-start gap-3 border-b border-line px-6 py-4">
+          <header className="flex items-start gap-3 border-b border-line px-6 py-4 max-md:px-4">
             <div className="min-w-0 flex-1">
               <p className="flex flex-wrap items-center gap-2 text-xs text-ink-3">
                 <span className="font-mono">{card.id}</span>
@@ -259,8 +259,8 @@ export function CardModal({
             </div>
 
             {/* Right: who, where it stands, what to do */}
-            <aside className="flex max-h-[45dvh] min-h-0 flex-col border-t border-line bg-sunken/40 md:max-h-none md:border-t-0 md:border-l">
-              <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-5 py-5">
+            <aside className="flex max-h-[40dvh] min-h-0 flex-col border-t border-line bg-sunken/40 md:max-h-none md:border-t-0 md:border-l">
+              <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-5 py-5 max-md:px-4 max-md:py-4">
                 <CardServices
                   workspaceId={workspaceId}
                   services={services}
@@ -389,7 +389,7 @@ export function CardModal({
                 <CardFacts workspaceId={workspaceId} card={card} />
               </div>
               {((card.actions ?? []).length > 0 || error) && (
-                <div className="flex flex-col gap-2 border-t border-line bg-panel px-5 py-4">
+                <div className="flex flex-col gap-2 border-t border-line bg-panel px-5 py-4 max-md:px-4 max-md:pb-[max(1rem,env(safe-area-inset-bottom))]">
                   {askDone ? (
                     <form
                       className="flex flex-col gap-2"
@@ -436,7 +436,7 @@ export function CardModal({
                     </form>
                   ) : (
                     <>
-                      <div className="grid grid-cols-2 gap-2 [&>*:only-child]:col-span-2">
+                      <div className="grid grid-cols-2 gap-2 max-md:[&>button]:!h-11 [&>*:only-child]:col-span-2">
                         {can("unblock") && !asks && (
                           <Button
                             type="button"

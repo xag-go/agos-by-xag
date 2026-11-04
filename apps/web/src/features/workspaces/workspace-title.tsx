@@ -29,7 +29,7 @@ export function WorkspaceTitle({
     ? "Settings"
     : (section?.label ?? name);
   return (
-    <header className="workspace-heading flex min-w-0 items-end justify-between gap-4">
+    <header className="workspace-heading flex min-w-0 items-end justify-between gap-4 max-md:flex-col max-md:items-stretch max-md:gap-3">
       <div className="min-w-0">
         <p className="text-xs font-medium tracking-wider text-ink-3 uppercase">
           {name}
@@ -41,10 +41,12 @@ export function WorkspaceTitle({
           <p className="mt-1 text-sm text-ink-2">{description}</p>
         )}
       </div>
-      <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+      {/* Small screens: the page's buttons take their own row under the
+          title and scroll sideways as chips; md+ keeps them right of it. */}
+      <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 max-md:min-w-0 max-md:flex-nowrap">
         <div
           id={PAGE_ACTIONS_SLOT}
-          className="flex flex-wrap items-center justify-end gap-2"
+          className="flex flex-wrap items-center justify-end gap-2 max-md:min-w-0 max-md:flex-1 max-md:flex-nowrap max-md:justify-start max-md:overflow-x-auto max-md:[scrollbar-width:none] max-md:[&>*]:shrink-0 max-md:[&_.agos-button]:h-11"
         />
         <CommandPalette workspaceId={workspaceId} />
       </div>

@@ -47,7 +47,7 @@ export function RouteDialog({
       }}
       className={cn(
         PANEL,
-        "m-auto max-h-[92dvh] w-[calc(100%-2rem)] overflow-hidden p-0 text-ink shadow-2xl",
+        "m-auto max-h-[92dvh] w-[calc(100%-2rem)] overflow-hidden p-0 text-ink shadow-2xl max-sm:max-h-[calc(100dvh-2.5rem)] max-sm:w-[calc(100%-1.25rem)] max-sm:overflow-y-auto",
         size === "xl" ? "max-w-6xl" : size === "lg" ? "max-w-4xl" : "max-w-xl",
       )}
     >
@@ -86,7 +86,7 @@ export function Modal({
       }}
       className={cn(
         PANEL,
-        "m-auto max-h-[92dvh] w-[calc(100%-2rem)] overflow-y-auto p-0 text-ink shadow-2xl",
+        "m-auto max-h-[92dvh] w-[calc(100%-2rem)] overflow-y-auto p-0 text-ink shadow-2xl max-sm:max-h-[calc(100dvh-2.5rem)] max-sm:w-[calc(100%-1.25rem)]",
         size === "lg" ? "max-w-3xl" : "max-w-xl",
       )}
     >

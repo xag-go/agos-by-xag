@@ -43,7 +43,7 @@ export function AgentReply({
         >
           <Markdown
             text={reply.body}
-            className="text-body leading-relaxed text-ink"
+            className="text-body leading-relaxed text-ink max-md:[overflow-wrap:anywhere]"
           />
         </div>
       )}
@@ -80,7 +80,7 @@ export function AgentReply({
           />
         )}
         {reply && onDelete && (
-          <span className="opacity-0 transition-opacity group-hover/reply:opacity-100 focus-within:opacity-100">
+          <span className="opacity-0 transition-opacity group-hover/reply:opacity-100 pointer-coarse:opacity-100 focus-within:opacity-100">
             <SmallAction label="Delete" onClick={onDelete} />
           </span>
         )}
@@ -103,7 +103,7 @@ function CopyButton({ text }: { text: string }) {
           }, 1500);
         });
       }}
-      className="text-xs text-ink-3 opacity-0 transition-opacity group-hover/reply:opacity-100 hover:text-ink focus-visible:opacity-100"
+      className="text-xs text-ink-3 opacity-0 transition-opacity group-hover/reply:opacity-100 pointer-coarse:opacity-100 hover:text-ink focus-visible:opacity-100"
     >
       {copied ? "Copied" : "Copy"}
     </button>

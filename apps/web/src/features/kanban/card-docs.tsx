@@ -37,7 +37,7 @@ export function DocumentsTab({
   // the open one (a member saved while the card was open).
   const stamp = docs.map((d) => `${d.key}@${String(d.revision)}`).join(",");
   return (
-    <div className="flex h-full min-h-[24rem] flex-col gap-3">
+    <div className="flex h-full min-h-96 flex-col gap-3">
       <div className="flex flex-wrap items-center gap-1.5">
         {docs.map((d) => (
           <button

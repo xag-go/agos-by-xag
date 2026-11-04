@@ -246,7 +246,7 @@ export function Office3D({
       </header>
 
       <div className="grid min-h-0 grid-cols-1 lg:grid-cols-[minmax(0,1fr)_17rem]">
-        <div className="relative h-[52vh] min-h-[320px] lg:h-[min(74vh,760px)] lg:min-h-[420px]">
+        <div className="relative h-[60dvh] min-h-[360px] lg:h-[min(74vh,760px)] lg:min-h-[420px]">
           {gl === false ? (
             <NoWebGL />
           ) : gl === null ? (

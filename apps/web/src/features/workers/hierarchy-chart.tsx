@@ -20,6 +20,7 @@ import {
   MAX_ZOOM,
   MIN_ZOOM,
   PAD,
+  READABLE_ZOOM,
   STATUS_WORDS,
   keyOf,
   type Node,
@@ -57,7 +58,13 @@ export function Chart({
   const drag = useRef<{ x: number; y: number; vx: number; vy: number } | null>(
     null,
   );
+  // Fingers on the canvas (touch): two at once pinch-zoom the chart.
+  const touches = useRef(new Map<number, { x: number; y: number }>());
+  const pinch = useRef<{ d: number; cx: number; cy: number } | null>(null);
   const moved = useRef(false);
+
+  // The root box's centre (chart px): small screens centre the view on it.
+  const rootCx = (placed[0]?.x ?? (width - BOX_W) / 2) + BOX_W / 2;
 
   const fit = useCallback(() => {
     const el = box.current;
@@ -65,12 +72,23 @@ export function Chart({
     const cw = el.clientWidth;
     const ch = el.clientHeight;
     const k = Math.min(1, (cw - PAD * 2) / width, (ch - PAD * 2) / height);
+    // A phone-sized pane: fitting the whole tree squeezes boxes into
+    // unreadable specks. Clamp to a readable scale, centred on the root;
+    // the rest is a pan/pinch away.
+    if (cw < 768 && k < READABLE_ZOOM) {
+      setView({
+        k: READABLE_ZOOM,
+        x: cw / 2 - rootCx * READABLE_ZOOM,
+        y: PAD / 2,
+      });
+      return;
+    }
     setView({
       k,
       x: (cw - width * k) / 2,
       y: Math.max(PAD, (ch - height * k) / 2),
     });
-  }, [width, height]);
+  }, [width, height, rootCx]);
 
   useLayoutEffect(fit, [fit]);
   useEffect(() => {
@@ -122,8 +140,30 @@ export function Chart({
         "org-chart relative min-h-0 flex-1 touch-none overflow-hidden rounded-2xl border border-line bg-paper select-none",
         "cursor-grab active:cursor-grabbing",
       )}
-      onPointerDown={(event) => {
-        if (event.button !== 0) return;
+      onPointerDownCapture={(event) => {
+        // Seen before a box's stopPropagation: on touch, a pan or pinch must
+        // start even when the finger lands on a box (a tap still opens it:
+        // the box's click only fires when nothing moved).
+        if (event.pointerType !== "touch") return;
+        touches.current.set(event.pointerId, {
+          x: event.clientX,
+          y: event.clientY,
+        });
+        if (touches.current.size === 2) {
+          // Second finger: pan becomes a pinch-zoom.
+          const [a, b] = [...touches.current.values()];
+          if (a && b) {
+            drag.current = null;
+            moved.current = true;
+            const r = event.currentTarget.getBoundingClientRect();
+            pinch.current = {
+              d: Math.hypot(a.x - b.x, a.y - b.y),
+              cx: (a.x + b.x) / 2 - r.left,
+              cy: (a.y + b.y) / 2 - r.top,
+            };
+          }
+          return;
+        }
         drag.current = {
           x: event.clientX,
           y: event.clientY,
@@ -131,9 +171,51 @@ export function Chart({
           vy: view.y,
         };
         moved.current = false;
+      }}
+      onPointerDown={(event) => {
+        if (event.pointerType === "touch") return;
+        if (event.button !== 0) return;
         event.currentTarget.setPointerCapture(event.pointerId);
+        drag.current = {
+          x: event.clientX,
+          y: event.clientY,
+          vx: view.x,
+          vy: view.y,
+        };
+        moved.current = false;
       }}
       onPointerMove={(event) => {
+        const finger = touches.current.get(event.pointerId);
+        if (finger) {
+          finger.x = event.clientX;
+          finger.y = event.clientY;
+        }
+        const pz = pinch.current;
+        if (pz && touches.current.size === 2) {
+          const [a, b] = [...touches.current.values()];
+          if (!a || !b) return;
+          const r = event.currentTarget.getBoundingClientRect();
+          const d = Math.hypot(a.x - b.x, a.y - b.y);
+          const cx = (a.x + b.x) / 2 - r.left;
+          const cy = (a.y + b.y) / 2 - r.top;
+          // Captured now: the updater runs batched, after pz is mutated.
+          const grow = d > 0 && pz.d > 0 ? d / pz.d : 1;
+          const px = pz.cx;
+          const py = pz.cy;
+          setView((v) => {
+            const k = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, v.k * grow));
+            const ratio = k / v.k;
+            return {
+              k,
+              x: cx - (px - v.x) * ratio,
+              y: cy - (py - v.y) * ratio,
+            };
+          });
+          pz.d = d;
+          pz.cx = cx;
+          pz.cy = cy;
+          return;
+        }
         const d = drag.current;
         if (!d) return;
         const dx = event.clientX - d.x;
@@ -141,10 +223,19 @@ export function Chart({
         if (Math.abs(dx) + Math.abs(dy) > 3) moved.current = true;
         setView((v) => ({ ...v, x: d.vx + dx, y: d.vy + dy }));
       }}
-      onPointerUp={() => {
+      onPointerUp={(event) => {
+        touches.current.delete(event.pointerId);
+        pinch.current = null;
         drag.current = null;
+        // One finger stays down: go on panning from where it is.
+        if (touches.current.size === 1) {
+          const [p] = [...touches.current.values()];
+          if (p) drag.current = { x: p.x, y: p.y, vx: view.x, vy: view.y };
+        }
       }}
-      onPointerCancel={() => {
+      onPointerCancel={(event) => {
+        touches.current.delete(event.pointerId);
+        pinch.current = null;
         drag.current = null;
       }}
     >
@@ -335,7 +426,7 @@ export function Chart({
           onClick={() => {
             zoomBy(1.25);
           }}
-          className="grid size-9 place-items-center rounded-lg border border-line bg-panel text-lg leading-none text-ink hover:bg-sunken"
+          className="grid size-9 place-items-center rounded-lg border border-line bg-panel text-lg leading-none text-ink hover:bg-sunken max-md:size-11"
         >
           +
         </button>
@@ -348,7 +439,7 @@ export function Chart({
           onClick={() => {
             zoomBy(0.8);
           }}
-          className="grid size-9 place-items-center rounded-lg border border-line bg-panel text-lg leading-none text-ink hover:bg-sunken"
+          className="grid size-9 place-items-center rounded-lg border border-line bg-panel text-lg leading-none text-ink hover:bg-sunken max-md:size-11"
         >
           −
         </button>
@@ -358,7 +449,7 @@ export function Chart({
             e.stopPropagation();
           }}
           onClick={fit}
-          className="grid h-9 place-items-center rounded-lg border border-line bg-panel px-2 text-xs font-semibold text-ink hover:bg-sunken"
+          className="grid h-9 place-items-center rounded-lg border border-line bg-panel px-2 text-xs font-semibold text-ink hover:bg-sunken max-md:h-11 max-md:min-w-11"
         >
           Fit
         </button>

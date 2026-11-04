@@ -264,10 +264,10 @@ class FakeRunner:
             # Hermes's catalog install: the plugin's code in the profile's plugins/.
             if self.plugins_down:
                 raise EngineError("could not reach the plugin catalog")
+            self.plugin_installs.append((argv[2], argv[5], *argv[6:]))  # first: files => counted
             folder = self.home_of(argv[2]) / "plugins" / argv[5]
             folder.mkdir(parents=True, exist_ok=True)
             (folder / "plugin.yaml").write_text(f"name: {argv[5]}\n")
-            self.plugin_installs.append((argv[2], argv[5], *argv[6:]))
             return ""
         if argv[1] == "-p" and argv[3:5] == ["curator", "archive"]:
             # Hermes's curator moves a local skill to skills/.archive/ (skill_usage.archive_skill).

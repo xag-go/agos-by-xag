@@ -233,6 +233,8 @@ uv run python scripts/migration_rehearsal.py --git all --side-branches   # also 
 `[tool.uv] exclude-newer`: a Python update newer than that date fails `uv sync --frozen`
 until the PR moves the date (and runs `uv lock`). npm updates wait 3 days
 (`cooldown`), like `minimumReleaseAge` in `pnpm-workspace.yaml`.
+At most two PRs per ecosystem are open at once (one for Actions and the sandbox
+image); minor and patch updates come grouped, a major one alone.
 
 ## Branch protection
 

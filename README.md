@@ -3,7 +3,7 @@
 ![version](<https://img.shields.io/badge/version-v0.1.0_(beta)-blue>)
 ![license](https://img.shields.io/badge/license-MIT-green)
 
-**Your own AI company, on your own machine.**
+**Where one-person companies get built, grow and turn dreams into reality. You and agents.**
 
 AGOS gives you workspaces, one per project. Each workspace has a Co-Founder
 agent you talk to and a team of agents that do the work. You see and control

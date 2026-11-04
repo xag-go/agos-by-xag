@@ -86,10 +86,9 @@ def test_a_dry_run_calls_nothing(tmp_path: Path) -> None:
     assert "nothing changed" in done.stdout
     for path in ("/vulnerability-alerts", "/private-vulnerability-reporting"):
         assert f"PUT repos/someone/agos-public{path}" in done.stdout
-    # Alerts only: the export gets no Dependabot PRs (they run in the development repo).
-    assert "DELETE repos/someone/agos-public/automated-security-fixes" in done.stdout
-    assert '"dependabot_security_updates": {\n' in done.stdout
-    assert '"status": "disabled"' in done.stdout
+    # Development happens in the public repo: Dependabot security-update PRs are on.
+    assert "PUT repos/someone/agos-public/automated-security-fixes" in done.stdout
+    assert '"dependabot_security_updates": {\n          "status": "enabled"' in done.stdout
     assert "POST repos/someone/agos-public/rulesets" in done.stdout
     assert '"has_wiki": false' in done.stdout and '"has_issues": true' in done.stdout
     assert '"has_discussions": false' in done.stdout
@@ -101,7 +100,7 @@ def test_apply_makes_every_call(tmp_path: Path) -> None:
     for call in (
         "-X PATCH repos/someone/agos-public",
         "-X PUT repos/someone/agos-public/vulnerability-alerts",
-        "-X DELETE repos/someone/agos-public/automated-security-fixes",
+        "-X PUT repos/someone/agos-public/automated-security-fixes",
         "-X PUT repos/someone/agos-public/private-vulnerability-reporting",
         "-X PUT repos/someone/agos-public/branches/main/protection",
         "-X POST repos/someone/agos-public/rulesets",

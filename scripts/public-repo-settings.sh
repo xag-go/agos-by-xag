@@ -11,9 +11,9 @@
 #
 # What it sets (docs/releases.md, "The public repository's settings"):
 #   - issues on, wiki off, discussions off unless --discussions, merged branches deleted;
-#   - secret scanning + push protection, Dependabot alerts (no Dependabot PRs: the
-#     public repository is an export; updates are tested and merged in the
-#     development repository), private vulnerability reporting;
+#   - secret scanning + push protection, Dependabot alerts and security-update PRs
+#     (version-update PRs come from .github/dependabot.yml), private vulnerability
+#     reporting;
 #   - branch protection on main: changes through a pull request (1 approval, stale
 #     approvals dismissed, conversations resolved), every CI and Security job below
 #     green on the PR's newest commit (reported by GitHub Actions only), no force-push, no deletion;
@@ -98,11 +98,11 @@ call PATCH "" "$(jq -n --argjson discussions "$DISCUSSIONS" '{
   security_and_analysis: {
     secret_scanning: {status: "enabled"},
     secret_scanning_push_protection: {status: "enabled"},
-    dependabot_security_updates: {status: "disabled"}
+    dependabot_security_updates: {status: "enabled"}
   }
 }')"
 call PUT /vulnerability-alerts             # Dependabot alerts
-call DELETE /automated-security-fixes      # no Dependabot security-update PRs (alerts only)
+call PUT /automated-security-fixes         # Dependabot security-update PRs
 call PUT /private-vulnerability-reporting  # SECURITY.md's "report privately" button
 
 # 2. main: pull requests only, CI green, no force-push, no deletion.

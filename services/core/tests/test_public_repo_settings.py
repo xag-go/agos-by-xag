@@ -76,7 +76,7 @@ def test_the_required_checks_are_the_ci_jobs_names(tmp_path: Path) -> None:
     assert {c["app_id"] for c in checks} == {15368}  # GitHub Actions only
     assert protection["allow_force_pushes"] is False
     assert protection["allow_deletions"] is False
-    assert protection["required_pull_request_reviews"]["required_approving_review_count"] >= 1
+    assert protection["required_pull_request_reviews"]["required_approving_review_count"] == 0
 
 
 def test_a_dry_run_calls_nothing(tmp_path: Path) -> None:

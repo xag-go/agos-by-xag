@@ -90,7 +90,7 @@ function AskDialog({
       onClick={(event) => {
         if (event.target === ref.current) finish(null);
       }}
-      className={`${PANEL} m-auto w-[calc(100%-2rem)] max-w-md p-0 text-ink shadow-2xl`}
+      className={`${PANEL} m-auto max-h-[calc(100dvh-2.5rem)] w-[calc(100%-2rem)] max-w-md overflow-y-auto p-0 text-ink shadow-2xl`}
     >
       <form
         method="dialog"

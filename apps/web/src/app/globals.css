@@ -1214,3 +1214,60 @@ body {
     --hold-soft: #3a2a0c;
   }
 }
+
+/* ---- Small screens (lane D): the overlay drawer, touch targets and the
+ * Office's controls. Additive only — nothing here applies at >= 1024px. ---- */
+@media (max-width: 1023px) {
+  /* The mobile drawer reuses .agos-sidebar (same graphite, same tokens) but
+   * floats over the page instead of sitting beside it. */
+  .agos-drawer {
+    width: fit-content;
+    max-width: calc(100vw - 48px);
+    animation: agos-drawer-in 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .agos-drawer-backdrop {
+    animation: agos-drawer-fade 0.2s ease-out;
+  }
+  @keyframes agos-drawer-in {
+    from {
+      opacity: 0;
+      transform: translateX(-16px);
+    }
+  }
+  @keyframes agos-drawer-fade {
+    from {
+      opacity: 0;
+    }
+  }
+  /* Thumb-sized targets inside the drawer: section rows grow to 44px, the
+   * 40px rail tiles get an invisible 46px hit area, and the foot's buttons
+   * grow. Hover tooltips mean nothing under a finger. */
+  .agos-drawer .agos-panel nav a {
+    min-height: 44px;
+  }
+  .agos-drawer .agos-rail li a::before {
+    content: "";
+    position: absolute;
+    inset: -3px;
+  }
+  .agos-drawer .agos-foot a,
+  .agos-drawer .agos-foot button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .agos-drawer [role="tooltip"] {
+    display: none;
+  }
+
+  /* Office: the scene's buttons are 30px for a mouse; a finger needs 44px. */
+  .office3d-icon {
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+  }
+  .office3d-btn {
+    min-height: 44px;
+    padding: 0 14px;
+  }
+}

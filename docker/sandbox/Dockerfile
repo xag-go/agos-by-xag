@@ -14,7 +14,7 @@
 # onto /root (its tool layout lives there); that folder is owned by `agent`.
 # Pinned by digest (the multi-arch index; docs/releases.md "Base images"): a rebuild
 # gets the same base until this line is changed on purpose (Dependabot proposes it).
-FROM debian:bookworm-slim@sha256:99c0b25c46d0214d5a2091092e7908907dcaecd6a962cde0ac700acee222b6f3
+FROM debian:bookworm-slim@sha256:734a72b3d6142a71993b4bc580ca01d8ca687f77a2c422d96a961d3376b179bc
 
 ARG NODE_MAJOR=22
 ARG UV_VERSION=0.8.22

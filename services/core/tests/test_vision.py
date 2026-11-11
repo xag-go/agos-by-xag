@@ -694,6 +694,30 @@ def test_the_first_vision_makes_the_three_jobs_in_the_cofounders_cron(space: Any
     assert r.status_code == 404
 
 
+def test_an_older_agos_prompt_is_refreshed_at_start_with_time_and_off_kept(space: Any) -> None:
+    from agos_core.engine.cron import JobSpec
+
+    client, core, cron, ws = space
+    client.put(f"/workspaces/{ws}/vision", json={"title": "Grow"})
+    client.put(
+        f"/workspaces/{ws}/vision/rhythm/weekly", json={"on": True, "time": "16:00", "day": 4}
+    )
+    client.put(f"/workspaces/{ws}/vision/rhythm/recap", json={"on": False, "time": "21:00"})
+    for job in _root_jobs(core, cron, ws).values():
+        job["spec"] = JobSpec(**{**job["spec"].as_dict(), "prompt": "an older AGOS's text"})
+    assert rhythm.refresh_all(core) == 3
+    jobs = _root_jobs(core, cron, ws)
+    assert jobs["AGOS weekly review"]["spec"].prompt == rhythm.PROMPTS["weekly"]
+    assert jobs["AGOS weekly review"]["spec"].schedule == "0 16 * * 4"
+    assert jobs["AGOS weekly review"]["enabled"] is True
+    recap = jobs["AGOS recap"]
+    assert (
+        recap["spec"].prompt == rhythm.PROMPTS["recap"] and recap["spec"].schedule == "0 21 * * *"
+    )
+    assert recap["enabled"] is False and recap["paused_reason"] == rhythm.OFF_REASON
+    assert rhythm.refresh_all(core) == 0  # already current: nothing edited
+
+
 def test_the_jobs_prompts() -> None:
     daily, recap, weekly = (rhythm.PROMPTS[w] for w in ("daily", "recap", "weekly"))
     assert "agos_goals with action status" in daily and "last recap" in daily
@@ -702,6 +726,7 @@ def test_the_jobs_prompts() -> None:
     assert "Nothing to do." in daily and "stay cheap" in daily
     assert "Never create today's cards yourself" in daily
     assert "Done, Left, Moves to tomorrow" in recap and "kind recap" in recap
+    assert "Team: one line per member" in weekly and "no card done this" in weekly
     assert "stay cheap" in recap and "Nothing to do." in recap
     assert "kind kr_update" in weekly and "agos_ask_owner" in weekly and "kind weekly" in weekly
     assert "suggest a change" in weekly and "stay cheap" in weekly

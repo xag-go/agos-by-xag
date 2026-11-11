@@ -98,10 +98,10 @@
       "length": 81
     },
     "services/core/src/agos_core/actions/services/automation/owner.py::save": {
-      "C901": 16,
-      "PLR0912": 16,
-      "PLR0915": 60,
-      "length": 143
+      "C901": 15,
+      "PLR0912": 15,
+      "PLR0915": 58,
+      "length": 141
     },
     "services/core/src/agos_core/actions/services/automation/sync_loop.py::keep_in_step": {
       "C901": 15,
@@ -145,20 +145,16 @@
     },
     "services/core/src/agos_core/actions/services/cofounder/agent_tools.py::run_actions": {
       "C901": 13,
-      "PLR0912": 13,
-      "length": 85
+      "PLR0912": 13
     },
     "services/core/src/agos_core/actions/services/cofounder/dispatch.py::_do": {
-      "C901": 35,
-      "PLR0912": 34,
-      "PLR0915": 70,
-      "length": 140
+      "C901": 20,
+      "PLR0912": 19
     },
     "services/core/src/agos_core/actions/services/cofounder/dispatch.py::_undo": {
       "C901": 23,
       "PLR0912": 25,
-      "PLR0915": 55,
-      "length": 81
+      "PLR0915": 55
     },
     "services/core/src/agos_core/actions/services/cofounder/skill_kinds.py::save_library_item": {
       "C901": 14,
@@ -1006,9 +1002,6 @@
       "complexity": 14,
       "lines": 121
     },
-    "apps/web/src/features/setup/actions.ts::(anonymous)": {
-      "complexity": 17
-    },
     "apps/web/src/features/setup/actions.ts::parseVariables": {
       "complexity": 12
     },
@@ -1017,8 +1010,8 @@
       "lines": 438
     },
     "apps/web/src/features/setup/automation-modal.tsx::AutomationModal": {
-      "complexity": 26,
-      "lines": 210
+      "complexity": 24,
+      "lines": 184
     },
     "apps/web/src/features/setup/automation-runs.tsx::RunCard": {
       "complexity": 11

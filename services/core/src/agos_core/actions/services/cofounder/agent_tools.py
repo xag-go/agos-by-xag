@@ -15,6 +15,7 @@ import time
 from datetime import UTC, datetime
 from typing import Any
 
+from agos_core.actions.errors import ActionError
 from agos_core.actions.services.channel import gateway_mirror, gateway_platform, hermes_addresses
 from agos_core.actions.services.chat import chat_writes
 from agos_core.context import Core
@@ -118,6 +119,44 @@ def _run_turn(core: Core, workspace_id: str, address: str) -> tuple[int, int] | 
     return chat_id, turn_id
 
 
+def _half_read(a: dict[str, Any], bad: list[str]) -> dict[str, Any]:
+    """Never a "done" for a change AGOS only half read: nothing of it is done."""
+    from agos_core.engine import cofounder_actions as action_rules
+
+    do = str(a.get("do") or "")
+    known = action_rules.KNOWN_FIELDS.get(do)
+    return {
+        "title": do or "action",
+        "status": "failed",
+        "error": f"AGOS doesn't know the field(s) {', '.join(bad)}: nothing was done. "
+        "Use the fields your instructions list"
+        + (f" ({', '.join(sorted(known))})." if known else "."),
+    }
+
+
+def _broken_automations(
+    core: Core, workspace_id: str, actions: list[Any], refused: list[dict[str, Any]]
+) -> list[Any]:
+    """An automation that would be refused on save never becomes a card (not even one
+    waiting for the owner): the Co-Founder gets every problem at once, to fix and resend
+    (added to `refused`)."""
+    from agos_core.actions.services.cofounder.automation_kinds import precheck
+
+    kept: list[Any] = []
+    for a in actions:
+        if a.do in ("create_automation", "update_automation"):
+            try:
+                bad = precheck(core, workspace_id, a.do, dict(a.fields))
+            except ActionError as error:
+                bad = error.message
+            if bad:
+                title = f"{a.do}: {a.get('name') or a.get('automation')}"
+                refused.append({"title": title, "status": "failed", "error": bad})
+                continue
+        kept.append(a)
+    return kept
+
+
 def run_actions(
     core: Core, workspace_id: str, address: str, raw: list[dict[str, Any]]
 ) -> dict[str, Any]:
@@ -138,25 +177,13 @@ def run_actions(
             continue
         bad = action_rules.unreadable(a)
         if bad:
-            # Never a "done" for a change AGOS only half read: nothing of it is done.
-            refused.append(
-                {
-                    "title": str(a.get("do") or "action"),
-                    "status": "failed",
-                    "error": f"AGOS doesn't know the field(s) {', '.join(bad)}: nothing "
-                    "was done. Use the fields your instructions list"
-                    + (
-                        f" ({', '.join(sorted(known))})."
-                        if (known := action_rules.KNOWN_FIELDS.get(str(a.get("do") or "")))
-                        else "."
-                    ),
-                }
-            )
+            refused.append(_half_read(a, bad))
         else:
             readable.append(a)
     items = [action_rules._clean(a) for a in readable]
     actions = [a for a in items if a is not None]
     skipped = len(items) - len(actions)
+    actions = _broken_automations(core, workspace_id, actions, refused)
     if not actions:
         if refused:
             return {"results": refused}

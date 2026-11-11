@@ -1143,6 +1143,36 @@
         "title": "AutomationBody",
         "type": "object"
       },
+      "AutomationCheck": {
+        "description": "What saving would say: every problem (they block the save), the warnings (they\ndon't), and in plain words how it will run (empty while there are problems).",
+        "properties": {
+          "preview": {
+            "title": "Preview",
+            "type": "string"
+          },
+          "problems": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Problems",
+            "type": "array"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Warnings",
+            "type": "array"
+          }
+        },
+        "required": [
+          "problems",
+          "warnings",
+          "preview"
+        ],
+        "title": "AutomationCheck",
+        "type": "object"
+      },
       "AutomationEvent": {
         "description": "One webhook delivery and what AGOS did with it.",
         "properties": {
@@ -27461,6 +27491,91 @@
           }
         },
         "summary": "Create",
+        "tags": [
+          "automations"
+        ]
+      }
+    },
+    "/workspaces/{workspace_id}/automations/check": {
+      "post": {
+        "description": "The owner's Save button: a dry run of the save, nothing is written.",
+        "operationId": "check_workspaces__workspace_id__automations_check_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "automation_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Automation Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-agos-internal",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Agos-Internal"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AutomationBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AutomationCheck"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Check",
         "tags": [
           "automations"
         ]

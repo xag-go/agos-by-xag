@@ -407,7 +407,7 @@ def check_who(
 ) -> tuple[str | None, list[dict[str, Any]]]:
     """The agent / the team plan, checked against this workspace's team."""
     from agos_core.actions.library import check_agent
-    from agos_core.engine import team_steps
+    from agos_core.engine import automation_check, team_steps
 
     if steps:
         from agos_core.actions import team
@@ -418,18 +418,22 @@ def check_who(
             plan = team_steps.parse_plan({"title": "automation", "steps": raw}, members)
         except team_steps.PlanError as error:
             raise ActionError(f"Team steps: {error}.") from error
-        return None, [
-            {
-                "key": s.key,
-                "title": s.title,
-                "description": s.description,
-                "kind": s.kind,
-                "agent": s.agent,
-                "waits_on": list(s.waits_on),
-                "reviews": s.reviews,
-            }
-            for s in plan.steps
-        ]
+        # Saved in an order where every step comes after the ones it waits on: the run
+        # puts the steps on the board in that order and only waits on earlier ones.
+        return None, automation_check.ordered(
+            [
+                {
+                    "key": s.key,
+                    "title": s.title,
+                    "description": s.description,
+                    "kind": s.kind,
+                    "agent": s.agent,
+                    "waits_on": list(s.waits_on),
+                    "reviews": s.reviews,
+                }
+                for s in plan.steps
+            ]
+        )
     if agent and agent.lower() not in (
         "cofounder",
         "manager",

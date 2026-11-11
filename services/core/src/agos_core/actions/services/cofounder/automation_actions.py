@@ -22,6 +22,7 @@ from agos_core.context import Core
 
 __all__ = [
     "do_catch_up",
+    "do_check_automation",
     "do_delete_rule",
     "do_hooks_address",
     "do_remove_job",
@@ -152,11 +153,12 @@ def do_restore_automation(core: Core, ws: str, p: Fields) -> Result:
 
 
 def undo_automation(core: Core, ws: str, r: Result) -> None:
-    from agos_core.actions.cofounder_actions import automation_snapshot, save_automation
+    from agos_core.actions.cofounder_actions import automation_snapshot
+    from agos_core.actions.services.cofounder.automation_kinds import put_back
 
     automation_id = int(r["automation_id"])
     current = automation_snapshot(core, ws, automation_id)
-    save_automation(core, ws, automation_id, {**current, **r["before"]})
+    put_back(core, ws, automation_id, {**current, **r["before"]})
 
 
 def do_catch_up(core: Core, ws: str, p: Fields) -> Result:
@@ -207,3 +209,11 @@ def undo_watch_tree(core: Core, ws: str, r: Result) -> None:
     from agos_core.actions import watchdogs
 
     watchdogs.watch(core, ws, str(r["card"]), on=bool(r["before"]))
+
+
+def do_check_automation(core: Core, ws: str, p: Fields) -> Result:
+    """A dry run of create_automation / update_automation: nothing is saved; the
+    Co-Founder reads every problem at once, or how it will run."""
+    from agos_core.actions.services.cofounder.automation_kinds import dry_run
+
+    return {"report": dry_run(core, ws, p)}

@@ -52,32 +52,44 @@ export const RUNNING = [
   "rollback",
 ];
 
+const isRunning = (state: UpdatesState | null) =>
+  state !== null && RUNNING.includes(state.phase);
+
+const stateOf = (part?: PartStatus) => part?.state ?? null;
+
+/** The later word of the two parts (the engine ran after AGOS when equal). */
+function latestOf(
+  agos: UpdatesState | null,
+  engine: UpdatesState | null,
+): UpdatesState | null {
+  if (agos === null) return engine;
+  if (engine === null) return agos;
+  return (engine.started_at ?? "") < (agos.started_at ?? "") ? agos : engine;
+}
+
+/** While nothing runs: the latest word — the engine part's failure right after
+ * AGOS's own "done" is marked half_done, never hidden behind it. */
+function settledState(
+  agos: UpdatesState | null,
+  engine: UpdatesState | null,
+): UpdatesState | null {
+  const shown = latestOf(agos, engine);
+  if (shown === engine && engine?.phase === "failed" && agos?.phase === "done")
+    return { ...engine, half_done: true };
+  return shown;
+}
+
 /** The one state the Updates card shows, from the core's real GET /updates:
- * a running part first (AGOS's update runs before the engine's); while nothing
- * runs, the latest word — and the engine part's failure right after AGOS's own
- * "done" is marked half_done, never hidden behind it. */
+ * a running part first (AGOS's update runs before the engine's), else the
+ * settled word. */
 export function deriveUpdatesState(
   status: CoreUpdatesStatus,
 ): UpdatesState | null {
-  const agos = status.agos?.state ?? null;
-  const engine = status.engine?.state ?? null;
-  const running = [agos, engine].find(
-    (state) => state && RUNNING.includes(state.phase),
-  );
-  if (running) return running;
-  const settled = [agos, engine].filter((state) => state !== null);
-  settled.sort((a, b) =>
-    (a.started_at ?? "") <= (b.started_at ?? "") ? -1 : 1,
-  );
-  const shown = settled.at(-1) ?? null;
-  if (
-    shown &&
-    shown === engine &&
-    shown.phase === "failed" &&
-    agos?.phase === "done"
-  )
-    return { ...shown, half_done: true };
-  return shown;
+  const agos = stateOf(status.agos);
+  const engine = stateOf(status.engine);
+  if (isRunning(agos)) return agos;
+  if (isRunning(engine)) return engine;
+  return settledState(agos, engine);
 }
 
 /** The state to keep from Update now's answer. */

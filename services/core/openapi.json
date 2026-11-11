@@ -6822,10 +6822,6 @@
           "doctor": {
             "$ref": "#/components/schemas/HermesReport"
           },
-          "home": {
-            "title": "Home",
-            "type": "string"
-          },
           "name": {
             "title": "Name",
             "type": "string"
@@ -6841,7 +6837,6 @@
         "required": [
           "workspaceId",
           "name",
-          "home",
           "status",
           "doctor"
         ],

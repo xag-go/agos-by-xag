@@ -180,6 +180,7 @@ RUN_UPDATES: OperationSpec[RunUpdates] = OperationSpec(
     web_action="runUpdates",
     cofounder_domain=WORKSPACE,
     cofounder_fields="(no fields)",
+    idempotent=True,
 )
 
 SPECS: tuple[OperationSpec[Any], ...] = (

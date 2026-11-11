@@ -1,7 +1,7 @@
 "use server";
 
 import { type Answer, carry } from "@/server/action";
-import { core } from "@/server/core";
+import { core, coreOnce } from "@/server/core";
 import type {
   RunStarted,
   UpdatesCheck,
@@ -18,5 +18,7 @@ export async function checkUpdates(): Promise<Answer<UpdatesCheck>> {
 }
 
 export async function runUpdates(): Promise<Answer<RunStarted>> {
-  return carry(() => core<RunStarted>("POST", "/updates/run"));
+  // A run action: keyed, so a double click or a broken-connection retry never
+  // starts two updates (the core's /updates/run runs a key at most once).
+  return carry(() => coreOnce<RunStarted>("/updates/run"));
 }

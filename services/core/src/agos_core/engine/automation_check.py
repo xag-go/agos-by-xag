@@ -86,7 +86,9 @@ def _only_if_problem(s: _Step) -> list[str]:
     try:
         step_conditions.parse_only_if(s.raw.get("only_if", s.raw.get("onlyIf")), s.key, s.kind)
     except step_conditions.ConditionError as error:
-        return [f"{_cap(s.name)}: {error}."]
+        # "step <key>, Only if line 1: ..." reads as "“Its title”, Only if line 1: ..."
+        said = str(error).removeprefix(f"step {s.key}").lstrip(" ,:")
+        return [f"{_cap(s.name)}: {said}."]
     return []
 
 

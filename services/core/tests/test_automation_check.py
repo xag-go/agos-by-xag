@@ -220,7 +220,7 @@ def test_only_if_lines_are_shown_in_plain_words() -> None:
 def test_a_broken_only_if_line_is_a_problem_in_the_check() -> None:
     bad = [step("a", only_if=[{"check": "rm -rf /"}])]
     text = "\n".join(ac.check(spec(bad), TEAM).problems)
-    assert "“T a”" in text and "inside /workspace" in text
+    assert "“T a”: Only if line 1: the check script must be inside /workspace" in text
     approval = [
         step("a"),
         {

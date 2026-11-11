@@ -17,7 +17,7 @@ from agos_core.actions import (
 )
 from agos_core.actions.errors import NotFoundError
 from agos_core.actions.services.automation import run_detail
-from agos_core.actions.services.automation.cron import cron_bridge, hermes_jobs, home_of
+from agos_core.actions.services.automation.cron import cron_bridge, get, hermes_jobs, home_of
 from agos_core.context import Core
 from agos_core.db import automations as repo
 from agos_core.db.records import (
@@ -48,7 +48,7 @@ def runs(core: Core, workspace_id: str, automation_id: int) -> list[AutomationRu
     row = repo.row(core.db, workspace_id, automation_id)
     if row is None:
         raise NotFoundError("This automation")
-    automation = repo.from_row(row, hooks.hooks_of(core, workspace_id).get(automation_id))
+    automation = _named(core, workspace_id, row)
     from agos_core.actions import catch_up
 
     caught = catch_up.asked(core, workspace_id).get(str(row["hermes_job_id"] or ""))
@@ -101,7 +101,7 @@ def detail_of(core: Core, workspace_id: str, automation_id: int, run_id: str) ->
     row = repo.row(core.db, workspace_id, automation_id)
     if row is None:
         raise NotFoundError("This automation")
-    automation = repo.from_row(row, hooks.hooks_of(core, workspace_id).get(automation_id))
+    automation = _named(core, workspace_id, row)
     for run in automation_cards.runs(core, automation):
         if run.id == run_id:
             return run_detail.details(core, workspace_id, [(automation, run)])[0]
@@ -109,6 +109,15 @@ def detail_of(core: Core, workspace_id: str, automation_id: int, run_id: str) ->
         if shown.detail is not None and shown.detail.run_id == run_id:
             return shown.detail
     raise NotFoundError("This run")
+
+
+def _named(core: Core, workspace_id: str, row: sqlite3.Row) -> Any:
+    """The automation's row, with the name Hermes holds when the row has none."""
+    automation = repo.from_row(row, hooks.hooks_of(core, workspace_id).get(int(row["id"])))
+    if automation.name:
+        return automation
+    held = get(core, workspace_id, int(row["id"]))
+    return automation.model_copy(update={"name": held.name}) if held else automation
 
 
 def proposed_cards(core: Core, workspace_id: str, job: str) -> list[dict[str, Any]]:

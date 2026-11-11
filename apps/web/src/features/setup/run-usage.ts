@@ -1,4 +1,4 @@
-import type { Usage } from "@/data/types";
+import type { RunDetail, Usage } from "@/data/types";
 import { formatTokens } from "@/shared/format";
 
 /** A cost as the engine priced it: "$0.85"; "cost unknown" when nothing was
@@ -40,4 +40,14 @@ export function tokenSplit(usage: Usage): string {
     `${formatTokens(usage.outputTokens)} out`,
     `${formatTokens(usage.cacheReadTokens + usage.cacheWriteTokens)} cache`,
   ].join(" · ");
+}
+
+/** A run card's chip word: "skipped" for a step its "Only if" skipped (the card is
+ * done on the board, the run's detail says why), else the card's own status. */
+export function cardStatusText(
+  card: { id: string; status: string },
+  detail: RunDetail | null | undefined,
+): string {
+  const step = detail?.steps.find((s) => s.cardId === card.id);
+  return step?.status === "skipped" ? "skipped" : card.status;
 }

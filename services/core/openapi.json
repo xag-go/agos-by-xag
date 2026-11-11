@@ -25428,6 +25428,162 @@
         ]
       }
     },
+    "/updates": {
+      "get": {
+        "description": "Both parts' progress, as the two old endpoints gave it.",
+        "operationId": "status_updates_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "x-agos-internal",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Agos-Internal"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Status Updates Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Status",
+        "tags": [
+          "updates"
+        ]
+      }
+    },
+    "/updates/check": {
+      "post": {
+        "description": "Check update: both parts, read-only; one `ready` + `note` for the card.",
+        "operationId": "check_updates_check_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "x-agos-internal",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Agos-Internal"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Check Updates Check Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Check",
+        "tags": [
+          "updates"
+        ]
+      }
+    },
+    "/updates/run": {
+      "post": {
+        "description": "Update now: AGOS's update first when it has one, else the engine's.",
+        "operationId": "run_updates_run_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "x-agos-internal",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Agos-Internal"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Run Updates Run Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Run",
+        "tags": [
+          "updates"
+        ]
+      }
+    },
     "/usage/limits": {
       "get": {
         "description": "The subscription/account limits Hermes reads from each provider (real,\nnot estimated). Empty when none is logged in.",

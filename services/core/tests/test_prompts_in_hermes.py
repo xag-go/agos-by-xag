@@ -36,4 +36,6 @@ def test_the_cofounder_does_agos_action_jobs_itself_and_never_hands_them_to_a_me
     for kind in ("automations", "team", "skills", "board admin", "workspace settings"):
         assert kind in identity.RULES
     assert "Co-Founder-only work" in identity.RULES
-    assert len(identity.RULES) < 8000
+    # A sanity cap so the shared rules stay readable; live's team rules (c65fb288)
+    # already put them at ~8.5k.
+    assert len(identity.RULES) < 10_000

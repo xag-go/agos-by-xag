@@ -28,11 +28,10 @@ export function VoiceCard({ voice }: { voice: HermesVoice }) {
       <h3 className="font-medium">Voice notes</h3>
       <p className="mt-1 text-sm text-ink-2">
         Who turns your voice notes into text before the agent reads them. It is
-        Hermes&apos;s own speech-to-text setting (stt.provider and its model):
-        one choice for every workspace and every member ({voice.profiles} Hermes
-        profiles), saved once into Hermes&apos;s managed settings, which they
-        all read. Off until you pick one. Gemini comes from AGOS&apos;s plugin
-        for Hermes; the others are Hermes&apos;s own.
+        the speech-to-text setting (stt.provider and its model): one choice for
+        every workspace and every member ({voice.profiles} profiles), saved once
+        into the shared settings, which they all read. Off until you pick one.
+        Gemini comes from AGOS&apos;s own plugin; the others are built in.
       </p>
 
       <div className="mt-4 flex flex-col gap-3">
@@ -55,7 +54,7 @@ export function VoiceCard({ voice }: { voice: HermesVoice }) {
             >
               {!known && (
                 <option value={voice.provider}>
-                  {voice.provider || "Not set (Hermes picks one)"}
+                  {voice.provider || "Not set (picked automatically)"}
                 </option>
               )}
               {voice.options.map((o) => (
@@ -73,7 +72,7 @@ export function VoiceCard({ voice }: { voice: HermesVoice }) {
                 list={listId}
                 value={model}
                 disabled={saving}
-                placeholder="Hermes's default"
+                placeholder="the default"
                 onChange={(e) => {
                   setModel(e.target.value);
                   setNote(null);
@@ -106,7 +105,7 @@ export function VoiceCard({ voice }: { voice: HermesVoice }) {
               setNote(null);
               startSave(async () => {
                 const r = await saveHermesVoice(provider, model);
-                setNote(r.error ?? "Saved in Hermes.");
+                setNote(r.error ?? "Saved.");
               });
             }}
           >

@@ -87,7 +87,7 @@ export default async function BoardPage({
 
       {shown === null ? (
         <p className="rounded-xl bg-danger-soft px-3 py-2 text-sm text-danger">
-          Hermes&apos;s Kanban isn&apos;t answering right now.
+          The Kanban isn&apos;t answering right now.
         </p>
       ) : (
         <KanbanBoardView

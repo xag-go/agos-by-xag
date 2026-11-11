@@ -32,7 +32,7 @@ export default async function CapabilitiesPage({
   return (
     <>
       <p className="max-w-2xl text-sm text-ink-2">
-        What this workspace may use. Every Hermes tool is on from the start;
+        What this workspace may use. Every built-in tool is on from the start;
         turn off what you don&apos;t want. Skills, agents, apps and MCP servers
         are this workspace&apos;s own, with its own accounts and keys; its
         Co-Founder and agents share its skills.

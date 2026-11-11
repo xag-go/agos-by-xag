@@ -56,10 +56,10 @@ export default async function WorkspaceChannelsPage({
       <section className="flex flex-col gap-3">
         <div>
           <h2 className="font-display text-base font-semibold">
-            More from Hermes
+            More channels
           </h2>
           <p className="mt-1 text-sm text-ink-2">
-            Hermes can talk on these too. Each gets a Connect button here once
+            The team can talk on these too. Each gets a Connect button here once
             AGOS supports it.
           </p>
         </div>

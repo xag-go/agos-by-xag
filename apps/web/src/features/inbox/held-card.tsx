@@ -154,7 +154,7 @@ function InShort({ workspaceId, held }: { workspaceId: string; held: Held }) {
   return (
     <p className="text-sm text-ink">
       <span className="font-medium">In short: </span>
-      {text ?? <span className="text-ink-3">Hermes is reading it…</span>}
+      {text ?? <span className="text-ink-3">Reading it…</span>}
     </p>
   );
 }

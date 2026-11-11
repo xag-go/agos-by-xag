@@ -5,7 +5,7 @@ const statusWords: { status: string; label: string; hint: string }[] = [
   {
     status: "triage",
     label: "Triage",
-    hint: "Rough ideas. Hermes fleshes them out and splits them for the team.",
+    hint: "Rough ideas. The Co-Founder fleshes them out and splits them for the team.",
   },
   {
     status: "todo",
@@ -20,7 +20,7 @@ const statusWords: { status: string; label: string; hint: string }[] = [
   {
     status: "ready",
     label: "Ready",
-    hint: "Starts with Hermes's next round.",
+    hint: "Starts with the next round.",
   },
   {
     status: "running",
@@ -70,7 +70,7 @@ export function kanbanColumns(
     const words = statusWords.find((w) => w.status === c.status);
     let hint = words?.hint ?? "";
     if (c.status === "ready" && dispatchSeconds)
-      hint = `Starts with Hermes's next round (it runs ${every(dispatchSeconds)}).`;
+      hint = `Starts with the next round (it runs ${every(dispatchSeconds)}).`;
     return {
       status: c.status,
       label: words?.label ?? c.label,

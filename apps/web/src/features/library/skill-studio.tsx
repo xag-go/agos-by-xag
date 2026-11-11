@@ -86,8 +86,8 @@ function AutoUpdateRow({
       <div className="min-w-60 flex-1">
         <p className="text-sm font-medium">Follow its source</p>
         <p className="text-xs text-ink-3">
-          Nightly, this workspace&apos;s Hermes updates it from where it was
-          installed; each update is a version here.
+          Nightly, this workspace updates it from where it was installed; each
+          update is a version here.
         </p>
       </div>
       <Switch

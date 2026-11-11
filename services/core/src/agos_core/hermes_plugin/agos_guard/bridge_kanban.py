@@ -37,8 +37,9 @@ AUTOMATION_KEY = "agos-automation:"
 # Our mark on a run card's subscription (Hermes keeps it in delivery_metadata):
 # "last" = a last card of its run, "step" = any other card of it.
 RUN_MARK = "agos_run"
-# A handoff that says the run had nothing to do (the owner's "WALO", Hermes's [SILENT]).
-NOTHING_DONE = ("WALO", "[SILENT]")
+# A handoff that says the run had nothing to do (the owner's "WALO", Hermes's [SILENT],
+# a step its "Only if" lines skipped: step_gate.py).
+NOTHING_DONE = ("WALO", "[SILENT]", "AGOS-SKIPPED:")
 
 
 def _run_card(conn: Any, task_id: str) -> str:

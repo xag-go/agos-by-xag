@@ -7,7 +7,9 @@ it waits on). Pure functions only: the steps are checked here.
 
 import re
 from dataclasses import dataclass
-from typing import Literal
+from typing import Any, Literal
+
+from agos_core.engine.step_conditions import ConditionError, parse_only_if
 
 # No cap on how many steps (the owner's rule: nothing stops the work but him).
 MAX_STEPS: int | None = None
@@ -26,6 +28,8 @@ class Step:
     agent: str | None  # a member's name; None = the Co-Founder itself / the owner (approval)
     waits_on: tuple[str, ...] = ()
     reviews: str | None = None  # review steps: the step they check
+    # "Only if" lines (engine/step_conditions.py); () = the step always runs.
+    only_if: tuple[dict[str, Any], ...] = ()
 
 
 @dataclass(frozen=True)
@@ -98,6 +102,7 @@ def parse_plan(data: object, members: list[str]) -> Plan:
                 agent=agent,
                 waits_on=waits_on,
                 reviews=reviews if kind == "review" else None,
+                only_if=_only_if(item, key, kind),
             )
         )
     for s in steps:
@@ -109,6 +114,13 @@ def parse_plan(data: object, members: list[str]) -> Plan:
     if _has_cycle(steps):
         raise PlanError("the steps wait on each other in a circle")
     return Plan(title=_text(data.get("title"), 140) or steps[0].title, steps=tuple(steps))
+
+
+def _only_if(item: dict[str, Any], key: str, kind: str) -> tuple[dict[str, Any], ...]:
+    try:
+        return parse_only_if(item.get("only_if", item.get("onlyIf")), key, kind)
+    except ConditionError as error:
+        raise PlanError(str(error)) from error
 
 
 def _has_cycle(steps: list[Step]) -> bool:

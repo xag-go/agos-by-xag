@@ -245,6 +245,7 @@ def steps_of(core: Core, automation: Any) -> list[Step]:
                 agent=agent,
                 waits_on=tuple(s.waits_on),
                 reviews=s.reviews,
+                only_if=tuple(c.model_dump(exclude_none=True) for c in s.only_if),
             )
         )
     if getattr(automation, "check_first", False):
@@ -265,6 +266,7 @@ def steps_of(core: Core, automation: Any) -> list[Step]:
                 agent=s.agent,
                 waits_on=s.waits_on or (() if s.kind == "review" else ("owner-ok",)),
                 reviews=s.reviews,
+                only_if=s.only_if,
             )
             for s in steps
         ]
@@ -373,6 +375,8 @@ def plan(core: Core, automation: Any, mode: str) -> dict[str, Any]:
                 "waits_on": list(s.waits_on),
                 # What happened (a webhook) goes on the work and on the owner's OK.
                 "happened": s.kind != "approval" or s.key == "owner-ok",
+                # Its "Only if" lines (checked when the step would start), if any.
+                **({"only_if": [dict(c) for c in s.only_if]} if s.only_if else {}),
             }
             for s in _ordered(steps)
         ],

@@ -42,6 +42,12 @@ nothing else, read back from the board (read only) by AGOS and by this script.
   can't give the payload to a no-agent job (cron/scheduler.py _run_no_agent_job
   gets no event context). So the script drops a retry itself: the same body again
   within an hour is a duplicate (a sender's retry resends it as is).
+- a step's "Only if" lines (PLAN step "only_if", engine/step_conditions.py): before
+  the run's first card, the run's lines, values and delivery go to
+  `<root>/agos-automations/<automation>.runs/<run>.only-if.json` (a delivery that joins a
+  waiting run is added); the step's worker reads them before its first model call
+  and closes its card `agos-skipped: <reason>` when a line doesn't hold
+  (hermes_plugin/agos_guard/step_gate.py). No line in the plan = no file.
 
 Standard library only: Hermes runs it with the Python it uses for scripts.
 """
@@ -364,6 +370,9 @@ def start(
     variables (and a delivery's fields) fill the titles and bodies."""
     run_id = datetime.now(UTC).strftime("%Y%m%dT%H%M%S%fZ")
     values = values_of(None) if values is None else values
+    if any(s.get("only_if") for s in PLAN["steps"]):
+        # Before any card exists (one may start at once): its worker reads them here.
+        keep_run(run_id, values, payload)
     cards: dict[str, str] = {}
     for step in PLAN["steps"]:
         body = fill(str(step["body"]), values, payload)
@@ -393,6 +402,61 @@ def start(
         ]
         cards[str(step["key"])] = _card_id(_cli(args))
     return list(cards.values())
+
+
+# ---- the steps' "Only if" lines --------------------------------------------------------
+
+RUNS_KEPT = 50
+PAYLOAD_KEPT = 100_000  # a bigger delivery is kept as "too big": its lines can't judge it
+
+
+def runs_dir() -> Path:
+    """Where a run's lines and values are, beside the board (Hermes's own root): the
+    agos-guard plugin of the step's worker reads them before its first model call
+    (hermes_plugin/agos_guard/step_gate.py)."""
+    return Path(str(PLAN["board"])).parent / "agos-automations" / f"{int(PLAN['automation'])}.runs"
+
+
+def _kept(payload: Any) -> Any:
+    text = json.dumps(payload, ensure_ascii=False, default=str)
+    return payload if len(text) <= PAYLOAD_KEPT else {"agos_too_big": True}
+
+
+def _write(path: Path, data: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(".tmp")
+    tmp.write_text(json.dumps(data, ensure_ascii=False, default=str), encoding="utf-8")
+    tmp.chmod(0o600)
+    tmp.replace(path)
+
+
+def keep_run(run_id: str, values: dict[str, str], payload: Any) -> None:
+    """The run's \"Only if\" lines (frozen for the run), its values and its delivery."""
+    lines = {str(s["key"]): s["only_if"] for s in PLAN["steps"] if s.get("only_if")}
+    folder = runs_dir()
+    _write(
+        folder / f"{run_id}.only-if.json",
+        {
+            "only_if": lines,
+            "values": values,
+            "payloads": [] if payload is None else [_kept(payload)],
+        },
+    )
+    for old in sorted(folder.glob("*.only-if.json"))[:-RUNS_KEPT]:
+        with contextlib.suppress(OSError):
+            old.unlink()
+
+
+def joined(run_id: str, payload: Any) -> None:
+    """A delivery taken by a run that hasn't begun: its lines see this one too."""
+    path = runs_dir() / f"{run_id}.only-if.json"
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return  # no lines in this run
+    if isinstance(data, dict) and isinstance(data.get("payloads"), list):
+        data["payloads"].append(_kept(payload))
+        _write(path, data)
 
 
 def _given(stdin: str) -> dict[str, str]:
@@ -562,6 +626,7 @@ def main(argv: list[str], stdin: str = "") -> int:
             note(event, shown, "started", take_tickets(payload, happened), body_hash)
         elif newest is not None and going(newest) and not begun(newest):
             first = first_cards(newest)
+            joined(str(newest["id"]), payload)
             for card in first:
                 _cli(["comment", card, f"## Also happened\n{happened}", "--author", "owner"])
             note(

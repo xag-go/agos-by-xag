@@ -264,6 +264,8 @@ def register(ctx: Any) -> None:
     for hook in ("kanban_task_claimed", "kanban_task_completed", "on_kanban_task_updated"):
         ctx.register_hook(hook, kanban_moved)
     ctx.register_hook("on_kanban_dispatch_tick", kanban_tick)
+    # An automation step's "Only if" lines, before its worker's first model call.
+    ctx.register_hook("pre_llm_call", runtime._sibling("step_gate").pre_llm_call)
 
     def subagent_start(
         parent_session_id: str = "", child_session_id: Any = None, **kwargs: Any
@@ -285,14 +287,7 @@ def register(ctx: Any) -> None:
     )
     if register_middleware is not None:
         register_middleware("tool_execution", tool_execution)
-    from . import estimate
-
-    ctx.register_cli_command(
-        "agos-estimate",
-        "Estimate a Kanban card's effort (for AGOS)",
-        estimate.setup,
-        estimate.handle,
-    )
+    ctx.register_cli_command("agos-estimate", "Estimate a Kanban card's effort (for AGOS)", runtime._sibling("estimate").setup, runtime._sibling("estimate").handle)  # fmt: skip
     runtime._bridge_module().register(ctx)
     # The agents' proposals and typed questions to the owner (asks.py): Hermes
     # Kanban cards AGOS writes in the shape its parsers read.

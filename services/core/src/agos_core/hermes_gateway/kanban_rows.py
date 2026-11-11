@@ -284,6 +284,35 @@ class Board:
             (since, *kinds),
         ).fetchall()
 
+    def attempts(self, card_ids: Sequence[str]) -> list[Any]:
+        """The runs (attempts) of these cards, oldest first: (task_id, id, profile,
+        status, outcome, started_at, ended_at, summary, metadata, error)."""
+        if not card_ids:
+            return []
+        return self.db.execute(
+            sql.text(
+                """SELECT task_id, id, profile, status, outcome, started_at, ended_at,
+                          summary, metadata, error
+                     FROM task_runs WHERE task_id IN ({m}) ORDER BY started_at, id""",
+                m=sql.marks(len(card_ids)),
+            ),
+            tuple(card_ids),
+        ).fetchall()
+
+    def admissions(self, card_ids: Sequence[str]) -> list[Any]:
+        """(task_id, run_id, payload) of these cards' `owner_admitted` events (the
+        session a gateway opened for each attempt, and its store)."""
+        if not card_ids:
+            return []
+        return self.db.execute(
+            sql.text(
+                """SELECT task_id, run_id, payload FROM task_events
+                    WHERE kind = 'owner_admitted' AND task_id IN ({m}) ORDER BY id""",
+                m=sql.marks(len(card_ids)),
+            ),
+            tuple(card_ids),
+        ).fetchall()
+
     def run_profiles(self, event_ids: Sequence[int]) -> dict[int, str]:
         """{event: the profile of the run it belongs to}; what was read before an error."""
         found: dict[int, str] = {}

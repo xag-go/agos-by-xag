@@ -23,12 +23,14 @@ from agos_core.api.schemas import (
 )
 from agos_core.db.records import (
     Automation,
+    AutomationCost,
     AutomationEvent,
     AutomationHook,
     AutomationRevision,
     AutomationRun,
     AutomationRunGroup,
     Record,
+    RunDetail,
 )
 from agos_core.ops import idempotency
 
@@ -237,3 +239,18 @@ def run_now(
 @router.get("/workspaces/{workspace_id}/automations/{automation_id}/runs")
 def list_runs(core: CoreDep, workspace_id: str, automation_id: int) -> list[AutomationRun]:
     return actions.runs(core, workspace_id, automation_id)
+
+
+@router.get("/workspaces/{workspace_id}/automations/{automation_id}/runs/{run_id}/detail")
+def run_detail(core: CoreDep, workspace_id: str, automation_id: int, run_id: str) -> RunDetail:
+    """One run step by step: who worked each step (or why it was skipped), when, how
+    long, its tokens and cost as Hermes counted them, and the run's totals."""
+    require_workspace(core, workspace_id)
+    return actions.detail_of(core, workspace_id, automation_id, run_id)
+
+
+@router.get("/workspaces/{workspace_id}/automation-costs")
+def automation_costs(core: CoreDep, workspace_id: str) -> list[AutomationCost]:
+    """What each automation's runs used this calendar month and last month (UTC)."""
+    require_workspace(core, workspace_id)
+    return actions.month_costs(core, workspace_id)

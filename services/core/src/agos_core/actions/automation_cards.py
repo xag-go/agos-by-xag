@@ -182,11 +182,14 @@ def run_groups(core: Core, workspace_id: str, limit: int = 60) -> list[Any]:
     """The run history: the workspace's automation cards grouped by run (one board
     query per automation, read only), newest first, each run with its status."""
     from agos_core.actions import automations as automation_actions
+    from agos_core.actions.services.automation import run_detail
     from agos_core.db.records import AutomationRunGroup, RunCard
 
     names = {a.id: a.name for a in automation_actions.list_all(core, workspace_id)}
+    pairs = sorted(of_workspace(core, workspace_id), key=lambda p: p[1].id, reverse=True)[:limit]
+    shown = run_detail.details(core, workspace_id, pairs)  # who worked, how long, tokens
     out = []
-    for automation, run in of_workspace(core, workspace_id):
+    for (automation, run), detail in zip(pairs, shown, strict=True):
         out.append(
             AutomationRunGroup(
                 automation_id=int(automation.id),
@@ -206,6 +209,9 @@ def run_groups(core: Core, workspace_id: str, limit: int = 60) -> list[Any]:
                     )
                     for step, c in run.cards.items()
                 ],
+                detail=detail.model_copy(
+                    update={"automation_name": names.get(automation.id) or detail.automation_name}
+                ),
             )
         )
     out.sort(key=lambda g: g.run_id, reverse=True)

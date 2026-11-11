@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { AutomationRunGroup } from "@/data/types";
 import { cn } from "@/shared/ui/cn";
 import { formatWhen } from "@/shared/format";
+import { RunSteps } from "./run-steps";
 
 const STATUS: Record<
   AutomationRunGroup["status"],
@@ -82,6 +83,9 @@ export function RunHistory({
                     </li>
                   ))}
                 </ul>
+                {run.detail && (
+                  <RunSteps workspaceId={workspaceId} detail={run.detail} />
+                )}
               </li>
             );
           })}

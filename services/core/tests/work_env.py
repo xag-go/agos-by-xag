@@ -262,6 +262,7 @@ def fake_board(monkeypatch: pytest.MonkeyPatch) -> None:
                 "key": str(c["key"]),
                 "created_at": c.get("created_at"),
                 "completed_at": c.get("completed_at"),
+                "assignee": str(c.get("assignee") or ""),
                 "parents": list(c.get("parents") or []),
             }
             for c in kanban_of(core, ws).values()

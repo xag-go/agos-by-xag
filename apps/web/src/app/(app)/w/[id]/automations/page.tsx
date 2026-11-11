@@ -4,6 +4,7 @@ import {
   getAutomation,
   getAutomationEvents,
   getAutomationRevisions,
+  getAutomationCosts,
   getAutomationRunHistory,
   getAutomationRuns,
   getHooksAddress,
@@ -64,6 +65,7 @@ export default async function AutomationsPage({
     board,
     hours,
     folders,
+    costs,
   ] = await Promise.all([
     getModelCatalog(),
     editId === null ? null : getAutomation(workspace.id, editId),
@@ -79,6 +81,7 @@ export default async function AutomationsPage({
     getKanban(workspace.id).catch(() => null),
     getWorkHours(workspace.id),
     getFolders(workspace.id, "automation").catch(() => []),
+    getAutomationCosts(workspace.id).catch(() => []),
   ]);
   // The Rules form's pick lists (columns, members, goals, automations).
   const ruleLists = {
@@ -177,6 +180,7 @@ export default async function AutomationsPage({
           catalog={catalog}
           baseHref={baseHref}
           folders={folders}
+          costs={costs}
         />
       </section>
 
@@ -211,6 +215,7 @@ export default async function AutomationsPage({
           workspaceId={workspace.id}
           automation={runsOf}
           runs={runs}
+          cost={costs.find((c) => c.automationId === runsOf.id)}
           closeHref={baseHref}
         />
       )}

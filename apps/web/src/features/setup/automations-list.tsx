@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type {
   Automation,
+  AutomationCost,
   CatalogProvider,
   LibraryItem,
   ListFolder,
@@ -13,6 +14,7 @@ import { Switch } from "@/shared/ui/switch";
 import { formatWhen } from "@/shared/format";
 import { toggleAutomation } from "./actions";
 import { RunNowButton } from "./automation-runs";
+import { MonthCost } from "./run-steps";
 import { describeCron } from "./schedule";
 
 /** Steps in order, one badge per run of the same member (parallel steps of
@@ -35,6 +37,7 @@ export function AutomationsList({
   baseHref,
   agents,
   folders,
+  costs = [],
 }: {
   workspaceId: string;
   automations: Automation[];
@@ -43,6 +46,8 @@ export function AutomationsList({
   agents: LibraryItem[];
   /** The owner's folders of this list (AGOS's own grouping). */
   folders: ListFolder[];
+  /** What each automation's runs used this month (a small figure per row). */
+  costs?: AutomationCost[];
 }) {
   const titleOf = (name: string | null | undefined) =>
     name
@@ -166,6 +171,7 @@ export function AutomationsList({
               ) : (
                 <p className="text-ink-3">Never run</p>
               )}
+              <MonthCost cost={costs.find((c) => c.automationId === a.id)} />
               {a.problem ? (
                 <p role="alert" className="mt-1 text-xs text-danger">
                   {a.problem}

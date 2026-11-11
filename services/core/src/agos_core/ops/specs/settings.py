@@ -19,6 +19,8 @@ from agos_core.engine.cofounder_kind import WORKSPACE
 from agos_core.ops.spec import CofounderFields, OperationSpec
 
 __all__ = [
+    "CHECK_UPDATES",
+    "RUN_UPDATES",
     "SET_FALLBACK",
     "SET_HELPER_MODELS",
     "SET_HERMES_LIMITS",
@@ -26,6 +28,8 @@ __all__ = [
     "SET_VOICE",
     "SET_WORKSPACE_SETTINGS",
     "SPECS",
+    "CheckUpdates",
+    "RunUpdates",
     "SetFallback",
     "SetHelperModels",
     "SetHermesLimits",
@@ -147,6 +151,35 @@ SET_FALLBACK: OperationSpec[SetFallback] = OperationSpec(
     cofounder_structured=("chain",),
 )
 
+
+class CheckUpdates(CofounderFields):
+    pass
+
+
+CHECK_UPDATES: OperationSpec[CheckUpdates] = OperationSpec(
+    name="check_updates",
+    input_model=CheckUpdates,
+    audit_title="Check for updates",
+    gate="once",
+    effect="read",
+    cofounder_domain=WORKSPACE,
+    cofounder_fields="(no fields)",
+)
+
+
+class RunUpdates(CofounderFields):
+    pass
+
+
+RUN_UPDATES: OperationSpec[RunUpdates] = OperationSpec(
+    name="run_updates",
+    input_model=RunUpdates,
+    audit_title="Install the update",
+    gate="owner",
+    cofounder_domain=WORKSPACE,
+    cofounder_fields="(no fields)",
+)
+
 SPECS: tuple[OperationSpec[Any], ...] = (
     SET_WORKSPACE_SETTINGS,
     SET_HERMES_LIMITS,
@@ -154,4 +187,6 @@ SPECS: tuple[OperationSpec[Any], ...] = (
     SET_HELPER_MODELS,
     SET_VOICE,
     SET_FALLBACK,
+    CHECK_UPDATES,
+    RUN_UPDATES,
 )

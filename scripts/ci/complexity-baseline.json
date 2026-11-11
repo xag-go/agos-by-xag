@@ -275,9 +275,6 @@
     "services/core/src/agos_core/actions/work_hours.py::apply": {
       "C901": 11
     },
-    "services/core/src/agos_core/api/app.py::create_app": {
-      "length": 107
-    },
     "services/core/src/agos_core/db/agent_revisions.py::_shown": {
       "C901": 11
     },

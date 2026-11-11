@@ -278,6 +278,18 @@ def do_run_update(core: Core, ws: str, p: Fields) -> Result:
     return {"report": json.dumps(hermes_update.start_update(core), default=str)[:2000]}
 
 
+def do_check_updates(core: Core, ws: str, p: Fields) -> Result:
+    from agos_core.actions import updates
+
+    return {"report": json.dumps(updates.run_check(core), default=str)[:3000]}
+
+
+def do_run_updates(core: Core, ws: str, p: Fields) -> Result:
+    from agos_core.actions import updates
+
+    return {"report": json.dumps(updates.start_update(core), default=str)[:2000]}
+
+
 def undo_learned(core: Core, ws: str, p: Fields) -> Result:
     from agos_core.actions import proactive
 

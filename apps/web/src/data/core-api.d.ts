@@ -1799,6 +1799,7 @@ export interface paths {
         /**
          * Run
          * @description Update now: AGOS's update first when it has one, else the engine's.
+         *     A keyed retry or double click gets the first start's answer, never a second.
          */
         post: operations["run_updates_run_post"];
         delete?: never;
@@ -17725,6 +17726,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                "idempotency-key"?: string | null;
                 "x-agos-internal"?: string | null;
             };
             path?: never;

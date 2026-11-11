@@ -1070,11 +1070,8 @@
     "apps/web/src/features/setup/schedule.ts::fromCron": {
       "complexity": 26
     },
-    "apps/web/src/features/setup/who-field.tsx::(anonymous)": {
-      "lines": 99
-    },
     "apps/web/src/features/setup/who-field.tsx::WhoField": {
-      "lines": 228
+      "lines": 201
     },
     "apps/web/src/features/shell/rail-order.ts::(anonymous)": {
       "complexity": 13

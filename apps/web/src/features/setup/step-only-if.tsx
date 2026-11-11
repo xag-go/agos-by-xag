@@ -10,6 +10,7 @@ export type StepLine =
   | { kind: "check"; check: string };
 
 type MatchOp = NonNullable<StepCondition["op"]>;
+type MatchLine = Extract<StepLine, { kind: "match" }>;
 
 const opText: Record<MatchOp, string> = {
   is: "is one of",
@@ -45,6 +46,97 @@ export const fromStepLines = (lines: StepLine[]): StepCondition[] =>
         },
   );
 
+function RemoveLine({ onRemove }: { onRemove: () => void }) {
+  return (
+    <Button
+      variant="ghost"
+      aria-label="Remove this line"
+      onClick={() => {
+        onRemove();
+      }}
+    >
+      Remove
+    </Button>
+  );
+}
+
+function CheckRow({
+  label,
+  check,
+  onChange,
+  onRemove,
+}: {
+  label: string;
+  check: string;
+  onChange: (check: string) => void;
+  onRemove: () => void;
+}) {
+  return (
+    <div className="flex gap-2 rounded-lg border border-line p-2">
+      <Input
+        aria-label={`${label} check script`}
+        className="flex-1"
+        value={check}
+        placeholder="/workspace/tools/inspiration_gate.py"
+        onChange={(e) => {
+          onChange(e.target.value);
+        }}
+      />
+      <RemoveLine onRemove={onRemove} />
+    </div>
+  );
+}
+
+function MatchRow({
+  label,
+  line,
+  onChange,
+  onRemove,
+}: {
+  label: string;
+  line: MatchLine;
+  onChange: (line: MatchLine) => void;
+  onRemove: () => void;
+}) {
+  return (
+    <div className="grid grid-cols-1 gap-2 rounded-lg border border-line p-2 sm:grid-cols-2">
+      <Input
+        aria-label={`${label} field`}
+        value={line.field}
+        placeholder="payload.sheet"
+        onChange={(e) => {
+          onChange({ ...line, field: e.target.value });
+        }}
+      />
+      <Select
+        aria-label={`${label} test`}
+        value={line.op}
+        onChange={(e) => {
+          onChange({ ...line, op: e.target.value as MatchOp });
+        }}
+      >
+        {Object.entries(opText).map(([op, text]) => (
+          <option key={op} value={op}>
+            {text}
+          </option>
+        ))}
+      </Select>
+      <div className="flex gap-2 sm:col-span-2">
+        <Input
+          aria-label={`${label} values`}
+          className="flex-1"
+          value={line.values}
+          placeholder="Editing-Inspiration"
+          onChange={(e) => {
+            onChange({ ...line, values: e.target.value });
+          }}
+        />
+        <RemoveLine onRemove={onRemove} />
+      </div>
+    </div>
+  );
+}
+
 /** A team step's "Only if" lines: the step starts its agent only when every line
  * holds; else its card closes as skipped at once, with no tokens spent. Same look
  * as the webhook's Only-if lines. */
@@ -57,9 +149,15 @@ export function StepOnlyIf({
   lines: StepLine[];
   onChange: (lines: StepLine[]) => void;
 }) {
-  const set = (i: number, line: StepLine) =>
+  const set = (i: number, line: StepLine) => {
     onChange(lines.map((l, j) => (j === i ? line : l)));
-  const drop = (i: number) => onChange(lines.filter((_, j) => j !== i));
+  };
+  const drop = (i: number) => () => {
+    onChange(lines.filter((_, j) => j !== i));
+  };
+  const add = (line: StepLine) => () => {
+    onChange([...lines, line]);
+  };
   const label = `Step ${String(step)}`;
 
   return (
@@ -79,93 +177,35 @@ export function StepOnlyIf({
       )}
       {lines.map((l, i) =>
         l.kind === "check" ? (
-          <div key={i} className="flex gap-2 rounded-lg border border-line p-2">
-            <Input
-              aria-label={`${label} check script`}
-              className="flex-1"
-              value={l.check}
-              placeholder="/workspace/tools/inspiration_gate.py"
-              onChange={(e) => {
-                set(i, { kind: "check", check: e.target.value });
-              }}
-            />
-            <Button
-              variant="ghost"
-              aria-label="Remove this line"
-              onClick={() => {
-                drop(i);
-              }}
-            >
-              Remove
-            </Button>
-          </div>
-        ) : (
-          <div
+          <CheckRow
             key={i}
-            className="grid grid-cols-1 gap-2 rounded-lg border border-line p-2 sm:grid-cols-2"
-          >
-            <Input
-              aria-label={`${label} field`}
-              value={l.field}
-              placeholder="payload.sheet"
-              onChange={(e) => {
-                set(i, { ...l, field: e.target.value });
-              }}
-            />
-            <Select
-              aria-label={`${label} test`}
-              value={l.op}
-              onChange={(e) => {
-                set(i, { ...l, op: e.target.value as MatchOp });
-              }}
-            >
-              {Object.entries(opText).map(([op, text]) => (
-                <option key={op} value={op}>
-                  {text}
-                </option>
-              ))}
-            </Select>
-            <div className="flex gap-2 sm:col-span-2">
-              <Input
-                aria-label={`${label} values`}
-                className="flex-1"
-                value={l.values}
-                placeholder="Editing-Inspiration"
-                onChange={(e) => {
-                  set(i, { ...l, values: e.target.value });
-                }}
-              />
-              <Button
-                variant="ghost"
-                aria-label="Remove this line"
-                onClick={() => {
-                  drop(i);
-                }}
-              >
-                Remove
-              </Button>
-            </div>
-          </div>
+            label={label}
+            check={l.check}
+            onChange={(check) => {
+              set(i, { kind: "check", check });
+            }}
+            onRemove={drop(i)}
+          />
+        ) : (
+          <MatchRow
+            key={i}
+            label={label}
+            line={l}
+            onChange={(line) => {
+              set(i, line);
+            }}
+            onRemove={drop(i)}
+          />
         ),
       )}
       <div className="flex flex-wrap items-center gap-2">
         <Button
           variant="ghost"
-          onClick={() => {
-            onChange([
-              ...lines,
-              { kind: "match", field: "", op: "is", values: "" },
-            ]);
-          }}
+          onClick={add({ kind: "match", field: "", op: "is", values: "" })}
         >
           Add a line
         </Button>
-        <Button
-          variant="ghost"
-          onClick={() => {
-            onChange([...lines, { kind: "check", check: "" }]);
-          }}
-        >
+        <Button variant="ghost" onClick={add({ kind: "check", check: "" })}>
           Add a check script
         </Button>
       </div>

@@ -28,7 +28,6 @@ from __future__ import annotations
 import contextlib
 import json
 import logging
-import os
 import re
 import shlex
 import time
@@ -197,7 +196,10 @@ def _lines_of(kb: Any, conn: Any, card: str) -> tuple[list[dict[str, Any]], dict
         return [], {}
     automation, run, step = parts
     path = (
-        Path(kb.kanban_home()) / "agos-automations" / f"{automation}.runs" / f"{run}.only-if.json"
+        Path(kb.kanban_db_path()).parent
+        / "agos-automations"
+        / f"{automation}.runs"
+        / f"{run}.only-if.json"
     )
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
@@ -234,13 +236,11 @@ def verdict(card: str, task_id: str = "") -> str | None:
         conn.close()
 
 
-def _close(card: str, reason: str) -> bool:
+def _close(card: str, run: int | None, reason: str) -> bool:
     """The card done as skipped, under this worker's own run (Hermes's fence)."""
     from hermes_cli import kanban_db as kb
     from hermes_cli import kanban_db_connect as kbc
 
-    raw = os.environ.get("HERMES_KANBAN_RUN_ID", "")
-    run = int(raw) if raw.isdigit() else None
     conn = kbc.connect()
     try:
         return bool(
@@ -279,12 +279,18 @@ def _end_worker(task_id: str, checked: bool) -> None:
 
 
 def pre_llm_call(
-    task_id: str = "", is_first_turn: bool = True, parent_session_id: str = "", **_: Any
+    card: str = "",
+    run: int | None = None,
+    task_id: str = "",
+    is_first_turn: bool = True,
+    parent_session_id: str = "",
+    **_: Any,
 ) -> dict[str, str] | None:
     """Hermes's pre_llm_call: a step that must not start ends here, before any model
-    call. Only the worker's own first turn (never a subagent's, never a later turn).
-    Any error = the step runs (as before Only if existed)."""
-    card = os.environ.get("HERMES_KANBAN_TASK", "")
+    call. `card` / `run`: the Kanban card this worker runs and its run id (Hermes's
+    dispatcher sets them; the guard passes them in). Only the worker's own first turn
+    (never a subagent's, never a later turn). Any error = the step runs (as before
+    Only if existed)."""
     if not card or card in _checked or not is_first_turn or parent_session_id:
         return None
     _checked.add(card)
@@ -293,7 +299,7 @@ def pre_llm_call(
         reason = verdict(card, str(task_id or ""))
         if reason is None or time.monotonic() - started > CLOSE_BEFORE_S:
             return None
-        if not _close(card, reason):
+        if not _close(card, run, reason):
             return None
     except Exception:
         log.warning("AGOS: Only if of card %s not checked; the step runs", card, exc_info=True)

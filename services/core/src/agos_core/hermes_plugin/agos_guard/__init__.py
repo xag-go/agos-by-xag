@@ -265,7 +265,7 @@ def register(ctx: Any) -> None:
         ctx.register_hook(hook, kanban_moved)
     ctx.register_hook("on_kanban_dispatch_tick", kanban_tick)
     # An automation step's "Only if" lines, before its worker's first model call.
-    ctx.register_hook("pre_llm_call", runtime._sibling("step_gate").pre_llm_call)
+    ctx.register_hook("pre_llm_call", lambda **kw: runtime._sibling("step_gate").pre_llm_call(card=runtime._current_card(), run=runtime._sibling("review")._run_id(), **kw))  # fmt: skip
 
     def subagent_start(
         parent_session_id: str = "", child_session_id: Any = None, **kwargs: Any

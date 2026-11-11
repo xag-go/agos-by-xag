@@ -9,7 +9,7 @@ Must not: decide which tools are the Co-Founder's (the facade's COFOUNDER_TOOLS)
 
 from __future__ import annotations
 
-import os
+from . import runtime
 
 __all__ = ["forget", "refusal"]
 
@@ -27,9 +27,9 @@ _CAP = 512
 
 
 def _run_key(session: str) -> str:
-    card = os.environ.get("HERMES_KANBAN_TASK", "")
+    card = runtime._current_card()
     if card:
-        return f"{card}#{os.environ.get('HERMES_KANBAN_RUN_ID', '')}"
+        return f"{card}#{runtime._sibling('review')._run_id()}"
     return f"session:{session}"
 
 

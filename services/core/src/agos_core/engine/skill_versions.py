@@ -289,7 +289,7 @@ def describe(group: list[dict[str, Any]]) -> tuple[str, str, str]:
     author = AUTHORS.get(actor, actor or "outside")
     actions = [str(e.get("action") or "") for e in group]
     if "rollback" in actions:
-        return author, "undo", "undo (Hermes's ledger rollback)"
+        return author, "undo", "undo (the engine's ledger rollback)"
     if "delete" in actions or "archive" in actions or "purge" in actions:
         return author, "delete", "deleted"
     if "create" in actions:
@@ -331,7 +331,9 @@ def derive(
         nonlocal number
         number += 1
         first = not (stored or out)
-        summary = "as found in the skill folder" if first else "changed outside Hermes's skill tool"
+        summary = (
+            "as found in the skill folder" if first else "changed outside the engine's skill tool"
+        )
         action = first_action if first and first_action else observed_action
         out.append(Version(number, at, observed_author, action, summary, (), files))
 

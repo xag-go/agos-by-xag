@@ -40,7 +40,7 @@ FORCED_WHY: dict[str, str] = {
     # workspace's sandbox, as the host user, with this machine's env or files.
     "terminal.backend": "Every command runs in the workspace's own Docker sandbox, never on this machine.",
     "terminal.docker_image": "AGOS's sandbox image, with the screen for browser and computer use.",
-    "terminal.docker_mount_cwd_to_workspace": "The sandbox sees only the folders AGOS mounts (Folders card), not Hermes's own working folder.",
+    "terminal.docker_mount_cwd_to_workspace": "The sandbox sees only the folders AGOS mounts (Folders card), not the engine's own working folder.",
     "terminal.docker_run_as_host_user": "The sandbox never runs as your user on this machine.",
     "terminal.docker_forward_env": "No environment variable of this machine (keys, tokens) is passed into the sandbox.",
     "terminal.docker_env": "Only the sandbox's own settings: the egress proxy and your timezone (TZ).",
@@ -48,26 +48,26 @@ FORCED_WHY: dict[str, str] = {
     "terminal.cwd": "Commands start in /workspace, the workspace's own files.",
     "terminal.credential_files": "No credential file of this machine is copied into the sandbox.",
     "terminal.docker_volumes": "Exactly the workspace's folders and the ones you shared (Folders card); nothing else of this machine.",
-    "terminal.docker_shared_container_key": "One sandbox per workspace, named after it, shared by its Co-Founder and members (Hermes: tools/terminal_tool.py:217).",
-    "auth.adopt_external_logins": "Each workspace's Hermes uses only the logins it holds itself, never one borrowed from another program (Hermes: agent/credential_pool.py:2620).",
-    "gateway.standalone": "One Hermes gateway per workspace, serving its Co-Founder and members (Hermes: gateway/host_attach.py:345).",
-    "bot_desktop.placement": "Browser and computer use run on the workspace's own screen inside its sandbox, never on this machine (Hermes's \"auto\" may use this machine: tools/bot_desktop/placement.py:41).",
+    "terminal.docker_shared_container_key": "One sandbox per workspace, named after it, shared by its Co-Founder and members (engine: tools/terminal_tool.py:217).",
+    "auth.adopt_external_logins": "Each workspace uses only the logins it holds itself, never one borrowed from another program (engine: agent/credential_pool.py:2620).",
+    "gateway.standalone": "One gateway per workspace, serving its Co-Founder and members (engine: gateway/host_attach.py:345).",
+    "bot_desktop.placement": "Browser and computer use run on the workspace's own screen inside its sandbox, never on this machine (the engine's \"auto\" may use this machine: tools/bot_desktop/placement.py:41).",
     # The workspace's capabilities and chats (actions/library.py profile_settings)
-    "context_file_max_chars": "SOUL.md (AGOS's rules, the Co-Founder's chat actions and its view of the workspace) is loaded whole; Hermes's own cap (6% of the window, at least 20,000 characters) cuts its middle out (Hermes: agent/prompt_builder.py:1155-1180).",
-    "plugins.entries.agos-guard.granted_capabilities": "AGOS's plugin may react to room messages through Hermes's own platform actions (Hermes: hermes_cli/plugin_capabilities.py:112).",
-    "display.platforms.agos.tool_progress": "AGOS's chats are its plugin's platform, where every message Hermes sends becomes a chat message (no edits: bridge.py edit_message keeps the first one). AGOS shows its own \"Working…\"; progress lines would land as answers.",
-    "display.platforms.agos.long_running_notifications": 'AGOS\'s chats show their own "Working…" (each Hermes notice would be a chat message).',
+    "context_file_max_chars": "SOUL.md (AGOS's rules, the Co-Founder's chat actions and its view of the workspace) is loaded whole; the engine's own cap (6% of the window, at least 20,000 characters) cuts its middle out (engine: agent/prompt_builder.py:1155-1180).",
+    "plugins.entries.agos-guard.granted_capabilities": "AGOS's plugin may react to room messages through the engine's own platform actions (engine: hermes_cli/plugin_capabilities.py:112).",
+    "display.platforms.agos.tool_progress": "AGOS's chats are its plugin's platform, where every message the engine sends becomes a chat message (no edits: bridge.py edit_message keeps the first one). AGOS shows its own \"Working…\"; progress lines would land as answers.",
+    "display.platforms.agos.long_running_notifications": 'AGOS\'s chats show their own "Working…" (each engine notice would be a chat message).',
     "display.platforms.agos.interim_assistant_messages": "AGOS's chats get only the answer (each interim message would be a chat message).",
     "display.platforms.agos.busy_ack_detail": "AGOS's chats show their own busy state.",
     "display.platforms.agos.streaming": "AGOS's chats take the answer when it is complete: the platform keeps no edits, so a streamed answer would stop at its first piece.",
     "display.platforms.agos.busy_steer_ack_enabled": "AGOS's chats show your correction themselves.",
-    "platforms.webhook.host": "Webhooks reach Hermes on this machine only; AGOS's public relay passes them on. Hermes's default binds every interface (Hermes: gateway/platforms/webhook.py:59,209; gateway/config.py:448).",
-    "approvals.mcp_reload_confirm": "AGOS reloads an edited app/MCP server with Hermes's own /reload-mcp, where nobody answers a confirm: with it on the reload waits for ever (Hermes: gateway/slash_commands.py:1058).",
+    "platforms.webhook.host": "Webhooks reach the engine on this machine only; AGOS's public relay passes them on. The engine's default binds every interface (engine: gateway/platforms/webhook.py:59,209; gateway/config.py:448).",
+    "approvals.mcp_reload_confirm": "AGOS reloads an edited app/MCP server with the engine's own /reload-mcp, where nobody answers a confirm: with it on the reload waits for ever (engine: gateway/slash_commands.py:1058).",
     # The team's board (actions/agent_profiles.py kanban_pairs; actions/account_pause.py)
-    "kanban.dispatch_in_gateway": "Only the Co-Founder's Hermes starts cards (for itself and its members) (Hermes: gateway/kanban_watchers.py:231).",
-    "kanban.dispatch_profiles": "The Co-Founder starts cards only for this workspace's agents; empty while your account-limit pause holds the board (Usage & limits) (Hermes: hermes_cli/kanban_db_dispatch.py:1693).",
+    "kanban.dispatch_in_gateway": "Only the Co-Founder's engine starts cards (for itself and its members) (engine: gateway/kanban_watchers.py:231).",
+    "kanban.dispatch_profiles": "The Co-Founder starts cards only for this workspace's agents; empty while your account-limit pause holds the board (Usage & limits) (engine: hermes_cli/kanban_db_dispatch.py:1693).",
     # The members' commands in Telegram (actions/hermes_channel.py sync_member_menus)
-    "platforms.telegram.extra.command_menu.priority": "The members' own commands come first in the bot's \"/\" menu (Hermes's menu holds 60); AGOS keeps it in step with the members.",
+    "platforms.telegram.extra.command_menu.priority": "The members' own commands come first in the bot's \"/\" menu (the engine's menu holds 60); AGOS keeps it in step with the members.",
 }
 
 # Keys AGOS doesn't write but that must stay as they are while AGOS's own egress
@@ -80,10 +80,10 @@ FORCED_WHY: dict[str, str] = {
 # proxy. Shown read-only with the reason.
 _PROXY_WHY = (
     "AGOS's own egress proxy is every sandbox's only way out (its HTTPS_PROXY is in "
-    "terminal.docker_env). Hermes's iron-proxy would collide with it: with "
-    "proxy.enforce_on_docker on (Hermes's default) Hermes then refuses to start any "
+    "terminal.docker_env). The engine's iron-proxy would collide with it: with "
+    "proxy.enforce_on_docker on (the built-in default) the engine then refuses to start any "
     "sandbox (tools/environments/docker_egress.py check_docker_env_collisions), and "
-    "with it off Hermes's proxy is dropped anyway. Kept as Hermes's default while AGOS's "
+    "with it off the engine's proxy is dropped anyway. Kept as the default while AGOS's "
     "proxy runs."
 )
 LOCKED_WHY: dict[str, str] = {
@@ -104,22 +104,22 @@ def locked_keys() -> dict[str, str]:
 # prefix). Shown read-only with the reason; a test checks each is written in AGOS's
 # source.
 FORCED_ENV_WHY: dict[str, str] = {
-    "API_SERVER_ENABLED": "AGOS talks to each workspace's Hermes through Hermes's own API server (engine/hermes.py _write_api_env).",
+    "API_SERVER_ENABLED": "AGOS talks to each workspace through the engine's own API server (engine/hermes.py _write_api_env).",
     "API_SERVER_HOST": "The API answers on this machine only (loopback).",
     "API_SERVER_PORT": "A free port AGOS picks for this profile's API.",
     "API_SERVER_KEY": "A fresh key AGOS keeps for this profile's API (never shown).",
-    "GATEWAY_ALLOW_ALL_USERS": "Kept unset: Hermes would then let anyone write to the bots (gateway/authz_mixin.py); who may write is on Workspace → Telegram.",
-    "AGOS_PLATFORM_*": "AGOS's chats are this Hermes's conversations (AGOS's plugin platform \"agos\"): on, the owner only, and the Co-Founder chat as its home.",
-    "WEBHOOK_ENABLED": "Hermes's webhook platform, on this machine only; AGOS's public relay passes webhooks on to it.",
+    "GATEWAY_ALLOW_ALL_USERS": "Kept unset: the engine would then let anyone write to the bots (gateway/authz_mixin.py); who may write is on Workspace → Telegram.",
+    "AGOS_PLATFORM_*": "AGOS's chats are this install's conversations (AGOS's plugin platform \"agos\"): on, the owner only, and the Co-Founder chat as its home.",
+    "WEBHOOK_ENABLED": "The engine's webhook platform, on this machine only; AGOS's public relay passes webhooks on to it.",
     "WEBHOOK_PORT": "The port of this workspace's webhook platform (one per workspace).",
-    "AGOS_MCP_*": "The keys of the workspace's apps (MCP servers), which its Hermes MCP config refers to.",
+    "AGOS_MCP_*": "The keys of the workspace's apps (MCP servers), which its MCP config refers to.",
 }
 
 # .env lines AGOS doesn't write but that must stay off: `<PLATFORM>_ALLOW_ALL_USERS`
 # (gateway/authz_mixin.py: a truthy one admits every user of that platform before
 # any allowlist or pairing is read).
 _ALLOW_ALL_WHY = (
-    "Kept off: Hermes then lets anyone on this platform command the agents "
+    "Kept off: the engine then lets anyone on this platform command the agents "
     "(gateway/authz_mixin.py, before its allowlist and pairing). Who may write to the "
     "bot is on Workspace → Telegram (people)."
 )
@@ -322,7 +322,7 @@ def _rule(
         from agos_core.actions import hermes_managed
 
         one = (
-            " One value for every workspace (Hermes's managed scope)."
+            " One value for every workspace (the managed scope)."
             if key in hermes_managed.by_card() or card == "helper-models"
             else ""
         )
@@ -337,7 +337,7 @@ def _rule(
             "kind": "choice",
             "card": None,
             "reason": f"Your choice. AGOS recommends {_norm(value)}: {owner_choices.WHY[key]} "
-            "A new workspace or agent starts on it; AGOS never resets yours (Hermes's default "
+            "A new workspace or agent starts on it; AGOS never resets yours (the built-in default "
             "is written as a value when you go back to it).",
             "recommended": value,
         }

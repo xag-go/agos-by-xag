@@ -190,7 +190,7 @@ def _items(core: Core, workspace_id: str, member: str, kit: dict[str, Any]) -> l
             how = "To write: the Co-Founder writes it, then it can be tried in Skill Studio."
             action = "write_skill"
         else:
-            how = "To find: the Co-Founder searches Hermes's skills hub and the Brain."
+            how = "To find: the Co-Founder searches the skills hub and the Brain."
             action = "find_skill"
         items.append(
             _item(

@@ -36,7 +36,12 @@ LOG_METHODS = {"debug", "info", "warning", "error", "exception", "critical"}
 # The owner-copy sources swept for the spec. A module belongs here when its
 # string literals include owner-visible text (errors, hints, titles,
 # descriptions, notifications, report lines). Modules owned by sibling lanes
-# (updates, health, errors-page, agent prompt composition) are not listed.
+# are not listed and are re-checked at integration: the updates modules
+# (engine/agos_update.py, engine/hermes_update.py, engine/skill_updates.py,
+# feat/nhw-core), the health modules (engine/hermes_health.py), the errors
+# modules (engine/errors.py, engine/error_alerts.py, engine/error_issues.py,
+# engine/hermes_errors.py, engine/mcp_errors.py) and the agent prompt
+# composition (feat/nhw-core2).
 MODULES = [
     # actions/: ActionError messages, hints, audit and notification texts
     "actions/access.py",
@@ -119,6 +124,7 @@ MODULES = [
     "engine/apps.py",
     "engine/automation_run.py",
     "engine/backup.py",
+    "engine/cron.py",
     "engine/envfile.py",
     "engine/github_token.py",
     "engine/hermes_redact.py",
@@ -143,7 +149,6 @@ MODULES = [
     "engine/settings_schema/groups.py",
     "engine/settings_schema/read_cache.py",
     "engine/hermes/commands.py",
-    "engine/hermes/cron.py",
     "engine/hermes/gateway_run.py",
     "engine/hermes/gateway_unit.py",
     "engine/hermes/profiles.py",
@@ -225,6 +230,5 @@ def test_owner_copy_never_names_the_engine() -> None:
         found.extend(_offenders(rel))
     assert not found, (
         f"{len(found)} owner-facing string(s) name the engine "
-        f"(reword without 'Hermes', spec 2026-11-04-no-engine-name):\n"
-        + "\n".join(found)
+        f"(reword without 'Hermes', spec 2026-11-04-no-engine-name):\n" + "\n".join(found)
     )

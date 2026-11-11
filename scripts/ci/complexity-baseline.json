@@ -229,7 +229,7 @@
     "services/core/src/agos_core/actions/services/settings/hermes_rows.py::_env_rows": {
       "C901": 15,
       "PLR0912": 13,
-      "length": 139
+      "length": 135
     },
     "services/core/src/agos_core/actions/services/settings/hermes_writes.py::give_new_profile": {
       "C901": 13,

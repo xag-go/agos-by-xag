@@ -562,7 +562,7 @@ def test_a_break_inside_hermes_reaches_the_log_and_his_phone_once(env: Any) -> N
     ).fetchall()
     assert len(said) == 1 and "Ask me" in said[0]["body"]
     phone = core.db.execute(
-        "SELECT body FROM channel_outbox WHERE body LIKE '%Hermes contract broken%'"
+        "SELECT body FROM channel_outbox WHERE body LIKE '%Engine contract broken%'"
     ).fetchall()
     assert len(phone) == 1
 

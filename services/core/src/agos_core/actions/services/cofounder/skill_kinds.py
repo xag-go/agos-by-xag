@@ -268,7 +268,7 @@ def undo_skill_here(core: Core, workspace_id: str, result: dict[str, Any]) -> No
     """A skill change taken back: Hermes's rollback_entry of the ledger entries the
     change made (refused when the skill changed again since)."""
     if core.engine is None:
-        raise ActionError("Hermes isn't available.", 503)
+        raise ActionError("The engine isn't available.", 503)
     name = str(result["copy"])
     home = core.engine.profile_home(workspace_id)
     ledger = result.get("ledger")
@@ -282,7 +282,7 @@ def undo_skill_here(core: Core, workspace_id: str, result: dict[str, Any]) -> No
             f"The copy this Undo needed was moved to the backups folder ({kept}); "
             "it can't be undone from here."
             if kept
-            else "This change was made before AGOS kept Hermes's skill ledger for it; "
+            else "This change was made before AGOS kept the skill ledger for it; "
             "there is nothing to roll back with."
         )
     from agos_core.actions import skill_writes

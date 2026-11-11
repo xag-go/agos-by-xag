@@ -43,7 +43,7 @@ def subtree(core: Core, workspace_id: str, root: str) -> dict[str, str]:
     from agos_core.actions import agent_profiles
 
     if core.engine is None:
-        raise ActionError("Hermes isn't set up yet.")
+        raise ActionError("The engine isn't set up yet.")
     board_db = agent_profiles.board_db(core, workspace_id)
     if not board_db.is_file():
         raise NotFoundError("This card")
@@ -54,7 +54,7 @@ def subtree(core: Core, workspace_id: str, root: str) -> dict[str, str]:
             for parent, child in board.links():
                 children.setdefault(str(parent), []).append(str(child))
     except sqlite3.Error as error:
-        raise ActionError("Hermes's board can't be read right now.") from error
+        raise ActionError("The engine's board can't be read right now.") from error
     if root not in statuses:
         raise NotFoundError("This card")
     found: dict[str, str] = {}

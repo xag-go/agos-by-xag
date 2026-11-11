@@ -176,7 +176,7 @@ from hermes_cli.main_provider_setup import _main_model_reasoning_efforts
 from hermes_cli.config import load_config
 from hermes_cli.setup import _current_reasoning_effort
 # refresh=1 asks each provider live (e.g. account-gated models such as GPT-6 Astra
-# only appear after a live, account-scoped discovery); 0 reads Hermes's cache.
+# only appear after a live, account-scoped discovery); 0 reads the engine's cache.
 p = build_model_options_payload(load_picker_context(), include_unconfigured=True,
                                 refresh=sys.argv[1:] == ["1"])
 def efforts(slug, model):
@@ -189,7 +189,7 @@ out = []
 for x in p.get("providers", []):
     ids = [m if isinstance(m, str) else m.get("id") for m in x.get("models") or []]
     ok = bool(x.get("authenticated"))
-    # Hermes's auth type: the picker's (unconnected rows), else its provider registry's.
+    # the engine's auth type: the picker's (unconnected rows), else its provider registry's.
     reg = PROVIDER_REGISTRY.get(x.get("slug") or "")
     out.append({"slug": x.get("slug"), "name": x.get("name"), "authenticated": ok, "models": ids,
                 "auth": x.get("auth_type") or getattr(reg, "auth_type", "") or "",
@@ -199,8 +199,8 @@ try:
     current = _current_reasoning_effort(load_config())
 except Exception:
     current = ""
-# Hermes's own key variables of each provider, in its order (its registry; a provider
-# with no registry row, OpenRouter, by its name in Hermes's list of known keys).
+# the engine's own key variables of each provider, in its order (its registry; a provider
+# with no registry row, OpenRouter, by its name in the engine's list of known keys).
 from hermes_cli.config import OPTIONAL_ENV_VARS
 def key_envs(slug):
     cfg = PROVIDER_REGISTRY.get(slug)
@@ -339,7 +339,7 @@ def to_connections(
             "id": agos,
             "name": provider_name(agos, payload),
             "cli": {
-                "tool": "Hermes",
+                "tool": "AGOS",
                 "installed": agos not in ("gemini", "openrouter"),
                 "account": None,
                 "loginCommand": f"hermes auth add {hermes_slug(agos, 'cli')}",
@@ -369,7 +369,7 @@ def to_connections(
             "id": p["slug"],
             "name": str(p.get("name") or p["slug"]),
             "cli": {
-                "tool": "Hermes",
+                "tool": "AGOS",
                 "installed": sign_in,
                 "account": "your account" if sign_in and on else None,
                 "loginCommand": f"hermes auth add {p['slug']}",
@@ -596,7 +596,7 @@ class ModelCatalog:
         out = self._run([self._python(), "-c", script], 60, home)
         lines = [ln for ln in out.splitlines() if ln.startswith("AGOS-POOL ")]
         if not lines:
-            raise RuntimeError("Hermes didn't list its credential pool")
+            raise RuntimeError("The engine didn't list its credential pool")
         found = json.loads(lines[-1][len("AGOS-POOL ") :])
         if found.get("error"):
             raise RuntimeError(str(found["error"])[:200])

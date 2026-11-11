@@ -66,7 +66,7 @@ def ops_for(
 
 def _engine(core: Core) -> Any:
     if core.engine is None:
-        raise ActionError("Hermes isn't available.", 503)
+        raise ActionError("The engine isn't available.", 503)
     return core.engine
 
 
@@ -104,9 +104,9 @@ def check_new(
     try:
         done = _engine(core).skill_check(home, name, text, files or {})
     except (EngineError, OSError, ValueError) as error:
-        raise ActionError(f"Hermes didn't take it: {error}", 502) from error
+        raise ActionError(f"The engine didn't take it: {error}", 502) from error
     if not done.get("ok"):
-        raise ActionError(f"Hermes refused it: {done.get('error') or 'no answer'}")
+        raise ActionError(f"The engine refused it: {done.get('error') or 'no answer'}")
 
 
 def _run(
@@ -121,9 +121,9 @@ def _run(
     try:
         done = _engine(core).skill_manage(home, name, ops, delete=delete, actor=actor)
     except (EngineError, OSError, ValueError) as error:
-        raise ActionError(f"Hermes didn't take it: {error}", 502) from error
+        raise ActionError(f"The engine didn't take it: {error}", 502) from error
     if not done.get("ok"):
-        raise ActionError(f"Hermes refused it: {done.get('error') or 'no answer'}")
+        raise ActionError(f"The engine refused it: {done.get('error') or 'no answer'}")
     return [str(i) for i in done.get("entries") or []]
 
 
@@ -135,6 +135,6 @@ def rollback(core: Core, home: Path, skills: list[str], entries: list[str]) -> N
     try:
         done = _engine(core).skill_rollback(home, skills, entries)
     except (EngineError, OSError, ValueError) as error:
-        raise ActionError(f"Hermes didn't take it: {error}", 502) from error
+        raise ActionError(f"The engine didn't take it: {error}", 502) from error
     if not done.get("ok"):
-        raise ActionError(str(done.get("error") or "Hermes didn't put it back."), 409)
+        raise ActionError(str(done.get("error") or "The engine didn't put it back."), 409)

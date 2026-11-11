@@ -52,7 +52,7 @@ if req["op"] == "start":
 else:
     try:
         r = tmb.poll_pairing_result_once(None, tmb.TelegramPairing(**req["pairing"]))
-    except Exception as error:  # Hermes counts these as "not ready yet"
+    except Exception as error:  # the engine counts these as "not ready yet"
         out["error"] = type(error).__name__
     else:
         out["result"] = dataclasses.asdict(r) if r else None
@@ -109,12 +109,12 @@ def _hermes(engine: EngineConfig, request: dict[str, Any]) -> dict[str, Any]:
         hermes_contract.ran(done)
     except (OSError, RuntimeError, subprocess.TimeoutExpired) as error:
         raise PairingError(
-            f"Hermes's Telegram setup didn't answer ({type(error).__name__})."
+            f"The engine's Telegram setup didn't answer ({type(error).__name__})."
         ) from None
     lines = [ln for ln in done.stdout.splitlines() if ln.startswith(MARKER)]
     if done.returncode != 0 or not lines:
         log.info("telegram setup failed (%s): %s", done.returncode, done.stderr[-500:])
-        raise PairingError("Hermes's Telegram setup failed. Try again in a moment.")
+        raise PairingError("The engine's Telegram setup failed. Try again in a moment.")
     answer = json.loads(lines[-1][len(MARKER) :])
     return answer if isinstance(answer, dict) else {}
 

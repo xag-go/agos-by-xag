@@ -82,11 +82,11 @@ def write(
 
     engine = core.engine
     if engine is None:
-        raise ActionError("Hermes isn't available.", status=503)
+        raise ActionError("The engine isn't available.", status=503)
     # Only this setting's row (C8: the whole page's read ran before each save).
     row = _one_row(core, key)
     if row is None:
-        raise ActionError(f"{key} isn't one of Hermes's settings.", status=404)
+        raise ActionError(f"{key} isn't one of the engine settings.", status=404)
     if not row["editable"]:
         rule = row["rule"] or {}
         raise ActionError(f"{key} can't be changed here: {rule.get('reason', '')}", status=409)
@@ -142,7 +142,7 @@ def write(
     if jobs:
         warm_after_write(core)
     if failed:
-        raise ActionError(f"Hermes didn't take it in {'; '.join(failed)}", status=502)
+        raise ActionError(f"The engine didn't take it in {'; '.join(failed)}", status=502)
     found = _one_row(core, key)
     assert found is not None
     return found
@@ -156,7 +156,7 @@ def restore(core: Core, before: dict[str, Any]) -> None:
 
     engine = core.engine
     if engine is None:
-        raise ActionError("Hermes isn't available.", status=503)
+        raise ActionError("The engine isn't available.", status=503)
     key = str(before["key"])
     env = before.get("source") == "env"
     field = hs.Field(key=key, type="string", description="", default=None)
@@ -188,7 +188,7 @@ def restore(core: Core, before: dict[str, Any]) -> None:
     if jobs:
         warm_after_write(core)
     if failed:
-        raise ActionError(f"Hermes didn't take it back in {'; '.join(failed)}", status=502)
+        raise ActionError(f"The engine didn't take it back in {'; '.join(failed)}", status=502)
 
 
 def _parsed(field_type: str, text: str) -> Any:

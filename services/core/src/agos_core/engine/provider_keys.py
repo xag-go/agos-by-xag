@@ -147,7 +147,7 @@ class ProviderKeys:
         )
         hermes_contract.ran(result)
         if result.returncode != 0:
-            raise RuntimeError("Hermes did not save the change.")
+            raise RuntimeError("The engine did not save the change.")
         return result.stdout
 
     def probe(self, name: str, key: str) -> KeyCheck | None:
@@ -158,13 +158,13 @@ class ProviderKeys:
         try:
             answer = json.loads(line[len("AGOS-PROBE ") :])
         except ValueError as error:
-            raise RuntimeError("Hermes did not test the key.") from error
+            raise RuntimeError("The engine did not test the key.") from error
         return verdict(answer if isinstance(answer, dict) else {})
 
     def check(self, name: str, key: str) -> KeyCheck:
         """A key for Hermes's variable `name` (its registry's), tested by Hermes."""
         found = self.probe(name, key)
-        return found or KeyCheck(True, "Key saved (Hermes has no test for it).")
+        return found or KeyCheck(True, "Key saved (there is no test for it).")
 
     def save_env(self, name: str, key: str) -> None:
         """A provider's key, under Hermes's own variable for it."""

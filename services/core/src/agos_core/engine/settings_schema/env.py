@@ -68,7 +68,7 @@ def unlisted_env(name: str) -> EnvVar:
     key as a secret (web_routers/config_env.py: custom keys are is_password)."""
     return EnvVar(
         name=name,
-        description="Not in Hermes's list of .env settings: set in this Hermes by hand, by a "
+        description="Not in the engine's list of .env settings: set here by hand, by a "
         "plugin, or by AGOS.",
         category="custom",
         secret=True,

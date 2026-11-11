@@ -191,12 +191,12 @@ def write(core: Core, limits: Limits) -> Limits:
     if limits.time_limit_minutes is not None and not 1 <= limits.time_limit_minutes <= 525_600:
         raise ActionError("Use a time limit between 1 minute and a year.")
     if core.engine is None:
-        raise ActionError("Hermes isn't available.", status=503)
+        raise ActionError("The engine isn't available.", status=503)
     defaults = hermes_defaults(core)
     sets, unsets = _changes(_managed(core), limits, defaults)
     if sets or unsets:
         try:
             hermes_managed.write(core, sets, unsets)
         except (EngineError, OSError) as error:
-            raise ActionError(f"Hermes didn't take it: {error}", status=502) from error
+            raise ActionError(f"The engine didn't take it: {error}", status=502) from error
     return read(core, defaults)

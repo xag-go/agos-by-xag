@@ -15,6 +15,8 @@ type Ask = {
   title: string;
   body?: ReactNode;
   confirmLabel?: string;
+  /** The cancel button's words; null = no cancel (a notice with one way on). */
+  cancelLabel?: string | null;
   danger?: boolean;
   /** Set to ask for a value (e.g. a name); the answer is the typed text. */
   input?: { label: string; initial?: string };
@@ -117,16 +119,18 @@ function AskDialog({
           />
         )}
         <div className="flex justify-end gap-2">
-          <Button
-            type="button"
-            variant="ghost"
-            autoFocus={!q.input}
-            onClick={() => {
-              finish(null);
-            }}
-          >
-            Cancel
-          </Button>
+          {q.cancelLabel !== null && (
+            <Button
+              type="button"
+              variant="ghost"
+              autoFocus={!q.input}
+              onClick={() => {
+                finish(null);
+              }}
+            >
+              {q.cancelLabel ?? "Cancel"}
+            </Button>
+          )}
           <Button type="submit" variant={q.danger ? "danger" : "primary"}>
             {q.confirmLabel ?? "OK"}
           </Button>

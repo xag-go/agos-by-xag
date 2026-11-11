@@ -2429,6 +2429,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/workspaces/{workspace_id}/automations/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Check
+         * @description The owner's Save button: a dry run of the save, nothing is written.
+         */
+        post: operations["check_workspaces__workspace_id__automations_check_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/workspaces/{workspace_id}/autonomy": {
         parameters: {
             query?: never;
@@ -6746,6 +6766,19 @@ export interface components {
             ticket?: components["schemas"]["TicketMapping"] | null;
             /** Variables */
             variables?: components["schemas"]["AutomationVariable"][] | null;
+        };
+        /**
+         * AutomationCheck
+         * @description What saving would say: every problem (they block the save), the warnings (they
+         *     don't), and in plain words how it will run (empty while there are problems).
+         */
+        AutomationCheck: {
+            /** Preview */
+            preview: string;
+            /** Problems */
+            problems: string[];
+            /** Warnings */
+            warnings: string[];
         };
         /**
          * AutomationCost
@@ -19304,6 +19337,45 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    check_workspaces__workspace_id__automations_check_post: {
+        parameters: {
+            query?: {
+                automation_id?: number | null;
+            };
+            header?: {
+                "x-agos-internal"?: string | null;
+            };
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AutomationBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutomationCheck"];
                 };
             };
             /** @description Validation Error */

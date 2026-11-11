@@ -24,7 +24,7 @@ import re
 import shlex
 from typing import Any
 
-__all__ = ["MAX_LINES", "OPS", "ConditionError", "parse_only_if"]
+__all__ = ["MAX_LINES", "OPS", "ConditionError", "describe", "parse_only_if"]
 
 MAX_LINES = 20
 OPS = ("is", "is_not", "contains", "not_contains")
@@ -104,3 +104,42 @@ def parse_only_if(raw: object, step: str, kind: str) -> tuple[dict[str, Any], ..
         line = {k: v for k, v in line.items() if v not in (None, "", [])}
         lines.append(_check(line, where) if "check" in line else _match(line, where))
     return tuple(lines)
+
+
+_OP_WORDS = {
+    "is": "is",
+    "is_not": "is not",
+    "contains": "contains",
+    "not_contains": "doesn't contain",
+}
+
+
+def describe(raw: object) -> str:
+    """A step's "Only if" lines in plain words for the preview ("sheet is Ideas or
+    Hooks and the check tools/gate.py says yes"); "" when there is no line or the
+    lines are not readable (the save check reports those)."""
+    if not isinstance(raw, list):
+        return ""
+    parts: list[str] = []
+    for line in raw:
+        if not isinstance(line, dict):
+            return ""
+        # A typed form (the owner's page) sends its empty fields too.
+        line = {k: v for k, v in line.items() if v not in (None, "", [])}
+        if "check" in line:
+            try:
+                words = shlex.split(str(line.get("check") or ""))
+            except ValueError:
+                return ""
+            script = words[0].removeprefix(WORKSPACE + "/") if words else "a script"
+            parts.append(f"the check {script} says yes")
+            continue
+        field = _field(line.get("field")).removeprefix("payload.")
+        values = line.get("values")
+        shown = values if isinstance(values, list) else [values] if values else []
+        wanted = " or ".join(str(v).strip() for v in shown if str(v).strip())
+        if not field or not wanted:
+            return ""
+        op = _OP_WORDS.get(str(line.get("op") or "is").strip().lower(), "is")
+        parts.append(f"{field} {op} {wanted}")
+    return " and ".join(parts)

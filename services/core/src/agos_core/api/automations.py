@@ -96,6 +96,43 @@ def create(core: CoreDep, workspace_id: str, body: AutomationBody) -> Created:
     )
 
 
+class AutomationCheck(Record):
+    """What saving would say: every problem (they block the save), the warnings (they
+    don't), and in plain words how it will run (empty while there are problems)."""
+
+    problems: list[str]
+    warnings: list[str]
+    preview: str
+
+
+@router.post("/workspaces/{workspace_id}/automations/check")
+def check(
+    core: CoreDep, workspace_id: str, body: AutomationBody, automation_id: int | None = None
+) -> AutomationCheck:
+    """The owner's Save button: a dry run of the save, nothing is written."""
+    require_workspace(core, workspace_id)
+    report = actions.review_form(
+        core,
+        workspace_id,
+        automation_id,
+        {
+            "name": body.name,
+            "instructions": body.instructions,
+            "schedule": body.schedule.strip(),
+            "hook": body.hook,
+            "agent": body.agent,
+            "steps": [s.model_dump() for s in body.steps],
+            "variables": [v.model_dump() for v in body.variables]
+            if body.variables is not None
+            else None,
+            "check_first": body.check_first,
+        },
+    )
+    return AutomationCheck(
+        problems=list(report.problems), warnings=list(report.warnings), preview=report.preview
+    )
+
+
 @router.put("/workspaces/{workspace_id}/automations/{automation_id}")
 def update(core: CoreDep, workspace_id: str, automation_id: int, body: AutomationBody) -> None:
     actions.save(

@@ -427,6 +427,7 @@ def check_who(
                 "agent": s.agent,
                 "waits_on": list(s.waits_on),
                 "reviews": s.reviews,
+                **({"only_if": [dict(c) for c in s.only_if]} if s.only_if else {}),
             }
             for s in plan.steps
         ]

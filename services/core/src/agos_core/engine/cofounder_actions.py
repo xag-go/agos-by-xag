@@ -243,18 +243,38 @@ def _condition(raw: dict[str, Any]) -> dict[str, Any]:
 
 
 def _step(raw: dict[str, Any]) -> dict[str, Any]:
-    """One step of a team automation, as the Co-Founder wrote it (checked on save)."""
+    """One step of a team automation, as the Co-Founder wrote it (checked on save).
+    Its kind, waits and Only if lines only when it names them: a change to one step
+    of an automation (update_automation) keeps what it doesn't name."""
     waits = raw.get("waits_on") or []
     return {
         "key": str(raw.get("key") or "").strip(),
         "title": str(raw.get("title") or "").strip(),
         "description": str(raw.get("description") or "").strip(),
-        "kind": str(raw.get("kind") or "work").strip().lower(),
+        **({"kind": str(raw.get("kind") or "work").strip().lower()} if "kind" in raw else {}),
         "agent": (str(raw["agent"]).strip().lstrip("@") or None) if raw.get("agent") else None,
-        "waits_on": [str(w).strip() for w in waits] if isinstance(waits, list) else [str(waits)],
+        **(
+            {
+                "waits_on": [str(w).strip() for w in waits]
+                if isinstance(waits, list)
+                else [str(waits)]
+            }
+            if "waits_on" in raw
+            else {}
+        ),
         "reviews": str(raw["reviews"]).strip() if raw.get("reviews") else None,
+        # Its "Only if" lines, as written (engine/step_conditions.py checks them on save).
+        **({"only_if": json.loads(json.dumps(raw["only_if"] or []))} if "only_if" in raw else {}),
     }
 
+
+# How a step's "Only if" lines read (engine/step_conditions.py), in the Co-Founder's help.
+ONLY_IF_HELP = """
+  A step with nothing to do in some runs gets "only_if" lines: it starts its agent
+  only when every line holds, else its card closes "agos-skipped: <why>" at once (no
+  tokens). A line: {"field": "payload.<path>" (the webhook delivery) or a variable
+  name, "op": "is" | "is_not" | "contains" | "not_contains", "values": [...]}, or
+  {"check": "/workspace/tools/<script>"} (its last line says YES/AH or NO/LA)."""
 
 # Several changes in ONE card (made by AGOS, e.g. the general check's changes that
 # wait for the owner): Approve applies them all (or none), Undo takes them all back.
@@ -439,7 +459,7 @@ WHO DOES AN AUTOMATION — decide it every time, from the team below:
   Step fields: key (short id), title, description (what exactly to do and hand
   on), agent (a team member's ID; leave out = you), kind ("work", or "review"
   with "reviews": "<key>"; "approval" only if the owner asked to check first),
-  waits_on (keys). Use each agent only for what its job title says.
+  waits_on (keys). Use each agent only for what its job title says.{ONLY_IF_HELP}
 - When you change who does an automation, use update_automation with agent or steps.
 
 WHEN AN AUTOMATION STARTS — a schedule, a webhook, or both:

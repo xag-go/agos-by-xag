@@ -6866,6 +6866,8 @@ export interface components {
              * @enum {string}
              */
             kind: "work" | "review" | "approval";
+            /** Onlyif */
+            onlyIf?: components["schemas"]["StepCondition"][];
             /** Reviews */
             reviews?: string | null;
             /** Title */
@@ -12678,6 +12680,22 @@ export interface components {
         StayBody: {
             /** Agents */
             agents?: string[];
+        };
+        /**
+         * StepCondition
+         * @description One "Only if" line of a team step (engine/step_conditions.py): a match line
+         *     (field, op, values: the webhook's tests on the run's values) or a check line
+         *     (check: a /workspace script whose last line says YES/AH or NO/LA).
+         */
+        StepCondition: {
+            /** Check */
+            check?: string | null;
+            /** Field */
+            field?: string | null;
+            /** Op */
+            op?: ("is" | "is_not" | "contains" | "not_contains") | null;
+            /** Values */
+            values?: string[];
         };
         /** Strategies */
         Strategies: {

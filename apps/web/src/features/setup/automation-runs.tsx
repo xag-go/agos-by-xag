@@ -22,14 +22,14 @@ export function AutomationRuns({
   workspaceId,
   automation,
   runs,
-  cost,
+  costs = [],
   closeHref,
 }: {
   workspaceId: string;
   automation: Automation;
   runs: AutomationRun[];
-  /** What its runs used this month and last month. */
-  cost?: AutomationCost;
+  /** What the automations' runs used this month and last month. */
+  costs?: AutomationCost[];
   closeHref: string;
 }) {
   return (
@@ -48,7 +48,7 @@ export function AutomationRuns({
               The last runs, newest first. Proposed cards go to To do only when
               you add them.
             </p>
-            <MonthCosts cost={cost} />
+            <MonthCosts of={automation.id} costs={costs} />
           </div>
           <RunNowButton
             workspaceId={workspaceId}
@@ -111,7 +111,7 @@ function RunCard({
       {run.report && (
         <Markdown text={run.report} className="mt-2 text-sm text-ink" />
       )}
-      {run.detail && <RunSteps workspaceId={workspaceId} detail={run.detail} />}
+      <RunSteps workspaceId={workspaceId} detail={run.detail} />
       {run.proposals.length > 0 && (
         <ul className="mt-3 flex flex-col gap-2 border-t border-line pt-3">
           {run.proposals.map((p) => (

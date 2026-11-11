@@ -30,8 +30,9 @@ export function RunSteps({
   detail,
 }: {
   workspaceId: string;
-  detail: RunDetail;
+  detail: RunDetail | null | undefined;
 }) {
+  if (!detail) return null;
   return (
     <details className="group mt-2 text-sm">
       <summary className="cursor-pointer list-none text-xs text-ink-2 hover:text-ink">
@@ -114,7 +115,14 @@ function StepRow({
 }
 
 /** "This month $1.23 · 1.2M tokens", small, for an automation's row. */
-export function MonthCost({ cost }: { cost: AutomationCost | undefined }) {
+export function MonthCost({
+  of,
+  costs,
+}: {
+  of: number;
+  costs: AutomationCost[];
+}) {
+  const cost = costs.find((c) => c.automationId === of);
   if (!cost || (cost.thisMonth.runs === 0 && cost.lastMonth.runs === 0)) {
     return null;
   }
@@ -130,7 +138,14 @@ export function MonthCost({ cost }: { cost: AutomationCost | undefined }) {
 }
 
 /** This month and last month, for the automation's Runs. */
-export function MonthCosts({ cost }: { cost: AutomationCost | undefined }) {
+export function MonthCosts({
+  of,
+  costs,
+}: {
+  of: number;
+  costs: AutomationCost[];
+}) {
+  const cost = costs.find((c) => c.automationId === of);
   if (!cost) return null;
   const rows = [
     ["This month", cost.thisMonth],

@@ -66,9 +66,16 @@ export function deriveUpdatesState(
   );
   if (running) return running;
   const settled = [agos, engine].filter((state) => state !== null);
-  settled.sort((a, b) => ((a.started_at ?? "") <= (b.started_at ?? "") ? -1 : 1));
+  settled.sort((a, b) =>
+    (a.started_at ?? "") <= (b.started_at ?? "") ? -1 : 1,
+  );
   const shown = settled.at(-1) ?? null;
-  if (shown && shown === engine && shown.phase === "failed" && agos?.phase === "done")
+  if (
+    shown &&
+    shown === engine &&
+    shown.phase === "failed" &&
+    agos?.phase === "done"
+  )
     return { ...shown, half_done: true };
   return shown;
 }

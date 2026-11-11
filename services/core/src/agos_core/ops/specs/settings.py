@@ -162,6 +162,7 @@ CHECK_UPDATES: OperationSpec[CheckUpdates] = OperationSpec(
     audit_title="Check for updates",
     gate="once",
     effect="read",
+    web_action="checkUpdates",
     cofounder_domain=WORKSPACE,
     cofounder_fields="(no fields)",
 )
@@ -176,6 +177,7 @@ RUN_UPDATES: OperationSpec[RunUpdates] = OperationSpec(
     input_model=RunUpdates,
     audit_title="Install the update",
     gate="owner",
+    web_action="runUpdates",
     cofounder_domain=WORKSPACE,
     cofounder_fields="(no fields)",
 )

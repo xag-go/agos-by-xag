@@ -99,7 +99,7 @@ def test_the_cofounder_changes_a_hermes_setting_and_undo_puts_each_value_back(en
     assert card["status"] == "failed" and "can't be changed here" in card["error"]
     [shown] = _run(core, a, {"do": "show_hermes_setting", "key": "checkpoints.max_snapshots"})
     assert shown["status"] == "done" and not shown["canUndo"]
-    assert "Hermes's default: 50" in shown["detail"]
+    assert "The engine's default: 50" in shown["detail"]
 
 
 def test_held_writes_are_decided_from_chat_and_undo_takes_it_back(env: Any) -> None:  # noqa: F811

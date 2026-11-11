@@ -119,14 +119,11 @@ DO: dict[str, str] = {
     "promoteArtifact": "do:promote_artifact",
     # settings, Hermes
     **PREFS_DO,
-    "saveHermesSetting": "do:change_hermes_setting",
     "runHermesHealth": "do:hermes_health",
     "runSecretsCheck": "do:secrets_check",
     "setBackupSchedule": "do:set_backup_schedule",
     "runBackup": "do:run_backup",
     "rehearseRestore": "do:rehearse_restore",
-    "checkHermesUpdate": "do:check_hermes_update",
-    "runHermesUpdate": "do:run_hermes_update",
     "undoLearned": "do:undo_learned",
     "saveMemory": "hermes:memory",
     **catalog.web_do(SPECS),  # the registry's kinds (ops/specs), as declared

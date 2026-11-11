@@ -149,9 +149,12 @@ def test_run_does_agos_first(client: Any, monkeypatch: pytest.MonkeyPatch) -> No
     set_setting(core.db, agos_update.KEY_CHECK, AGOS_READY)
     set_setting(core.db, hermes_update.KEY_CHECK, ENGINE_READY)
     started: list[str] = []
-    monkeypatch.setattr(
-        agos_update, "start_update", lambda core: started.append("agos") or {"phase": "queued"}
-    )
+
+    def _agos_start(core: Any) -> dict[str, str]:
+        started.append("agos")
+        return {"phase": "queued"}
+
+    monkeypatch.setattr(agos_update, "start_update", _agos_start)
     monkeypatch.setattr(
         hermes_update,
         "start_update",
@@ -228,7 +231,12 @@ def test_run_updates_runs_the_combined_update_with_an_audit_row(
 
     _c, core = client
     ran: list[str] = []
-    monkeypatch.setattr(updates, "start_update", lambda core: ran.append("run") or {"part": "agos"})
+
+    def _start(core: Any) -> dict[str, str]:
+        ran.append("run")
+        return {"part": "agos"}
+
+    monkeypatch.setattr(updates, "start_update", _start)
     REGISTRY.run(core, "run_updates", {}, actor=OWNER, workspace_id="ws-a")
     assert ran == ["run"]
     run = op_runs.latest(core.db, "run_updates")

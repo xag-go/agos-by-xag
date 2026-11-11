@@ -55,7 +55,7 @@ SET_WORKSPACE_SETTINGS: OperationSpec[SetWorkspaceSettings] = OperationSpec(
     cofounder_domain=WORKSPACE,
     cofounder_fields=(
         "model (its default model: the model id, or {provider, model, effort}), name, "
-        "description, values (object: the page's other Hermes settings keys)"
+        "description, values (object: the page's other engine settings keys)"
     ),
     cofounder_structured=("values",),
 )
@@ -79,7 +79,7 @@ SET_HERMES_LIMITS: OperationSpec[SetHermesLimits] = OperationSpec(
     cofounder_domain=WORKSPACE,
     cofounder_fields=(
         "loop_on, same_error, same_tool_failing, no_progress, time_limit_minutes, "
-        'members_at_once (each optional; "" = Hermes\'s default)'
+        'members_at_once (each optional; "" = the engine\'s default)'
     ),
 )
 

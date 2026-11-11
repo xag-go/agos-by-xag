@@ -81,15 +81,12 @@ function useUpdatePoll<T>(
   }, [url, watching]);
 }
 
-export function UpdatesCard() {
-  const [check, setCheck] = useState<UpdatesCheck | null>(null);
-  const [state, setState] = useState<UpdatesState | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [away, setAway] = useState(false);
-  const [error, setError] = useState("");
-  const [watching, setWatching] = useState(0);
-  const running = state !== null && RUNNING.includes(state.phase);
-
+/** Polls the status route while an update runs; `away` while AGOS restarts. */
+function useUpdatesStatus(
+  watching: number,
+  setState: (state: UpdatesState) => void,
+  setAway: (away: boolean) => void,
+) {
   useUpdatePoll<UpdatesStatus>("/api/updates", watching, (data) => {
     if (!data) {
       // AGOS restarts during an update: keep asking until it is back.
@@ -101,6 +98,117 @@ export function UpdatesCard() {
     if (data.state) setState(data.state);
     return data.state && RUNNING.includes(data.state.phase) ? 3000 : null;
   });
+}
+
+/** The live step list while the update runs (or while AGOS restarts). */
+function Progress({
+  state,
+  away,
+}: {
+  state: UpdatesState | null;
+  away: boolean;
+}) {
+  return (
+    <div
+      aria-live="polite"
+      className="rounded-xl border border-line bg-panel-2 p-4"
+    >
+      <p className="text-sm font-medium">
+        AGOS is updating — it stops for a few minutes and this page comes back
+        by itself…
+      </p>
+      <ol className="mt-2 flex flex-col gap-1 text-sm text-ink-2">
+        {(state?.steps ?? []).map((step) => (
+          <li key={`${step.name}-${step.at}`}>
+            {!away && step.name === state?.phase ? "⏳" : "✓"}{" "}
+            {STEP_WORDS[step.name] ?? step.name}
+          </li>
+        ))}
+        {away && <li>⏳ AGOS is restarting</li>}
+      </ol>
+    </div>
+  );
+}
+
+/** "An update is ready": what happens next, Not now / Update now. */
+function ReadyCard({
+  onRun,
+  onDismiss,
+}: {
+  onRun: () => void;
+  onDismiss: () => void;
+}) {
+  return (
+    <div className="flex flex-col gap-3 rounded-xl border border-line p-4">
+      <p className="text-sm font-medium">An update is ready.</p>
+      <p className="text-sm text-ink-2">
+        It backs everything up first, then AGOS stops for a few minutes and
+        comes back by itself. If anything fails, the old release comes back on
+        its own.
+      </p>
+      <div className="flex justify-end gap-2">
+        <Button onClick={onDismiss}>Not now</Button>
+        <Button variant="primary" onClick={onRun}>
+          Update now
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+/** The idle row: Check update, and "up to date" when the check found nothing. */
+function CheckRow({
+  busy,
+  check,
+  onCheck,
+}: {
+  busy: boolean;
+  check: UpdatesCheck | null;
+  onCheck: () => void;
+}) {
+  return (
+    <div className="flex items-center gap-3">
+      <Button onClick={onCheck} disabled={busy}>
+        {busy ? "Checking…" : "Check update"}
+      </Button>
+      {check && !check.ready && !busy && (
+        <span className="text-sm text-ink-2">You&apos;re up to date.</span>
+      )}
+    </div>
+  );
+}
+
+/** Everything shown while nothing runs: the note, the ready card, the result. */
+function Settled({
+  check,
+  state,
+  onRun,
+  onDismiss,
+}: {
+  check: UpdatesCheck | null;
+  state: UpdatesState | null;
+  onRun: () => void;
+  onDismiss: () => void;
+}) {
+  return (
+    <>
+      {check?.note ? <p className="text-sm text-ink-2">{check.note}</p> : null}
+      {check?.ready && <ReadyCard onRun={onRun} onDismiss={onDismiss} />}
+      {state && <Result state={state} />}
+    </>
+  );
+}
+
+export function UpdatesCard() {
+  const [check, setCheck] = useState<UpdatesCheck | null>(null);
+  const [state, setState] = useState<UpdatesState | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [away, setAway] = useState(false);
+  const [error, setError] = useState("");
+  const [watching, setWatching] = useState(0);
+  const running = state !== null && RUNNING.includes(state.phase);
+
+  useUpdatesStatus(watching, setState, setAway);
 
   const onCheck = async () => {
     setBusy(true);
@@ -127,57 +235,18 @@ export function UpdatesCard() {
   return (
     <div className="flex flex-col gap-3">
       {running || away ? (
-        <div
-          aria-live="polite"
-          className="rounded-xl border border-line bg-panel-2 p-4"
-        >
-          <p className="text-sm font-medium">
-            AGOS is updating — it stops for a few minutes and this page comes
-            back by itself…
-          </p>
-          <ol className="mt-2 flex flex-col gap-1 text-sm text-ink-2">
-            {(state?.steps ?? []).map((step) => (
-              <li key={`${step.name}-${step.at}`}>
-                {!away && step.name === state?.phase ? "⏳" : "✓"}{" "}
-                {STEP_WORDS[step.name] ?? step.name}
-              </li>
-            ))}
-            {away && <li>⏳ AGOS is restarting</li>}
-          </ol>
-        </div>
+        <Progress state={state} away={away} />
       ) : (
-        <div className="flex items-center gap-3">
-          <Button onClick={() => void onCheck()} disabled={busy}>
-            {busy ? "Checking…" : "Check update"}
-          </Button>
-          {check && !check.ready && !busy && (
-            <span className="text-sm text-ink-2">You&apos;re up to date.</span>
-          )}
-        </div>
+        <CheckRow busy={busy} check={check} onCheck={() => void onCheck()} />
       )}
-
-      {settled && check?.note ? (
-        <p className="text-sm text-ink-2">{check.note}</p>
-      ) : null}
-
-      {settled && check?.ready && (
-        <div className="flex flex-col gap-3 rounded-xl border border-line p-4">
-          <p className="text-sm font-medium">An update is ready.</p>
-          <p className="text-sm text-ink-2">
-            It backs everything up first, then AGOS stops for a few minutes and
-            comes back by itself. If anything fails, the old release comes back
-            on its own.
-          </p>
-          <div className="flex justify-end gap-2">
-            <Button onClick={() => setCheck(null)}>Not now</Button>
-            <Button variant="primary" onClick={() => void onRun()}>
-              Update now
-            </Button>
-          </div>
-        </div>
+      {settled && (
+        <Settled
+          check={check}
+          state={state}
+          onRun={() => void onRun()}
+          onDismiss={() => setCheck(null)}
+        />
       )}
-
-      {settled && state && <Result state={state} />}
       {error && <p className="text-sm text-red-600">{error}</p>}
     </div>
   );

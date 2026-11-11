@@ -17,25 +17,10 @@ export const ALLOWED_LITERALS = new Set([
 ]);
 
 /**
- * Files owned by the sibling nhw-web lane (it rewrites or deletes them);
- * owned by nhw-web lane, re-checked at integration.
+ * Files owned by a sibling lane while the lanes were built in parallel.
+ * Integrated now: the list stays empty — every file is scanned.
  */
-export const SIBLING_LANE_FILES = new Set([
-  "src/features/settings/sections.ts",
-  "src/features/settings/lazy-sections.ts",
-  "src/features/settings/settings-nav.tsx",
-  "src/features/settings/update-card.tsx",
-  "src/features/settings/hermes-update-card.tsx",
-  "src/features/settings/agos-update-card.tsx",
-  "src/features/settings/hermes-update-actions.ts",
-  "src/features/settings/agos-update-actions.ts",
-  "src/features/settings/hermes-settings.tsx",
-  "src/features/settings/hermes-settings-actions.ts",
-  "src/features/settings/hermes-settings-shared.ts",
-  "src/features/settings/hermes-edit-setting.tsx",
-  "src/features/settings/hermes-edit-model-pair.tsx",
-  "src/features/settings/hermes-setting-row.tsx",
-]);
+export const SIBLING_LANE_FILES = new Set([]);
 
 /**
  * Identifier-like matches (no whitespace: API paths, query keys, ids,

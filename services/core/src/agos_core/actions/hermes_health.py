@@ -137,10 +137,10 @@ def read(
     new reports (the Co-Founder's check)."""
     engine = core.engine
     if engine is None:
-        raise ActionError("Hermes isn't available.", status=503)
+        raise ActionError("The engine isn't available.", status=503)
     roots = _roots(core, engine, workspace_id)
     if workspace_id is not None and not roots:
-        raise ActionError("This workspace's Hermes isn't set up yet.", status=404)
+        raise ActionError("This workspace's engine isn't set up yet.", status=404)
     now = time.time()
     slots: dict[tuple[str, str], _Slot] = {}
     now_jobs: list[tuple[tuple[str, str], _Slot, threading.Event]] = []

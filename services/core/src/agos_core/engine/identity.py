@@ -373,7 +373,7 @@ def write_memory(profile_home: Path, target: MemoryTarget, entries: list[str]) -
     cleaned = [e for e in cleaned if e]
     if any("§" in e for e in cleaned):
         raise IdentityError(
-            "An entry can't contain the § character (Hermes uses it between entries)."
+            "An entry can't contain the § character (the engine uses it between entries)."
         )
     memory = Memory(target, cleaned, LIMITS[target])
     if memory.used > memory.limit:

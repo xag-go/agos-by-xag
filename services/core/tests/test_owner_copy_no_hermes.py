@@ -35,16 +35,21 @@ LOG_METHODS = {"debug", "info", "warning", "error", "exception", "critical"}
 
 # The owner-copy sources swept for the spec. A module belongs here when its
 # string literals include owner-visible text (errors, hints, titles,
-# descriptions, notifications, report lines). Modules owned by sibling lanes
-# are not listed and are re-checked at integration: the updates modules
-# (engine/agos_update.py, engine/hermes_update.py, engine/skill_updates.py,
-# feat/nhw-core), the health modules (engine/hermes_health.py), the errors
-# modules (engine/errors.py, engine/error_alerts.py, engine/error_issues.py,
-# engine/hermes_errors.py, engine/mcp_errors.py) and the agent prompt
-# composition (feat/nhw-core2).
+# descriptions, notifications, report lines). The sibling lanes' modules are
+# integrated and scanned too: the updates modules (actions/agos_update.py,
+# actions/hermes_update.py, actions/skill_updates.py, actions/updates.py,
+# engine/hermes_update.py), the health modules (actions/hermes_health.py,
+# api/settings_health.py), the errors modules (actions/errors.py,
+# actions/error_alerts.py, actions/error_issues.py, actions/hermes_errors.py,
+# engine/mcp_errors.py, api/errors.py, api/error_bodies.py). Not listed on
+# purpose: engine/identity.py — it composes the agents' own prompt, which is
+# agent-facing and names the engine by design (it carries the 'Never say
+# "Hermes" to the owner' rule); its one owner-visible error is worded without
+# the name and pinned by test_identity.py.
 MODULES = [
     # actions/: ActionError messages, hints, audit and notification texts
     "actions/access.py",
+    "actions/agos_update.py",
     "actions/artifacts.py",
     "actions/autonomy.py",
     "actions/backups.py",
@@ -54,16 +59,23 @@ MODULES = [
     "actions/cofounder_hermes.py",
     "actions/contract_alert.py",
     "actions/diagnostics.py",
+    "actions/error_alerts.py",
+    "actions/error_issues.py",
+    "actions/errors.py",
     "actions/heartbeat.py",
     "actions/held_writes.py",
+    "actions/hermes_errors.py",
     "actions/hermes_fallback.py",
+    "actions/hermes_health.py",
     "actions/hermes_helper_models.py",
     "actions/hermes_limits.py",
     "actions/hermes_managed.py",
     "actions/hermes_settings.py",
     "actions/hermes_time_limits.py",
+    "actions/hermes_update.py",
     "actions/hermes_voice.py",
     "actions/holds.py",
+    "actions/identity.py",
     "actions/key_pools.py",
     "actions/memory_plugin.py",
     "actions/ongoing.py",
@@ -74,6 +86,7 @@ MODULES = [
     "actions/security_events.py",
     "actions/skill_requests.py",
     "actions/skill_tests.py",
+    "actions/skill_updates.py",
     "actions/skill_writes.py",
     "actions/team.py",
     "actions/telegram_people.py",
@@ -82,6 +95,7 @@ MODULES = [
     "actions/tool_search.py",
     "actions/tool_services.py",
     "actions/trusted_apps.py",
+    "actions/updates.py",
     "actions/vision_notes.py",
     "actions/workspaces.py",
     # actions/services/: the service layer's owner-facing errors and texts
@@ -130,7 +144,9 @@ MODULES = [
     "engine/hermes_redact.py",
     "engine/hermes_reports.py",
     "engine/hermes_tools.py",
+    "engine/hermes_update.py",
     "engine/library.py",
+    "engine/mcp_errors.py",
     "engine/models.py",
     "engine/owner_choices.py",
     "engine/provider_keys.py",
@@ -155,6 +171,13 @@ MODULES = [
     "engine/hermes/sessions.py",
     "engine/hermes/tools.py",
     "engine/hermes/webhooks.py",
+    # api/: response texts and error bodies the web shows as-is
+    "api/agos_update.py",
+    "api/error_bodies.py",
+    "api/errors.py",
+    "api/hermes_update.py",
+    "api/settings_health.py",
+    "api/updates.py",
     # hermes_gateway/: the gateway's owner-visible failure texts
     "hermes_gateway/chat_sessions.py",
     "hermes_gateway/errors.py",
@@ -172,7 +195,9 @@ ALLOWED: dict[str, list[str]] = {
 
 
 def _skipped_ids(tree: ast.AST) -> set[int]:
-    """Constants the scan ignores: docstrings and log-call arguments."""
+    """Constants the scan ignores: docstrings, log-call arguments, and regex
+    patterns handed to ``re.compile`` (they parse the engine's own output —
+    e.g. its version banner — and are never shown to the owner)."""
     skip: set[int] = set()
     for node in ast.walk(tree):
         if isinstance(node, (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
@@ -187,7 +212,14 @@ def _skipped_ids(tree: ast.AST) -> set[int]:
         if (
             isinstance(node, ast.Call)
             and isinstance(node.func, ast.Attribute)
-            and node.func.attr in LOG_METHODS
+            and (
+                node.func.attr in LOG_METHODS
+                or (
+                    node.func.attr == "compile"
+                    and isinstance(node.func.value, ast.Name)
+                    and node.func.value.id == "re"
+                )
+            )
         ):
             for sub in ast.walk(node):
                 if isinstance(sub, ast.Constant):

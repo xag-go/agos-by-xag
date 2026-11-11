@@ -356,7 +356,7 @@ def title_of(action: Action) -> str:
         "set_pool_strategy": f"{action.get('provider')} pool: pick keys by "
         f"{action.get('strategy')}",
         "list_pool_keys": "Keys per provider (Hermes's pools)",
-        "hermes_health": "Hermes's checks (status and doctor)",
+        "hermes_health": "Engine checks (status and full check)",
         "secrets_check": "Secrets check (keys in chats and logs, file permissions)",
         "assign_founder": f"For you (Founder): “{action.get('title')[:120]}”"
         + (f" · by {action.get('due')[:40]}" if action.get("due") else ""),

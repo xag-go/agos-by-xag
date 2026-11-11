@@ -14,6 +14,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from agos_core.engine import cofounder_parity as parity
+from agos_core.engine.step_levels import done_by
 
 MAX_PER_TURN = 1_000  # no real cap: every action of the turn is kept
 # The actions that ask for a new member: never done on the spot, in any mode (the
@@ -291,14 +292,7 @@ def when_of(action: Action) -> str:
 def who_of(action: Action) -> str:
     steps = action.fields.get("steps") or []
     if steps:
-        names = [
-            f"@{s['agent']}"
-            if s.get("agent")
-            else ("you" if s.get("kind") == "approval" else "Co-Founder")
-            for s in steps
-        ]
-        # Steps side by side (e.g. one per style) read once: @a → @b, not @a → @a → @a.
-        order = " → ".join(n for i, n in enumerate(names) if i == 0 or names[i - 1] != n)
+        order = done_by(steps)
         return f"team: {order}"
     agent = str(action.fields.get("agent") or "").lstrip("@")
     return f"@{agent}" if agent and agent.lower() not in ("cofounder", "manager") else "Co-Founder"

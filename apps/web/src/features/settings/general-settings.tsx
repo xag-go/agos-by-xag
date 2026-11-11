@@ -128,7 +128,7 @@ export function GeneralSettings({
       </Card>
 
       <Card
-        title="Hermes update"
+        title="Engine update"
         description="The engine under every workspace. Check for a new release; AGOS checks it fits, backs everything up, and does the update itself."
       >
         <HermesUpdateCard />
@@ -225,7 +225,7 @@ export function GeneralSettings({
               [
                 "direct",
                 "Does it at once",
-                "Like Hermes. Each thing it did shows as a card with Undo. An app that needs your login still waits for you.",
+                "Each thing it did shows as a card with Undo. An app that needs your login still waits for you.",
               ],
               [
                 "ask",

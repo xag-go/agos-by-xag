@@ -41,9 +41,9 @@ export function HelperModelsPage({
     <div className="flex max-w-4xl flex-col gap-6">
       {dialog}
       <p className="text-sm text-ink-2">
-        Besides the main model, Hermes uses helpers for side jobs. Each helper
-        uses your main model unless you pick another one here. A choice counts
-        for every workspace and member ({data.profiles} in all).
+        Besides the main model, helpers do the side jobs. Each helper uses your
+        main model unless you pick another one here. A choice counts for every
+        workspace and member ({data.profiles} in all).
       </p>
       {data.imageMode && (
         <PicturesCard
@@ -114,7 +114,7 @@ function HelperRow({
       setNote(
         route.main && differ.length === 0
           ? "It already uses the main model."
-          : "Nothing to remove from Hermes's shared settings: the workspaces listed above set this in their own Hermes, and it stays there.",
+          : "Nothing to remove from the shared settings: the workspaces listed above set this themselves, and it stays there.",
       );
       return;
     }
@@ -122,7 +122,7 @@ function HelperRow({
       const r = await saveHermesHelperModels({}, [], {
         [task.task]: own ? pick : null,
       });
-      setNote(r.error ?? "Saved in Hermes.");
+      setNote(r.error ?? "Saved.");
       if (!r.error) setOpen(false);
     });
   };
@@ -257,7 +257,7 @@ function HelperRow({
         notice={
           task.inHermesList
             ? null
-            : "Not in Hermes's list of helper tasks (set in Hermes; Hermes's code may read it)."
+            : "Not in the engine's list of helper tasks (set there directly; it may still be read)."
         }
         description={task.description}
       >
@@ -265,7 +265,7 @@ function HelperRow({
         {pickable && (
           <p className="text-xs text-ink-3">
             Choosing a model above removes the endpoint address and API mode set
-            here, so Hermes sends the helper to the model you picked.
+            here, so the helper goes to the model you picked.
           </p>
         )}
       </Details>

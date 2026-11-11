@@ -80,7 +80,7 @@ export function LiveScreen({
             The screen is off right now. It turns on by itself when an agent
             uses the browser or the desktop
             {idleStopMinutes === null
-              ? ", and Hermes turns it off when it isn't used."
+              ? ", and it turns off by itself when it isn't used."
               : idleStopMinutes === 0
                 ? "."
                 : `, and goes off after ${String(idleStopMinutes)} ${idleStopMinutes === 1 ? "minute" : "minutes"} without use.`}

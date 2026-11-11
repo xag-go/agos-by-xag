@@ -186,8 +186,8 @@ function BotRow({ bot: b }: { bot: ChannelConnection }) {
             });
           }}
         />
-        React 👀 / ✅ / ❌ on your messages while it works (Hermes&apos;s
-        telegram.reactions)
+        React 👀 / ✅ / ❌ on your messages while it works (the
+        telegram.reactions setting)
       </label>
       <People
         bot={b}

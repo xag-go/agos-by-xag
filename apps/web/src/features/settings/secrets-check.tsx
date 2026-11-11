@@ -113,10 +113,10 @@ export function SecretsCheckView() {
           </h3>
           <p className="mt-1 text-sm text-ink-2">
             Looks for keys left in every workspace&apos;s chat history and logs
-            (as Hermes&apos;s own masking sees them) and for key files others
-            could read. Nothing is changed, and no key is shown: only its kind
-            and last 4 characters. The Co-Founder can run it for its workspace
-            from a chat too.
+            (as the built-in masking sees them) and for key files others could
+            read. Nothing is changed, and no key is shown: only its kind and
+            last 4 characters. The Co-Founder can run it for its workspace from
+            a chat too.
           </p>
         </div>
         <Button variant="primary" disabled={busy} onClick={run}>

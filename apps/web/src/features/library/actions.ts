@@ -456,7 +456,7 @@ async function tokenCall(
     return { state: await fn(), error: null };
   } catch (error) {
     if (error instanceof CoreError) return { state: null, error: error.detail };
-    return { state: null, error: "Hermes didn't answer. Try again." };
+    return { state: null, error: "The engine didn't answer. Try again." };
   }
 }
 

@@ -50,8 +50,8 @@ export function UsageLimits({
           <p className="text-sm font-medium">Use account limits</p>
           <p className="text-xs text-ink-3">
             Everything new waits while an account is at the pause level — new
-            Kanban cards, schedules and chat replies (Hermes&apos;s own pause
-            holds each workspace); work already running goes on.
+            Kanban cards, schedules and chat replies (the pause holds each
+            workspace); work already running goes on.
           </p>
         </div>
         <Switch
@@ -103,9 +103,8 @@ export function UsageLimits({
       </div>
       {limits.length === 0 ? (
         <p className="text-sm text-ink-3">
-          No account reports its limits right now. Subscriptions logged in
-          through Hermes (Claude, OpenAI Codex) show their session and weekly
-          use here.
+          No account reports its limits right now. Subscriptions you logged in
+          with (Claude, OpenAI Codex) show their session and weekly use here.
         </p>
       ) : (
         <ul className="flex flex-col gap-4">
@@ -295,8 +294,8 @@ export function ServerSettings({ status }: { status: BackupStatus }) {
           One password-protected file with every workspace (files, tasks,
           chats), the library, automations, connectors, channels and settings.
           The agents&apos; side (their conversations, memory, identity, skills
-          and schedules) is Hermes&apos;s own backup, sealed in the same file.
-          Provider logins are never included: you log in once on a new machine.
+          and schedules) has its own backup, sealed in the same file. Provider
+          logins are never included: you log in once on a new machine.
         </p>
         <div className="flex flex-wrap items-center gap-2 text-sm">
           <Input

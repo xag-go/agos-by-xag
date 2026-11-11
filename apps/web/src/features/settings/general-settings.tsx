@@ -16,15 +16,13 @@ import type {
 import type { CatalogProvider } from "@/data/types";
 import { FallbackCard } from "./fallback-card";
 import { HermesLimitsCard } from "./hermes-limits-card";
-import { AgosUpdateCard } from "./agos-update-card";
-import { HermesUpdateCard } from "./hermes-update-card";
+import { UpdatesCard } from "./updates-card";
 import { LabsCard } from "./labs-card";
 import { saveCofounderActionsMode, saveTabsOrder } from "./preferences-actions";
 import { TimeLimitsCard } from "./time-limits-card";
 import { OwnerNameCard } from "./owner-name-card";
 import { TimezoneCard } from "./timezone-card";
 import { VoiceCard } from "./voice-card";
-import { AllHermesSettingsLink } from "./hermes-settings";
 import { PanelSection } from "@/shared/ui/panel";
 
 const DEFAULT_ORDER = [
@@ -124,21 +122,13 @@ export function GeneralSettings({
         description="When you tell an agent a time (“at 6”, “tomorrow at 9”), it means this timezone. It is used in every workspace."
       >
         <TimezoneCard initial={timezone} />
-        <AllHermesSettingsLink search="timezone" />
       </Card>
 
       <Card
-        title="Hermes update"
-        description="The engine under every workspace. Check for a new release; AGOS checks it fits, backs everything up, and does the update itself."
+        title="Updates"
+        description="Everything AGOS runs on, in one check. It backs everything up first, updates, and comes back by itself — on the old release if anything fails."
       >
-        <HermesUpdateCard />
-      </Card>
-
-      <Card
-        title="Update AGOS"
-        description="AGOS itself (the same as `agos update` on this machine). Check for a new release; AGOS backs everything up, updates, and comes back by itself — on the old release if anything fails."
-      >
-        <AgosUpdateCard />
+        <UpdatesCard />
       </Card>
 
       <Card

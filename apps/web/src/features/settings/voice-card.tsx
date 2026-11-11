@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { AllHermesSettingsLink } from "./hermes-settings";
 import type { HermesVoice } from "@/data/queries";
 import { Button } from "@/shared/ui/button";
 import { saveHermesVoice } from "./preferences-actions";
@@ -132,7 +131,6 @@ export function VoiceCard({ voice }: { voice: HermesVoice }) {
           )}
         </div>
       </div>
-      <AllHermesSettingsLink search="stt" />
     </PanelSection>
   );
 }

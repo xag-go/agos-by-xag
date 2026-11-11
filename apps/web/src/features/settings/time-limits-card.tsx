@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import { AllHermesSettingsLink } from "./hermes-settings";
 import type { HermesTimeLimits } from "@/data/queries";
 import { saveHermesTimeLimits } from "./preferences-actions";
 import { PanelSection } from "@/shared/ui/panel";
@@ -207,7 +206,6 @@ export function TimeLimitsCard({ limits }: { limits: HermesTimeLimits }) {
           {note && <span className="text-sm text-ink-2">{note}</span>}
         </div>
       </form>
-      <AllHermesSettingsLink search="timeout" />
     </PanelSection>
   );
 }

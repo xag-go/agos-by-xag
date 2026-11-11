@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { AllHermesSettingsLink } from "./hermes-settings";
 import type { HermesLimitsShown } from "@/data/queries";
 import { saveHermesLimits } from "./preferences-actions";
 import { PanelSection } from "@/shared/ui/panel";
@@ -225,7 +224,6 @@ export function HermesLimitsCard({ limits }: { limits: HermesLimitsShown }) {
           {note && <span className="text-sm text-ink-2">{note}</span>}
         </div>
       </form>
-      <AllHermesSettingsLink search="tool_loop_guardrails" />
     </PanelSection>
   );
 }

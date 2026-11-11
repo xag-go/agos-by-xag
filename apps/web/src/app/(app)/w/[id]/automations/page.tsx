@@ -34,6 +34,29 @@ import { PlusIcon } from "@/shared/ui/icons";
 
 export const metadata: Metadata = { title: "Automations" };
 
+/** The Rules form's pick lists (columns, members, goals, automations). */
+function ruleListsOf(
+  board: Awaited<ReturnType<typeof getKanban>> | null,
+  automations: Awaited<ReturnType<typeof getAutomations>>,
+) {
+  return {
+    columns: (board?.columns ?? [])
+      .filter((c) => c.status !== "archived")
+      .map((c) => ({ value: c.status, label: c.label })),
+    members: (board?.members ?? []).map((m) => ({
+      value: m.name,
+      label: m.title || m.name,
+    })),
+    goals: (board?.goals ?? [])
+      .filter((g) => g.level !== "vision")
+      .map((g) => ({ value: String(g.id), label: g.title })),
+    automations: automations.map((a) => ({
+      value: String(a.id),
+      label: a.name,
+    })),
+  };
+}
+
 export default async function AutomationsPage({
   params,
   searchParams,
@@ -83,23 +106,7 @@ export default async function AutomationsPage({
     getFolders(workspace.id, "automation").catch(() => []),
     getAutomationCosts(workspace.id).catch(() => []),
   ]);
-  // The Rules form's pick lists (columns, members, goals, automations).
-  const ruleLists = {
-    columns: (board?.columns ?? [])
-      .filter((c) => c.status !== "archived")
-      .map((c) => ({ value: c.status, label: c.label })),
-    members: (board?.members ?? []).map((m) => ({
-      value: m.name,
-      label: m.title || m.name,
-    })),
-    goals: (board?.goals ?? [])
-      .filter((g) => g.level !== "vision")
-      .map((g) => ({ value: String(g.id), label: g.title })),
-    automations: automations.map((a) => ({
-      value: String(a.id),
-      label: a.name,
-    })),
-  };
+  const ruleLists = ruleListsOf(board, automations);
   // What an open dialog shows of its automation (only once it exists).
   const [events, publicUrl, runs, revisions] = await Promise.all([
     hookOf ? getAutomationEvents(workspace.id, hookOf.id) : [],
@@ -215,7 +222,7 @@ export default async function AutomationsPage({
           workspaceId={workspace.id}
           automation={runsOf}
           runs={runs}
-          cost={costs.find((c) => c.automationId === runsOf.id)}
+          costs={costs}
           closeHref={baseHref}
         />
       )}

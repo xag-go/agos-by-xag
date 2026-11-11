@@ -30,6 +30,19 @@ function flow(steps: { agent?: string | null }[]) {
   return out;
 }
 
+/** What the list's search matches: the name, the schedule and who does it. */
+function searchText(
+  a: Automation,
+  titleOf: (name: string | null | undefined) => string,
+) {
+  return [
+    a.name,
+    a.schedule ? describeCron(a.schedule, a.scheduleDisplay) : "",
+    titleOf(a.agent),
+    ...(a.steps ?? []).map((s) => titleOf(s.agent)),
+  ].join(" ");
+}
+
 export function AutomationsList({
   workspaceId,
   automations,
@@ -68,12 +81,7 @@ export function AutomationsList({
       }
       entries={automations.map((a) => ({
         id: a.id,
-        text: [
-          a.name,
-          a.schedule ? describeCron(a.schedule, a.scheduleDisplay) : "",
-          titleOf(a.agent),
-          ...(a.steps ?? []).map((s) => titleOf(s.agent)),
-        ].join(" "),
+        text: searchText(a, titleOf),
         node: (
           <>
             <div className="min-w-64 flex-1">
@@ -171,7 +179,7 @@ export function AutomationsList({
               ) : (
                 <p className="text-ink-3">Never run</p>
               )}
-              <MonthCost cost={costs.find((c) => c.automationId === a.id)} />
+              <MonthCost of={a.id} costs={costs} />
               {a.problem ? (
                 <p role="alert" className="mt-1 text-xs text-danger">
                   {a.problem}

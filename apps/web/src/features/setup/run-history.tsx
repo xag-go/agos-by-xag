@@ -83,9 +83,7 @@ export function RunHistory({
                     </li>
                   ))}
                 </ul>
-                {run.detail && (
-                  <RunSteps workspaceId={workspaceId} detail={run.detail} />
-                )}
+                <RunSteps workspaceId={workspaceId} detail={run.detail} />
               </li>
             );
           })}

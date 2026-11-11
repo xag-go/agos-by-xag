@@ -19,6 +19,7 @@ from agos_core.engine.cofounder_kind import AUTOMATIONS
 from agos_core.ops.spec import CofounderFields, OperationSpec
 
 __all__ = [
+    "AUTOMATION_COST",
     "DELETE_PIPELINE_RULE",
     "REMOVE_SCHEDULED_JOB",
     "RESTORE_AUTOMATION_REVISION",
@@ -28,6 +29,7 @@ __all__ = [
     "SET_HOOKS_ADDRESS",
     "SPECS",
     "WATCH_TREE",
+    "AutomationCost",
     "DeletePipelineRule",
     "RemoveScheduledJob",
     "RestoreAutomationRevision",
@@ -184,6 +186,28 @@ WATCH_TREE: OperationSpec[WatchTree] = OperationSpec(
     cofounder_fields="card, on (true/false)",
 )
 
+
+class AutomationCost(CofounderFields):
+    automation: Any = None
+    run: Any = None
+
+
+AUTOMATION_COST: OperationSpec[AutomationCost] = OperationSpec(
+    name="automation_cost",
+    input_model=AutomationCost,
+    audit_title="What “{automation}” cost",
+    gate="once",
+    effect="read",
+    cofounder_domain=AUTOMATIONS,
+    cofounder_fields=(
+        "automation (its name or number; leave out = every automation), run (a run id "
+        "from its Runs: that run step by step: who worked, who was skipped and why, how "
+        "long, tokens and cost). Read only: what its runs cost this month and last month "
+        "(UTC), as counted by the engine; an unpriced cost is said as unknown"
+    ),
+)
+
+
 SPECS: tuple[OperationSpec[Any], ...] = (
     SAVE_PIPELINE_RULE,
     DELETE_PIPELINE_RULE,
@@ -193,4 +217,5 @@ SPECS: tuple[OperationSpec[Any], ...] = (
     REMOVE_SCHEDULED_JOB,
     SET_HOOKS_ADDRESS,
     WATCH_TREE,
+    AUTOMATION_COST,
 )

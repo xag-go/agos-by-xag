@@ -20,6 +20,7 @@ from agos_core.hermes_gateway import kanban_rows
 
 __all__ = [
     "EVENTS",
+    "attempts",
     "board_file",
     "done_since",
     "events",
@@ -235,6 +236,54 @@ def keyed(core: Core, workspace_id: str, prefix: str) -> list[dict[str, Any]]:
         }
         for i, st, t, r, k, c, done, who in rows
     ]
+
+
+def attempts(
+    core: Core, workspace_id: str, card_ids: list[str]
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """These cards' attempts (Hermes's task_runs, oldest first) and the sessions
+    Hermes's gateway admitted for them (`owner_admitted` events), read from the
+    workspace's own board (read only; ([], []) when it can't be read). An older
+    board without admissions gives them as []."""
+    import sqlite3
+
+    from agos_core.actions import agent_profiles
+
+    if core.engine is None or not card_ids:
+        return [], []
+    board_db = agent_profiles.board_db(core, workspace_id)
+    if not board_db.is_file():
+        return [], []
+    names = ("card", "run", "profile", "status", "outcome", "started_at", "ended_at")
+    try:
+        with kanban_rows.opened(board_db) as board:
+            runs = [
+                {
+                    **dict(zip(names, r[:7], strict=True)),
+                    "summary": r[7],
+                    "metadata": _json(r[8]),
+                    "error": r[9],
+                }
+                for r in board.attempts(card_ids)
+            ]
+            try:
+                admitted = [
+                    {"card": str(c), "run": run, "payload": _json(p)}
+                    for c, run, p in board.admissions(card_ids)
+                ]
+            except sqlite3.Error:
+                admitted = []
+    except sqlite3.Error:
+        return [], []
+    return runs, admitted
+
+
+def _json(text: Any) -> dict[str, Any]:
+    try:
+        found = json.loads(text) if text else {}
+    except (TypeError, ValueError):
+        return {}
+    return found if isinstance(found, dict) else {}
 
 
 def made_in(core: Core, workspace_id: str, session_prefix: str) -> list[dict[str, Any]]:

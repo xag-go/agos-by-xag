@@ -75,11 +75,6 @@ def _do(core: Core, workspace_id: str, action: str, p: dict[str, Any]) -> dict[s
     """Runs one action; returns what Undo needs."""
     if action == rules.BUNDLE:
         return _bundle(core, workspace_id, p)
-    return _do_kind(core, workspace_id, action, p)
-
-
-def _do_kind(core: Core, workspace_id: str, action: str, p: dict[str, Any]) -> dict[str, Any]:
-    """Runs one kind (never a bundle); the base kinds' steps are here."""
     from agos_core.actions import cofounder_hermes
 
     if action in (*cofounder_hermes.DOES, *cofounder_hermes.REPORTS):
@@ -224,11 +219,6 @@ def _undo(core: Core, workspace_id: str, action: str, result: dict[str, Any]) ->
             if d["do"] in _UNDO:
                 _undo(core, workspace_id, str(d["do"]), d["result"])
         return
-    _undo_kind(core, workspace_id, action, result)
-
-
-def _undo_kind(core: Core, workspace_id: str, action: str, result: dict[str, Any]) -> None:
-    """Takes one kind (never a bundle) back; the base kinds' steps are here."""
     from agos_core.actions import cofounder_hermes
 
     if action in cofounder_hermes.DOES:
@@ -367,4 +357,4 @@ def decide(
     return _view(_row(core, workspace_id, action_id))
 
 
-base_ops.bind(_do_kind, _undo_kind)  # the base kinds also run through the registry
+base_ops.bind(_do, _undo)  # the base kinds also run through the registry

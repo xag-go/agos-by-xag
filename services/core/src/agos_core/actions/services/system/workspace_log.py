@@ -88,7 +88,7 @@ class LogPage(BaseModel):
 OWNER = ("owner", "You", "owner")
 COFOUNDER = ("cofounder", "Co-Founder", "cofounder")
 SYSTEM = ("system", "AGOS", "system")
-HERMES = ("system", "Hermes", "system")
+HERMES = ("system", "Engine", "system")
 
 # The owner's audit trail is mostly his own clicks; these kinds are AGOS's or
 # Hermes's own doing, an automation's, or the Co-Founder's.
@@ -622,12 +622,12 @@ def _hermes_errors(core: Any, ws: str, before: str) -> list[LogEntry]:
         main, _, cause = m.group(4).partition(": ")
         out.append(
             LogEntry(
-                actor="Hermes",
+                actor="Engine",
                 id=f"hermes:{at}:{n}",
                 at=at,
                 level="error",
                 area="system",
-                where=f"Hermes · {m.group(3)}",
+                where=f"Engine · {m.group(3)}",
                 text=_clip(main if cause else m.group(4)),
                 cause=_clip(cause),
             )
@@ -644,7 +644,7 @@ def _actors(entries: list[LogEntry]) -> list[LogActor]:
     seen: dict[str, LogActor] = {}
     for e in entries:
         if e.actor_key not in seen:
-            label = "AGOS / Hermes" if e.actor_key == "system" else e.actor
+            label = "AGOS" if e.actor_key == "system" else e.actor
             seen[e.actor_key] = LogActor(key=e.actor_key, label=label, kind=e.actor_kind)
     return sorted(seen.values(), key=lambda a: (_KIND_ORDER[a.kind], a.label.lower()))
 

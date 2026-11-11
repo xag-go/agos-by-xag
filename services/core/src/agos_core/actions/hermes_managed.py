@@ -177,7 +177,7 @@ def write(core: Core, sets: dict[str, str], unsets: list[str] | tuple[str, ...] 
     """Into the managed config.yaml (Hermes's own writer), then the profiles'
     copies follow (settle). Raises EngineError when Hermes didn't take it."""
     if core.engine is None:
-        raise EngineError("Hermes isn't available")
+        raise EngineError("The engine isn't available")
     managed = pinned(core)
     changed = [(k, v) for k, v in sets.items() if not _same(lookup(managed, k), v)]
     gone = [k for k in unsets if has(managed, k)]

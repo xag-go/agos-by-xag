@@ -75,7 +75,7 @@ def sign_in_for(service: dict[str, object]) -> dict[str, object] | None:
     if step and service.get("login_is_auth"):
         return {
             "id": None,
-            "label": f"This service signs in with Hermes's own “{step}” login, which "
+            "label": f"This service signs in with the engine's own “{step}” login, which "
             "AGOS can't start yet: run `hermes tools` on this machine.",
         }
     return None
@@ -200,7 +200,7 @@ class ProviderLogins:
         }
         if workspace:
             if self.home_of is None:
-                raise ValueError("This workspace has no Hermes of its own.")
+                raise ValueError("This workspace isn't set up on its own yet.")
             env["HERMES_HOME"] = str(self.home_of(workspace))
         return env
 
@@ -294,7 +294,7 @@ class ProviderLogins:
         hermes_contract.ran(result)
         if result.returncode != 0:
             raise RuntimeError(
-                last_line(result.stderr or result.stdout) or "Hermes did not log out."
+                last_line(result.stderr or result.stdout) or "The engine did not log out."
             )
 
     def _expire(self, session: LoginSession) -> None:
@@ -360,7 +360,7 @@ def _failure(output: str) -> str:
     """Why a login did not end connected, in Hermes's words (never its success line)."""
     line = last_line(output)
     if not line or line.startswith("Added "):
-        return "Hermes signed in, but the login is not there. Click Connect to try again."
+        return "The sign-in finished, but the login is not there. Click Connect to try again."
     return line
 
 

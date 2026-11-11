@@ -420,7 +420,7 @@ def test_timing_is_read_live_from_hermes_and_agos_keeps_no_copy(env: Any) -> Non
     job.update(enabled=False, paused_reason="Auto-paused by scheduler: no model")
     got = client.get(f"/workspaces/{ws}/automations/{aid}").json()
     assert got["on"] is False and got["nextRunAt"] is None
-    assert got["problem"] == "Paused by Hermes: Auto-paused by scheduler: no model"
+    assert got["problem"] == "Paused by the engine: Auto-paused by scheduler: no model"
     actions.keep_in_step(core)  # AGOS doesn't overwrite Hermes's reason
     assert job["paused_reason"] == "Auto-paused by scheduler: no model"
     # The last run is Hermes's.

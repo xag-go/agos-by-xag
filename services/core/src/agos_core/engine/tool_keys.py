@@ -99,7 +99,7 @@ try:
         out = {"catalog": rows, "own": {n: own(n) for n in sorted(names) if NAME.match(n)}}
     elif do == "share":
         # A member profile gets its root's tool keys: values on stdin (a JSON
-        # object), names to drop on argv. Each written by Hermes's own writer.
+        # object), names to drop on argv. Each written by the engine's own writer.
         values = json.loads(secret or "{}")
         have = load_env()
         put, dropped = [], []
@@ -228,7 +228,7 @@ def pick(app: str, facts: dict[str, Any]) -> Picked:
     hermes_own = own.get(base, True)  # fail closed: Hermes didn't say
     name = TOOLS_PREFIX + base if hermes_own else base
     if not NAME.match(name) or own.get(name, True):
-        raise NameProblem("Hermes keeps a key of this name for itself: it can't be added here.")
+        raise NameProblem("The engine keeps a key of this name for itself: it can't be added here.")
     return Picked(name, url, hermes_own)
 
 

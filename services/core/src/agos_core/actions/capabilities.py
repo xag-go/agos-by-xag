@@ -156,7 +156,7 @@ def _switch(core: Core, row: Any) -> None:
 
     if kind == "skill" and workspace_skills.never_written(core, item):
         raise ActionError(
-            f"{row['title']} has nothing in it: Hermes never wrote it (an earlier create "
+            f"{row['title']} has nothing in it: it was never written (an earlier create "
             "of it failed). Create it again first.",
             409,
         )

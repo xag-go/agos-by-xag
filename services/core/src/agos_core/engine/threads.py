@@ -86,9 +86,9 @@ class Wake:
 
 
 HOW = {
-    "steer": "working on it now: Hermes puts the comment into its turn",
-    "unblock": "its question is answered: Hermes starts it again with the comment",
-    "dispatch": "Hermes starts it soon and it reads the comment",
+    "steer": "working on it now: the comment goes into its turn",
+    "unblock": "its question is answered: it starts again with the comment",
+    "dispatch": "it starts soon and reads the comment",
     "waits": "reads it when the card starts (held on purpose until then)",
     "review": "its review turn reads the comment",
     "inbox": "in your Inbox",

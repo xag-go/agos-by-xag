@@ -92,7 +92,7 @@ def provider_of(provider: str, core: Core | None = None) -> str:
 def workspace_of(core: Core, workspace_id: str, provider: str) -> str:
     """A workspace on its own root, for a subscription it signs in to itself."""
     if not any(ws == workspace_id for ws, _, _ in model_catalog.roots(core)):
-        raise ActionError("No such workspace on a Hermes root.", 404)
+        raise ActionError("No such workspace on any root.", 404)
     try:
         slug = slug_of(provider)
     except ValueError as error:
@@ -114,7 +114,7 @@ def start(core: Core, provider: str, workspace: str | None = None) -> dict[str, 
             log.warning("login start failed for %s in %s: %s", provider, workspace, error)
         else:
             log.warning("login start failed for %s: %s", provider, error)
-        raise ActionError("Hermes could not start the login.", 503) from error
+        raise ActionError("The engine could not start the login.", 503) from error
     return view
 
 
@@ -160,7 +160,7 @@ def logout(core: Core, provider: str, workspace: str | None = None) -> None:
             log.warning("logout failed for %s in %s: %s", provider, workspace, error)
         else:
             log.warning("logout failed for %s: %s", provider, error)
-        raise ActionError("Hermes did not log out.", 503) from error
+        raise ActionError("The engine did not log out.", 503) from error
     limits.forget()
     model_catalog.load(core, True)
 

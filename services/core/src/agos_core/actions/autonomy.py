@@ -221,7 +221,7 @@ def set_rule(core: Core, workspace_id: str, agent: str, action: str, choice: str
             found.pop(agent, None)
 
     if not _change(core, workspace_id, change):
-        raise ActionError("The workspace's Hermes isn't ready yet. Try again in a moment.", 503)
+        raise ActionError("The workspace isn't ready yet. Try again in a moment.", 503)
     _said(core, workspace_id, agent, action, choice)
 
 
@@ -379,7 +379,7 @@ def _set_memory(core: Core, workspace_id: str, agent: str, choice: str | None) -
             found.pop(agent, None)
 
     if not _change(core, workspace_id, change):
-        raise ActionError("The workspace's Hermes isn't ready yet. Try again in a moment.", 503)
+        raise ActionError("The workspace isn't ready yet. Try again in a moment.", 503)
     if choice == "never":
         return
     if agent == "*":

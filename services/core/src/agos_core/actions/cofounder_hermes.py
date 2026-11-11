@@ -91,7 +91,7 @@ def _row(core: Core, key: str) -> dict[str, Any]:
 
     found = next((r for r in hall.read(core)["settings"] if r["key"] == key), None)
     if found is None:
-        raise ActionError(f"{key} isn't one of Hermes's settings.", status=404)
+        raise ActionError(f"{key} isn't one of the engine settings.", status=404)
     return dict(found)
 
 
@@ -231,7 +231,7 @@ def undo(core: Core, workspace_id: str, action: str, result: dict[str, Any]) -> 
         key_pools.remove(core, provider, str(result["label"]))
     elif action == "remove_pool_key":
         if not result.get("sealed"):
-            raise ActionError("Hermes gave no key back to put in again.", status=409)
+            raise ActionError("The engine gave no key back to put in again.", status=409)
         # The same key at its old number (the later ones move down again).
         key_pools.add(
             core,
@@ -255,8 +255,8 @@ def report(core: Core, workspace_id: str, action: str, p: dict[str, Any]) -> str
         rule = row.get("rule") or {}
         lines = [
             f"{row['key']} ({row['type']}): {_shown(row)}",
-            f"Hermes's default: {json.dumps(row['default'], ensure_ascii=False)}",
-            f"Hermes says: {row['description']}",
+            f"The engine's default: {json.dumps(row['default'], ensure_ascii=False)}",
+            f"The engine says: {row['description']}",
         ]
         if rule:
             lines.append(f"AGOS: {rule.get('kind')} — {rule.get('reason')}")
@@ -275,7 +275,7 @@ def report(core: Core, workspace_id: str, action: str, p: dict[str, Any]) -> str
             f"- {i['id']} · {i['agent']} · {i['subsystem']} {i['action']} · {i['summary']}"
             for i in found["items"]
         ]
-        return f"Hermes's write approval ({gates})\n" + ("\n".join(items) or "- nothing held")
+        return f"The engine's write approval ({gates})\n" + ("\n".join(items) or "- nothing held")
     if action == "list_pool_keys":
         from agos_core.actions import key_pools
 
@@ -289,7 +289,7 @@ def report(core: Core, workspace_id: str, action: str, p: dict[str, Any]) -> str
                     + ("" if e["removable"] else " · from Settings → Models")
                 )
         strategies = ", ".join(found["strategies"])
-        return ("\n".join(lines) or "No keys in Hermes's pools.") + f"\nStrategies: {strategies}"
+        return ("\n".join(lines) or "No keys in the key pools.") + f"\nStrategies: {strategies}"
     if action == "secrets_check":
         from agos_core.actions import secrets_check
 

@@ -36,8 +36,8 @@ def text_for(name: str) -> str:
     feature = next((u.feature for u in CONTRACT if u.key == name), "")
     what = f" — {feature} may not work" if feature else ""
     return (
-        f"⚠️ Hermes contract broken: {name}{what}. AGOS is refusing or skipping it "
-        "safely for now; the installed Hermes no longer has it as AGOS uses it "
+        f"⚠️ Engine contract broken: {name}{what}. AGOS is refusing or skipping it "
+        "safely for now; the installed engine no longer has it as AGOS uses it "
         "(see Log)."
     )
 

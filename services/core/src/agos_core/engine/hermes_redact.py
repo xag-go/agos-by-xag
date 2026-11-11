@@ -21,7 +21,7 @@ from agos_core.engine.waits import hermes_wait
 
 log = logging.getLogger("agos.hermes_redact")
 
-HIDDEN = "(hidden: Hermes couldn't check it for secrets)"
+HIDDEN = "(hidden: the engine couldn't check it for secrets)"
 
 _LOOP = (
     "import sys, json\n"
@@ -57,7 +57,7 @@ class Redactor:
         argv: list[str] = json.loads(out)
         run = "runpy.run_module('agos_goal_judge', run_name='__main__', alter_sys=True)"
         if not argv or run not in argv[-1]:
-            raise RuntimeError("this Hermes can't run code for AGOS")
+            raise RuntimeError("this install can't run code for AGOS")
         argv[-1] = argv[-1].replace(run, f"exec({self.LOOP!r})")
         return argv
 

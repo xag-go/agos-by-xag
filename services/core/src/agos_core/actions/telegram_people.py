@@ -173,7 +173,7 @@ def approve(core: Core, workspace_id: str, request_id: str) -> str:
         raise ActionError("This request is gone (it lasts an hour). Ask them to write again.")
     hermes_cli.cli(core.engine, workspace_id, "pairing", "approve", PLATFORM, request_id)
     if found.id not in ids(core, workspace_id):
-        raise ActionError("Hermes didn't take the approval. Try again.", 503)
+        raise ActionError("The engine didn't take the approval. Try again.", 503)
     return found.id
 
 
@@ -188,4 +188,4 @@ def remove(core: Core, workspace_id: str, user_id: str) -> None:
     if rest != env_ids(core, workspace_id):
         hermes_cli.cli(core.engine, workspace_id, "config", "set", ENV, ",".join(rest))
     if user_id in ids(core, workspace_id):
-        raise ActionError("Hermes didn't take it. Try again.", 503)
+        raise ActionError("The engine didn't take it. Try again.", 503)

@@ -35,11 +35,11 @@ log = logging.getLogger("agos.hermes_helper_models")
 _CHECKS: dict[str, tuple[re.Pattern[str], str]] = {
     "provider": (
         re.compile(r"^[a-z0-9][a-z0-9._:-]{0,63}$"),
-        "a Hermes provider name (e.g. openrouter, or auto)",
+        "a provider name (e.g. openrouter, or auto)",
     ),
     "model": (re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:/@+-]{0,199}$"), "a model id"),
     "base_url": (re.compile(r"^https?://[^\s]{1,500}$"), "an http(s) address"),
-    "api_mode": (re.compile(r"^[a-z][a-z0-9_]{0,39}$"), "one of Hermes's API modes"),
+    "api_mode": (re.compile(r"^[a-z][a-z0-9_]{0,39}$"), "one of the engine's API modes"),
 }
 _MODE = re.compile(r"^[a-z][a-z_]{0,31}$")
 _MISSING = object()
@@ -47,12 +47,12 @@ _MISSING = object()
 
 def _schema(core: Core) -> list[hs.Field]:
     if core.engine is None:
-        raise ActionError("Hermes isn't available.", status=503)
+        raise ActionError("The engine isn't available.", status=503)
     try:
         return list(core.engine.config_schema())
     except (EngineError, OSError) as error:
         raise ActionError(
-            f"Hermes's settings list couldn't be read: {error}", status=502
+            f"The engine's settings list couldn't be read: {error}", status=502
         ) from error
 
 
@@ -135,7 +135,9 @@ def read(core: Core) -> dict[str, Any]:
             seen = engine.as_hermes_reads(homes)
             found = engine.hermes_secrets(homes)
         except (EngineError, OSError, ValueError) as error:
-            raise ActionError(f"Hermes's settings couldn't be read: {error}", status=502) from error
+            raise ActionError(
+                f"The engine's settings couldn't be read: {error}", status=502
+            ) from error
         configs = [seen.get(str(h), {}) for h in homes]
         secrets = [hs.secret_paths(found.get(str(h))) for h in homes]
     managed = hermes_managed.current(core)
@@ -185,12 +187,12 @@ def check(fields: list[hs.Field], held: set[str], sets: dict[str, str], unsets: 
         allowed.add(hm.IMAGE_MODE)
     for key in [*sets, *unsets]:
         if not hm.owns(key) or key not in allowed:
-            raise ActionError(f"{key} isn't one of Hermes's helper-model settings.")
+            raise ActionError(f"{key} isn't one of the engine's helper-model settings.")
     for key, value in sets.items():
         if key == hm.IMAGE_MODE:
             modes = hs.image_modes()
             if (modes is not None and value not in modes) or not _MODE.fullmatch(value):
-                raise ActionError(f"Hermes's image mode is one of: {', '.join(modes or [])}.")
+                raise ActionError(f"The engine's image mode is one of: {', '.join(modes or [])}.")
             continue
         pattern, what = _CHECKS[key.rsplit(".", 1)[1]]
         if not pattern.fullmatch(value):
@@ -216,14 +218,14 @@ def _picked(
     for task, pick in picks.items():
         row = by_task.get(task)
         if row is None:
-            raise ActionError(f"{task} isn't one of Hermes's helper tasks.")
+            raise ActionError(f"{task} isn't one of the engine's helper tasks.")
         keys = {f.key.rsplit(".", 1)[1]: f.key for f in row.fields}
         held = [k for k in keys.values() if config_file.get(managed, k, _MISSING) is not _MISSING]
         if pick is None:
             unsets.extend(held)
             continue
         if "provider" not in keys or "model" not in keys:
-            raise ActionError(f"Hermes has no provider and model for {row.label}.")
+            raise ActionError(f"The engine has no provider and model for {row.label}.")
         provider, mode = str(pick.get("provider") or ""), str(pick.get("mode") or "")
         if mode not in ("cli", "api"):
             raise ActionError("Pick a provider from the list.")
@@ -259,5 +261,5 @@ def write(
     try:
         hermes_managed.write(core, sets, unsets)
     except (EngineError, OSError) as error:
-        raise ActionError(f"Hermes didn't take it: {error}", status=502) from error
+        raise ActionError(f"The engine didn't take it: {error}", status=502) from error
     return read(core)

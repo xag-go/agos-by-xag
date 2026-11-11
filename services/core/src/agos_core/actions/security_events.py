@@ -25,7 +25,7 @@ KINDS = {
     "host": "a request with a Host AGOS doesn't serve was refused",
     "origin": "a request from another site (its Origin) was refused",
     "internal_token": "a call to the core's API with a wrong or missing internal token was refused",
-    "bridge_key": "a Hermes bridge call with a wrong workspace key was refused",
+    "bridge_key": "a bridge call with a wrong workspace key was refused",
 }
 _SAFE = re.compile(r"[^A-Za-z0-9._:/\[\]@+-]")
 _lock = threading.Lock()

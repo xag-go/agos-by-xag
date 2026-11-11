@@ -54,12 +54,12 @@ def targets(core: Core, workspace_id: str | None = None) -> list[Target]:
 
 def _schema(core: Core) -> list[hs.Field]:
     if core.engine is None:
-        raise ActionError("Hermes isn't available.", status=503)
+        raise ActionError("The engine isn't available.", status=503)
     try:
         return list(core.engine.config_schema())
     except (EngineError, OSError) as error:
         raise ActionError(
-            f"Hermes's settings list couldn't be read: {error}", status=502
+            f"The engine's settings list couldn't be read: {error}", status=502
         ) from error
 
 
@@ -68,12 +68,12 @@ def _as_hermes_reads(core: Core, every: list[Target]) -> dict[str, dict[str, Any
     (one value for all), merged by Hermes's own apply_managed_overlay."""
     engine = core.engine
     if engine is None:
-        raise ActionError("Hermes isn't available.", status=503)
+        raise ActionError("The engine isn't available.", status=503)
     homes = {t.key: engine.profile_home(t.key) for t in every}
     try:
         merged = engine.as_hermes_reads(list(homes.values()))
     except (EngineError, OSError, ValueError) as error:
-        raise ActionError(f"Hermes's settings couldn't be read: {error}", status=502) from error
+        raise ActionError(f"The engine's settings couldn't be read: {error}", status=502) from error
     return {key: merged.get(str(home)) or {} for key, home in homes.items()}
 
 
@@ -82,11 +82,11 @@ def _secrets(core: Core, homes: dict[str, Path]) -> dict[str, set[hs.Path_]]:
     the same runtime run as _as_hermes_reads)."""
     engine = core.engine
     if engine is None:
-        raise ActionError("Hermes isn't available.", status=503)
+        raise ActionError("The engine isn't available.", status=503)
     try:
         found = engine.hermes_secrets(list(homes.values()))
     except (EngineError, OSError, ValueError) as error:
-        raise ActionError(f"Hermes's settings couldn't be read: {error}", status=502) from error
+        raise ActionError(f"The engine's settings couldn't be read: {error}", status=502) from error
     return {key: hs.secret_paths(found.get(str(home))) for key, home in homes.items()}
 
 

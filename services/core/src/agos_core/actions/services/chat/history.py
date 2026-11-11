@@ -215,7 +215,7 @@ def _rename_member(core: Core, workspace_id: str, row: Any, title: str) -> None:
         raise ActionError("The Co-Founder's chat keeps its name.")
     where = team.home(core, workspace_id, agent) if core.engine is not None else None
     if where is None or not (where / "config.yaml").is_file():
-        raise ActionError("This agent has no Hermes profile to hold the name.", 409)
+        raise ActionError("This agent has no profile to hold the name.", 409)
     name = title.strip()[: profile_meta.TITLE_MAX]
     if not name:
         raise ActionError("Give it a name.")
@@ -225,7 +225,7 @@ def _rename_member(core: Core, workspace_id: str, row: Any, title: str) -> None:
             if profile_meta.display_name(profile_meta.read(where)) != name:
                 core.engine.set_display_name(where, name)
     except (EngineError, OSError) as error:
-        raise ActionError(f"Hermes didn't take the name: {error}", 502) from error
+        raise ActionError(f"The engine didn't take the name: {error}", 502) from error
 
 
 def rename(core: Core, workspace_id: str, chat_id: int, title: str) -> None:
@@ -266,7 +266,7 @@ def rename(core: Core, workspace_id: str, chat_id: int, title: str) -> None:
     try:
         core.engine.rename_session(workspace_id, sessions[-1].id, title)
     except EngineError as error:
-        raise ActionError(f"Hermes didn't take the name: {error}") from error
+        raise ActionError(f"The engine didn't take the name: {error}") from error
 
 
 def set_model(core: Core, workspace_id: str, chat_id: int, model: Any) -> None:

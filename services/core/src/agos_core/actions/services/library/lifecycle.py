@@ -98,7 +98,7 @@ def delete_item(core: Core, item_id: int, workspace_id: str | None = None) -> li
     ):
         raise NotFoundError("This item")
     if row["kind"] == "tool":
-        raise ActionError("Hermes tools can't be deleted; turn them off per workspace.")
+        raise ActionError("Built-in tools can't be deleted; turn them off per workspace.")
     users = used_by(core, row)
     if row["kind"] == "agent":
         if not row["workspace_id"]:

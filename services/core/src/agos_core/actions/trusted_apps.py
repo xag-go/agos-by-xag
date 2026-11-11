@@ -55,7 +55,7 @@ def save(core: Core, workspace_id: str, names: list[str]) -> list[str]:
     wanted = clean(names)
     path = autonomy._policy_file(core, workspace_id)
     if path is None or not path.parent.is_dir():
-        raise ActionError("The workspace's Hermes isn't ready yet. Try again in a moment.", 503)
+        raise ActionError("The workspace isn't ready yet. Try again in a moment.", 503)
     with autonomy._write_lock:
         policy = autonomy._read_policy(core, workspace_id)
         before = listed(core, workspace_id)

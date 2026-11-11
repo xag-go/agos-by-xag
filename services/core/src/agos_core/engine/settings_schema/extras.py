@@ -189,8 +189,8 @@ def extra_fields(hermes_root: Path, listed: set[str]) -> list[Field]:
             Field(
                 key=key,
                 type=_type(default) if default is not None else "string",
-                description=f"{what}Read by Hermes's Telegram adapter ({extra.where}); "
-                f"not in Hermes's list of defaults.{env}",
+                description=f"{what}Read by the engine's Telegram adapter ({extra.where}); "
+                f"not in the engine's list of defaults.{env}",
                 default=default,
                 in_defaults=False,
             )

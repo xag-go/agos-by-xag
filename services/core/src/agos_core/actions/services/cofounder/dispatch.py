@@ -15,6 +15,7 @@ from agos_core.actions import automations as automation_actions
 from agos_core.actions import library as library_actions
 from agos_core.actions.errors import ActionError
 from agos_core.actions.owner_gate import fields_of
+from agos_core.actions.services.cofounder import base_ops
 from agos_core.actions.services.cofounder.action_cards import _KINDS, _UNDO, _row, _set, _view
 from agos_core.actions.services.cofounder.automation_kinds import (
     automation_id_of,
@@ -74,13 +75,18 @@ def _do(core: Core, workspace_id: str, action: str, p: dict[str, Any]) -> dict[s
     """Runs one action; returns what Undo needs."""
     if action == rules.BUNDLE:
         return _bundle(core, workspace_id, p)
+    return _do_kind(core, workspace_id, action, p)
+
+
+def _do_kind(core: Core, workspace_id: str, action: str, p: dict[str, Any]) -> dict[str, Any]:
+    """Runs one kind (never a bundle); the base kinds' steps are here."""
     from agos_core.actions import cofounder_hermes
 
     if action in (*cofounder_hermes.DOES, *cofounder_hermes.REPORTS):
         return cofounder_hermes.do(core, workspace_id, action, p)
     from agos_core.actions import cofounder_more
 
-    if action in cofounder_more.KINDS:
+    if action in cofounder_more.KINDS and action not in base_ops.NAMES:
         return cofounder_more.do(core, workspace_id, action, p)
     if action == "hire_agent":
         return _hire(core, workspace_id, p)
@@ -218,6 +224,11 @@ def _undo(core: Core, workspace_id: str, action: str, result: dict[str, Any]) ->
             if d["do"] in _UNDO:
                 _undo(core, workspace_id, str(d["do"]), d["result"])
         return
+    _undo_kind(core, workspace_id, action, result)
+
+
+def _undo_kind(core: Core, workspace_id: str, action: str, result: dict[str, Any]) -> None:
+    """Takes one kind (never a bundle) back; the base kinds' steps are here."""
     from agos_core.actions import cofounder_hermes
 
     if action in cofounder_hermes.DOES:
@@ -225,7 +236,7 @@ def _undo(core: Core, workspace_id: str, action: str, result: dict[str, Any]) ->
         return
     from agos_core.actions import cofounder_more
 
-    if action in cofounder_more.KINDS:
+    if action in cofounder_more.KINDS and action not in base_ops.NAMES:
         cofounder_more.undo(core, workspace_id, action, result)
         return
     if action == "assign_founder":
@@ -354,3 +365,6 @@ def decide(
         else:
             _run(core, row)
     return _view(_row(core, workspace_id, action_id))
+
+
+base_ops.bind(_do_kind, _undo_kind)  # the base kinds also run through the registry

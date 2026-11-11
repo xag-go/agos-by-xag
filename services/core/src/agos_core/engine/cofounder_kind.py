@@ -31,3 +31,6 @@ TEAM = "team"
 SKILLS = "skills_admin"
 BOARD = "board_admin"
 WORKSPACE = "workspace"
+# The base kinds its always-on prompt teaches itself (automations, skills, agents, hires,
+# rules, Hermes settings, the Founder): no section in the hidden skill (DOMAINS).
+CHAT = "chat"

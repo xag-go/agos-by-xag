@@ -462,8 +462,8 @@
       "lines": 180
     },
     "apps/web/src/app/(app)/w/[id]/automations/page.tsx::(anonymous)": {
-      "complexity": 28,
-      "lines": 185
+      "complexity": 22,
+      "lines": 174
     },
     "apps/web/src/app/(app)/w/[id]/kanban/page.tsx::(anonymous)": {
       "complexity": 38,
@@ -1027,11 +1027,11 @@
       "lines": 109
     },
     "apps/web/src/features/setup/automations-list.tsx::(anonymous)": {
-      "complexity": 20,
-      "lines": 155
+      "complexity": 18,
+      "lines": 151
     },
     "apps/web/src/features/setup/automations-list.tsx::AutomationsList": {
-      "lines": 190
+      "lines": 188
     },
     "apps/web/src/features/setup/connector-config.tsx::ConnectorConfig": {
       "complexity": 12,

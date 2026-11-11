@@ -67,10 +67,7 @@ export function PicturesCard({
               <span className="block font-medium">
                 {c.label}
                 {c.value === asText(field.hermesDefault) && (
-                  <span className="font-normal text-ink-3">
-                    {" "}
-                    · Hermes&apos;s default
-                  </span>
+                  <span className="font-normal text-ink-3"> · the default</span>
                 )}
               </span>
               {c.hint && <span className="block text-ink-2">{c.hint}</span>}
@@ -102,7 +99,7 @@ export function PicturesCard({
               const r = back
                 ? await saveHermesHelperModels({}, [field.key])
                 : await saveHermesHelperModels({ [field.key]: value }, []);
-              setNote(r.error ?? "Saved in Hermes.");
+              setNote(r.error ?? "Saved.");
             });
           }}
         >
@@ -116,8 +113,8 @@ export function PicturesCard({
       </div>
       <Details title={field.key} description={field.description}>
         <p className="text-xs text-ink-2">
-          Hermes uses {shownValue(field.value)} · {where(field)} · Hermes&apos;s
-          default: {shownValue(field.hermesDefault)}
+          In use: {shownValue(field.value)} · {where(field)} · the default:{" "}
+          {shownValue(field.hermesDefault)}
         </p>
         {field.managed && (
           <RawFields fields={[field]} confirm={confirm} resetOnly />

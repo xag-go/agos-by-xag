@@ -62,7 +62,7 @@ export function TestsTab({
         A test run is a card on this workspace&apos;s Kanban: the member runs
         the skill (version {tests.version} now) on a saved input; the
         card&apos;s result comes back here and, with an expected output or a
-        checklist, Hermes&apos;s helper model grades it.
+        checklist, a helper model grades it.
       </p>
       <TemplateForm workspaceId={workspaceId} itemId={itemId} tests={tests} />
       <section className="flex flex-col gap-3">

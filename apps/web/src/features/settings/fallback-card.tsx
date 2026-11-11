@@ -121,12 +121,12 @@ export function FallbackCard({
       <h3 className="font-medium">Fallback models</h3>
       <p className="mt-1 text-sm text-ink-2">
         When an agent&apos;s main model fails (rate limit, outage, expired
-        login), Hermes switches to the first model in this list, then the next,
-        for the rest of that turn; the next message tries the main model again.
-        It is Hermes&apos;s own fallback list (fallback_providers): one list for
-        every workspace and every member ({fallback.profiles} Hermes profiles),
-        saved once into Hermes&apos;s managed settings, which they all read. New
-        workspaces and members use it at once.
+        login), the first model in this list takes over, then the next, for the
+        rest of that turn; the next message tries the main model again. It is
+        one fallback list (fallback_providers) for every workspace and every
+        member ({fallback.profiles} profiles), saved once into the shared
+        settings, which they all read. New workspaces and members use it at
+        once.
       </p>
 
       {fallback.spread.length > 0 && (
@@ -177,8 +177,8 @@ export function FallbackCard({
                     {!connected(row) && (
                       <span className="block text-xs text-warn">
                         {row.catalogProvider === null
-                          ? "Set in Hermes itself (kept as it is)."
-                          : "Not among the providers you're connected to: Hermes skips it until it has a login or key."}
+                          ? "Set in the engine itself (kept as it is)."
+                          : "Not among the providers you're connected to: it is skipped until it has a login or key."}
                       </span>
                     )}
                   </span>
@@ -269,7 +269,7 @@ export function FallbackCard({
                         },
                   ),
                 );
-                setNote(r.error ?? "Saved in Hermes.");
+                setNote(r.error ?? "Saved.");
               });
             }}
           >

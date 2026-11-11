@@ -257,7 +257,7 @@ function RhythmSettings({
       </summary>
       <div className="px-[18px] pb-4">
         <p className="text-xs text-ink-3">
-          Hermes runs these in the Co-Founder&apos;s own schedule (times in your
+          These run on the Co-Founder&apos;s own schedule (times in your
           timezone from Settings → General, else this server&apos;s). Each posts
           to your Inbox and its Telegram chat; turn any of them off here.
         </p>

@@ -46,7 +46,7 @@ export function NewCardModal({
             <h2 className="font-display text-xl font-semibold">New card</h2>
             <p className="mt-0.5 text-sm text-ink-2">
               Given to a member, it starts by itself. With nobody, it goes to
-              Triage: Hermes fleshes it out and gives it to the team.
+              Triage: the Co-Founder fleshes it out and gives it to the team.
             </p>
           </div>
           <DialogCloseButton />
@@ -85,7 +85,7 @@ export function NewCardModal({
                 ))}
               </div>
               <span className="text-xs text-ink-3">
-                Hermes loads them for the member; the card keeps their versions.
+                They are loaded for the member; the card keeps their versions.
               </span>
             </fieldset>
           )}
@@ -128,7 +128,7 @@ export function NewCardModal({
                 <p className="text-sm font-medium text-ink">Goal mode</p>
                 <p className="mt-0.5 text-xs text-ink-3">
                   The member keeps going until a judge agrees the card is done
-                  (title, description, success criteria): Hermes&apos;s own goal
+                  (title, description, success criteria): the built-in goal
                   mode.
                 </p>
               </div>

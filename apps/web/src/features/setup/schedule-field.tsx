@@ -19,7 +19,7 @@ const kinds: { value: Schedule["kind"]; label: string }[] = [
   { value: "weekly", label: "Once a week" },
   { value: "monthly", label: "Once a month" },
   { value: "hours", label: "Every few hours" },
-  { value: "custom", label: "Custom (as Hermes takes it)" },
+  { value: "custom", label: "Custom (cron or plain words)" },
 ];
 
 function switchKind(kind: Schedule["kind"], current: Schedule): Schedule {
@@ -162,7 +162,7 @@ export function ScheduleField({
         {schedule.kind === "custom" && (
           <Field
             label="Schedule"
-            hint="A cron expression (minute · hour · day of month · month · day of week), or Hermes's own forms: “every 30m”, “every monday 9am”."
+            hint="A cron expression (minute · hour · day of month · month · day of week), or plain forms: “every 30m”, “every monday 9am”."
           >
             <Input
               value={schedule.cron}

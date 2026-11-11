@@ -186,6 +186,32 @@ def test_run_without_a_check_refuses(client: Any) -> None:
     assert refused.json()["detail"] == "Check for an update first."
 
 
+def test_run_with_an_idempotency_key_runs_once(
+    client: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A double click (the web's coreOnce retry too) never starts two updates."""
+    c, core = client
+    set_setting(core.db, agos_update.KEY_CHECK, AGOS_READY)
+    started: list[str] = []
+
+    def _start(core: Any) -> dict[str, str]:
+        started.append("agos")
+        return {"phase": "queued"}
+
+    monkeypatch.setattr(agos_update, "start_update", _start)
+    first = c.post("/updates/run", headers={"Idempotency-Key": "double-click"})
+    again = c.post("/updates/run", headers={"Idempotency-Key": "double-click"})
+    assert first.status_code == 200, first.text
+    assert again.status_code == 200, again.text
+    assert started == ["agos"]
+    assert again.json() == first.json()
+
+
+def test_run_updates_spec_takes_an_idempotency_key() -> None:
+    specs = {s.name: s for s in REGISTRY.specs()}
+    assert specs["run_updates"].idempotent is True
+
+
 def test_status_merges_both_parts(client: Any, monkeypatch: pytest.MonkeyPatch) -> None:
     c, _core = client
     monkeypatch.setattr(agos_update, "status", lambda core: {"state": {"phase": "build"}})

@@ -68,6 +68,14 @@ const STATES = {
   "failed, not rolled back": card({
     state: { phase: "failed", error: "disk full" },
   }),
+  "failed, half done (AGOS updated, the engine part stopped)": card({
+    state: {
+      phase: "failed",
+      error: "the fit check refused",
+      rolled_back: true,
+      half_done: true,
+    },
+  }),
   "rolled back on purpose": card({
     state: {
       phase: "rolled-back",

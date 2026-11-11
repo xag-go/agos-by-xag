@@ -3,13 +3,15 @@
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { getStatus } from "@/shared/get-status";
 import { Button } from "@/shared/ui/button";
+import { checkUpdates, runUpdates } from "./updates-actions";
 import {
-  checkUpdates,
-  runUpdates,
+  type CoreUpdatesStatus,
+  deriveUpdatesState,
+  RUNNING,
+  startedState,
   type UpdatesCheck,
   type UpdatesState,
-  type UpdatesStatus,
-} from "./updates-actions";
+} from "./updates-status";
 
 /**
  * Settings → General → Updates: one Check update for everything AGOS runs on
@@ -19,23 +21,6 @@ import {
  * card never says which part updates.
  */
 
-const RUNNING = [
-  "queued",
-  "starting",
-  "backup",
-  "backups",
-  "stopping",
-  "code",
-  "hermes",
-  "build",
-  "sandbox",
-  "gateways-off",
-  "install",
-  "prepare",
-  "gateways-on",
-  "starting-up",
-  "rollback",
-];
 const STEP_WORDS: Record<string, string> = {
   queued: "Starting…",
   starting: "Starting…",
@@ -81,13 +66,15 @@ function useUpdatePoll<T>(
   }, [url, watching]);
 }
 
-/** Polls the status route while an update runs; `away` while AGOS restarts. */
+/** Polls the status route while an update runs; `away` while AGOS restarts.
+ * The core answers both parts' records (see updates-status.ts); the card shows
+ * the one state derived from them. */
 function useUpdatesStatus(
   watching: number,
   setState: (state: UpdatesState) => void,
   setAway: (away: boolean) => void,
 ) {
-  useUpdatePoll<UpdatesStatus>("/api/updates", watching, (data) => {
+  useUpdatePoll<CoreUpdatesStatus>("/api/updates", watching, (data) => {
     if (!data) {
       // AGOS restarts during an update: keep asking until it is back.
       if (watching === 0) return null;
@@ -95,8 +82,9 @@ function useUpdatesStatus(
       return 4000;
     }
     setAway(false);
-    if (data.state) setState(data.state);
-    return data.state && RUNNING.includes(data.state.phase) ? 3000 : null;
+    const state = deriveUpdatesState(data);
+    if (state) setState(state);
+    return state && RUNNING.includes(state.phase) ? 3000 : null;
   });
 }
 
@@ -227,7 +215,8 @@ export function UpdatesCard() {
       return;
     }
     setCheck(null);
-    setState(answer.data);
+    const started = startedState(answer.data);
+    if (started) setState(started);
     setWatching((n) => n + 1);
   };
 
@@ -264,7 +253,10 @@ function Result({ state }: { state: UpdatesState }) {
   if (state.phase === "failed") {
     return (
       <p className="text-sm text-red-600">
-        The update stopped: {state.error}
+        {state.half_done
+          ? "AGOS itself updated, but the engine's update stopped: "
+          : "The update stopped: "}
+        {state.error}
         {state.rolled_back
           ? " The old release is back and everything runs on it."
           : " Tell the assistant — the backups made at the start restore everything."}

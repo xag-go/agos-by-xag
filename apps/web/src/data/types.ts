@@ -12,6 +12,12 @@ export type HookCondition = S["HookCondition"];
 export type AutomationVariable = S["AutomationVariable"];
 export type AutomationRevision = S["AutomationRevision"];
 export type AutomationRunGroup = S["AutomationRunGroup"];
+/** A run step by step: who worked, how long, tokens and cost. */
+export type RunDetail = S["RunDetail"];
+export type RunStep = S["RunStep"];
+export type Usage = S["Usage"];
+/** What an automation's runs used this month and last month (UTC). */
+export type AutomationCost = S["AutomationCost"];
 /** A folder of the Automations, Skills or Projects list (AGOS-only grouping). */
 export type ListFolder = S["Folder"];
 export type FolderKind = ListFolder["kind"];

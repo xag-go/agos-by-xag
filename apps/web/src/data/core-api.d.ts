@@ -2178,6 +2178,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/workspaces/{workspace_id}/automation-costs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Automation Costs
+         * @description What each automation's runs used this calendar month and last month (UTC).
+         */
+        get: operations["automation_costs_workspaces__workspace_id__automation_costs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/workspaces/{workspace_id}/automation-runs": {
         parameters: {
             query?: never;
@@ -2363,6 +2383,27 @@ export interface paths {
         };
         /** List Runs */
         get: operations["list_runs_workspaces__workspace_id__automations__automation_id__runs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/workspaces/{workspace_id}/automations/{automation_id}/runs/{run_id}/detail": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Run Detail
+         * @description One run step by step: who worked each step (or why it was skipped), when, how
+         *     long, its tokens and cost as Hermes counted them, and the run's totals.
+         */
+        get: operations["run_detail_workspaces__workspace_id__automations__automation_id__runs__run_id__detail_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -6707,6 +6748,18 @@ export interface components {
             variables?: components["schemas"]["AutomationVariable"][] | null;
         };
         /**
+         * AutomationCost
+         * @description What an automation's runs used this calendar month and last month (UTC).
+         */
+        AutomationCost: {
+            /** Automationid */
+            automationId: number;
+            lastMonth: components["schemas"]["MonthUsage"];
+            /** Name */
+            name: string;
+            thisMonth: components["schemas"]["MonthUsage"];
+        };
+        /**
          * AutomationEvent
          * @description One webhook delivery and what AGOS did with it.
          */
@@ -6797,6 +6850,7 @@ export interface components {
         AutomationRun: {
             /** Caughtup */
             caughtUp?: string | null;
+            detail?: components["schemas"]["RunDetail"] | null;
             /** Error */
             error: string | null;
             /** Finishedat */
@@ -6832,6 +6886,7 @@ export interface components {
             automationName: string;
             /** Cards */
             cards?: components["schemas"]["RunCard"][];
+            detail?: components["schemas"]["RunDetail"] | null;
             /** Finishedat */
             finishedAt: string | null;
             /** Runid */
@@ -10382,6 +10437,17 @@ export interface components {
             /** Provider */
             provider: string;
         };
+        /** MonthUsage */
+        MonthUsage: {
+            /** Month */
+            month: string;
+            /**
+             * Runs
+             * @default 0
+             */
+            runs: number;
+            usage: components["schemas"]["Usage"];
+        };
         /** NeedsOwner */
         NeedsOwner: {
             /** Kind */
@@ -12079,6 +12145,29 @@ export interface components {
             title: string;
         };
         /**
+         * RunDetail
+         * @description A run in detail: its steps in run order and their totals.
+         */
+        RunDetail: {
+            /** Automationid */
+            automationId: number;
+            /** Automationname */
+            automationName: string;
+            /** Durations */
+            durationS?: number | null;
+            /** Finishedat */
+            finishedAt: string | null;
+            /** Runid */
+            runId: string;
+            /** Source */
+            source: string;
+            /** Startedat */
+            startedAt: string;
+            /** Steps */
+            steps: components["schemas"]["RunStep"][];
+            totals: components["schemas"]["Usage"];
+        };
+        /**
          * RunNowBody
          * @description Run now with variables: the values for this run (name → value as text).
          */
@@ -12087,6 +12176,39 @@ export interface components {
             variables?: {
                 [key: string]: string;
             };
+        };
+        /**
+         * RunStep
+         * @description One step of a run: its card, who worked it, its state and what it used.
+         */
+        RunStep: {
+            /** Agent */
+            agent: string;
+            /**
+             * Attempts
+             * @default 0
+             */
+            attempts: number;
+            /** Cardid */
+            cardId: string;
+            /** Durations */
+            durationS?: number | null;
+            /** Finishedat */
+            finishedAt?: string | null;
+            /** Key */
+            key: string;
+            /** Reason */
+            reason?: string | null;
+            /** Startedat */
+            startedAt?: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "done" | "running" | "waiting" | "skipped" | "failed" | "needs_you" | "stopped";
+            /** Title */
+            title: string;
+            usage: components["schemas"]["Usage"];
         };
         /** ScheduleBody */
         ScheduleBody: {
@@ -13087,6 +13209,54 @@ export interface components {
             itemId: number;
             /** Name */
             name: string;
+        };
+        /**
+         * Usage
+         * @description Tokens and cost as Hermes counted them (its sessions table). cost_usd is
+         *     None when Hermes priced none of it ("unknown"); priced is False when part of
+         *     the tokens has no price (then cost_usd is the priced part only).
+         */
+        Usage: {
+            /**
+             * Cachereadtokens
+             * @default 0
+             */
+            cacheReadTokens: number;
+            /**
+             * Cachewritetokens
+             * @default 0
+             */
+            cacheWriteTokens: number;
+            /**
+             * Costusd
+             * @default 0
+             */
+            costUsd: number | null;
+            /**
+             * Inputtokens
+             * @default 0
+             */
+            inputTokens: number;
+            /**
+             * Outputtokens
+             * @default 0
+             */
+            outputTokens: number;
+            /**
+             * Priced
+             * @default true
+             */
+            priced: boolean;
+            /**
+             * Sessions
+             * @default 0
+             */
+            sessions: number;
+            /**
+             * Tokens
+             * @default 0
+             */
+            tokens: number;
         };
         /** UsageDay */
         UsageDay: {
@@ -18564,6 +18734,39 @@ export interface operations {
             };
         };
     };
+    automation_costs_workspaces__workspace_id__automation_costs_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-agos-internal"?: string | null;
+            };
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutomationCost"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     run_history_workspaces__workspace_id__automation_runs_get: {
         parameters: {
             query?: never;
@@ -19010,6 +19213,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AutomationRun"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    run_detail_workspaces__workspace_id__automations__automation_id__runs__run_id__detail_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-agos-internal"?: string | null;
+            };
+            path: {
+                automation_id: number;
+                run_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunDetail"];
                 };
             };
             /** @description Validation Error */

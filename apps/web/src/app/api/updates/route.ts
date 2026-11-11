@@ -1,4 +1,4 @@
-import type { UpdatesStatus } from "@/features/settings/updates-actions";
+import type { CoreUpdatesStatus } from "@/features/settings/updates-status";
 import { core, CoreError } from "@/server/core";
 import { refuseUnlessOwner } from "@/server/access-guard";
 
@@ -13,7 +13,7 @@ export async function GET() {
   const refused = await refuseUnlessOwner();
   if (refused) return refused;
   try {
-    const data = await core<UpdatesStatus>("GET", "/updates");
+    const data = await core<CoreUpdatesStatus>("GET", "/updates");
     return Response.json(
       { ok: true, data },
       { headers: { "Cache-Control": "no-store" } },

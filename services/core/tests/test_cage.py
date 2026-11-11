@@ -118,7 +118,7 @@ def test_the_policy_lists_only_this_workspaces_folders(tmp_path: Path) -> None:
     policy = cage.policy(
         labels=["agos-alpha", "agos-alpha--a-writer"],
         images=["agos-sandbox:1", "agos-sandbox:desktop"],
-        network="agos-net-agos-alpha",
+        networks=["agos-net-agos-alpha"],
         root=root,
         temp_dir=temp,
         configs=[config],
@@ -643,3 +643,38 @@ def test_the_caged_docker_cli_reaches_only_the_filtered_socket(tmp_path: Path) -
         shutil.rmtree(short, ignore_errors=True)
     assert done.returncode == 0, done.stderr
     assert "1.51" in done.stdout
+
+
+def test_every_members_own_network_is_in_its_workspaces_policy(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Live 2026-11-04..08: each member's sandbox runs on its own internal network
+    (`agos-net-<ws>--<member>`, engine/network.sandbox_settings), but the policy
+    listed only the root's, so the broker refused every member sandbox (`docker run`
+    exit 125) and workers had no terminal. The policy must name the exact network
+    each profile's own config asks for, and never another workspace's."""
+    from agos_core.engine import network as net
+
+    monkeypatch.setattr(cage, "available", lambda: True)
+    engine = _caged_engine(tmp_path, "auto", _Runner())
+    for ws, member in (("alpha", "a-writer"), ("alpha", "a-scout"), ("beta", "a-spy")):
+        home = engine.root(ws) / "profiles" / member
+        home.mkdir(parents=True)
+        (home / "config.yaml").write_text("{}\n")
+    target = cage.write_policy(
+        tmp_path / "pol", engine.profile("alpha"), sandbox_broker.policy(engine, "alpha")
+    )
+    allowed = sandboxd.load_policy(target).networks
+    for key in ("alpha", "alpha--a-writer", "alpha--a-scout"):
+        extra = json.loads(net.sandbox_settings(engine.profile(key))["terminal.docker_extra_args"])
+        asked = {a.split("=", 1)[1] for a in extra if a.startswith("--network=")}
+        assert asked and asked <= allowed, (key, asked, allowed)
+    assert net.network_name(engine.profile("beta")) not in allowed
+    assert net.network_name(engine.profile("beta--a-spy")) not in allowed
+    assert allowed == {
+        "none",
+        *(
+            net.network_name(engine.profile(k))
+            for k in ("alpha", "alpha--a-writer", "alpha--a-scout")
+        ),
+    }

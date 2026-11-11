@@ -97,7 +97,7 @@ def _ask_nous(core: Core) -> tuple[bool, str | None]:
     except (OSError, hermes_process.TimeoutExpired, ValueError):
         data = {}
     if not data:
-        return False, "Hermes didn't answer."
+        return False, "The engine didn't answer."
     if not data.get("logged_in"):
         return False, "Sign in to Nous Portal first."
     if not data.get("available"):

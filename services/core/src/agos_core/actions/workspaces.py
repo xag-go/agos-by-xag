@@ -77,7 +77,7 @@ def _checked_name(name: str) -> str:
     if not clean:
         raise ActionError("Give the workspace a name.")
     if len(clean) > repo.NAME_MAX:
-        raise ActionError(f"Keep the name to {repo.NAME_MAX} characters (Hermes's limit).")
+        raise ActionError(f"Keep the name to {repo.NAME_MAX} characters (the limit).")
     return clean
 
 
@@ -242,7 +242,7 @@ def save_settings(
             access.set_workspace(core, workspace_id, chat_access == "full")
         except (EngineError, OSError) as error:
             raise ActionError(
-                "Saved, but Hermes didn't take the new access. Try again.", 503
+                "Saved, but the engine didn't take the new access. Try again.", 503
             ) from error
     if default_model != current.default_model:
         # Straight into the workspace's Hermes (its default model; AGOS keeps no copy).
@@ -250,7 +250,7 @@ def save_settings(
         try:
             engine_actions.set_model(core, workspace_id, default_model)
         except (EngineError, OSError) as error:
-            raise ActionError("Hermes didn't take the new model. Try again.", 503) from error
+            raise ActionError("The engine didn't take the new model. Try again.", 503) from error
 
 
 def _change_folders(
@@ -265,13 +265,13 @@ def _change_folders(
     is still Hermes's)."""
 
     if core.engine is None:
-        raise ActionError("The engine is off: folders live in the workspace's Hermes.", 409)
+        raise ActionError("The engine is off: folders live in the workspace.", 409)
     try:
         engine_actions.save_folders(core, workspace_id, grants)
     except ActionError as error:
         if not done(engine_actions.folders(core, workspace_id)):
             raise ActionError(
-                "Not saved: the workspace's Hermes didn't take it, and the agent is stopped. "
+                "Not saved: the workspace didn't take it, and the agent is stopped. "
                 "Check that Docker is running, then try again.",
                 503,
             ) from error

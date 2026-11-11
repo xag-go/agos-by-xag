@@ -194,7 +194,7 @@ def consent(core: Core, workspace_id: str, member: str, card: str, payload: dict
     from agos_core.actions.kanban_asks import _write
 
     if core.engine is None:
-        raise ActionError("Hermes isn't available.", 503)
+        raise ActionError("The engine isn't available.", 503)
     home = core.engine.profile_home(
         agent_profiles.key(workspace_id, member) if member else workspace_id
     )

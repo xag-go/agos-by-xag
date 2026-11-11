@@ -39,7 +39,7 @@ def _attachments(core: Core, workspace_id: str) -> tuple[list[dict[str, Any]], d
         return (
             [],
             _titles_from_board(core, workspace_id),
-            f"Hermes's board files can't be listed here ({why}).",
+            f"The board's files can't be listed here ({why}).",
         )
     return files, titles, ""
 

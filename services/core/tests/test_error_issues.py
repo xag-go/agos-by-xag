@@ -414,7 +414,7 @@ def test_hermes_down_or_slow_is_a_typed_503_not_an_internal_error(tmp_path: Path
         client.headers["x-agos-internal"] = settings.internal_token_file.read_text()
         ws = test_api.create_workspace(client, "Hermes down WS")
         for path, code, detail in (
-            ("down", "HERMES_UNAVAILABLE", "Hermes isn't answering right now"),
+            ("down", "HERMES_UNAVAILABLE", "The engine isn't answering right now"),
             ("slow", "HERMES_TIMEOUT", "Hermes didn't answer in time."),
         ):
             answer = client.get(f"/workspaces/{ws}/{path}")

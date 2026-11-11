@@ -76,7 +76,7 @@ def test_a_too_long_description_is_refused_at_once_and_leaves_nothing(
     skill = {"do": "create_skill", "name": "talking-head-editing", "instructions": "Cut."}
     [card] = _run(core, ws, {**skill, "description": LONG})
     assert card["status"] == "failed", card
-    assert card["error"].startswith("Hermes refused it: Description is"), card
+    assert card["error"].startswith("The engine refused it: Description is"), card
     # Hermes's whole reason reaches the Co-Founder: it says how to fix it.
     assert "60-char" in card["error"] and "Move detail into the skill body." in card["error"]
     assert "talking-head-editing" not in _skills(client, ws)
@@ -105,7 +105,7 @@ def test_a_create_hermes_refuses_after_the_check_leaves_no_empty_card(
     )
     skill = {"do": "create_skill", "name": "video-editing", "instructions": "Cut."}
     [card] = _run(core, ws, {**skill, "description": LONG})
-    assert card["status"] == "failed" and "Hermes refused it" in card["error"], card
+    assert card["status"] == "failed" and "The engine refused it" in card["error"], card
     assert "video-editing" not in _skills(client, ws)
     [card] = _run(core, ws, {**skill, "description": SHORT})
     assert card["status"] == "done", card

@@ -191,13 +191,13 @@ def set_lists(core: Core, workspace_id: str, deny: Any, allow: Any) -> dict[str,
     unless the owner just removed that entry from the Co-Founder's list)."""
     engine = core.engine
     if engine is None:
-        raise ActionError("Hermes isn't available.", status=503)
+        raise ActionError("The engine isn't available.", status=503)
     wanted = {"deny": _clean(deny), "allow": _clean(allow)}
     from agos_core.engine import config_file
 
     root = engine.profile_home(workspace_id)
     if not (root / "config.yaml").is_file():
-        raise ActionError("This workspace's Hermes isn't set up yet.", status=409)
+        raise ActionError("This workspace isn't set up yet.", status=409)
     before = lists(core, workspace_id)
     for name, key in LISTS.items():
         if before[name] != wanted[name]:
@@ -312,7 +312,7 @@ def set_chat(core: Core, workspace_id: str, chat_id: int, full: bool) -> None:
     require_chat(core, workspace_id, chat_id)
     where = hermes_channel.chat_on_hermes(core, chat_id)
     if where is None:
-        raise ActionError("This chat has no Hermes conversation to switch.")
+        raise ActionError("This chat has no conversation to switch.")
     if chat_full(core, workspace_id, chat_id) == full:
         return
     item = hermes_inbox.put(core.db, workspace_id, str(where["address"]), YOLO, "command")
@@ -326,4 +326,4 @@ def set_chat(core: Core, workspace_id: str, chat_id: int, full: bool) -> None:
             return
         time.sleep(0.2)
     hermes_inbox.drop_unfinished(core.db, workspace_id, item)
-    raise ActionError("The workspace's Hermes didn't take it. Try again in a moment.", 503)
+    raise ActionError("The workspace didn't take it. Try again in a moment.", 503)

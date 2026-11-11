@@ -33,15 +33,15 @@ log = logging.getLogger("agos.kanban_board")
 def run(core: Core, workspace_id: str, *args: str) -> str:
     """`hermes kanban <args>` on the workspace's board; ActionError when Hermes refuses."""
     if core.engine is None:
-        raise ActionError("Hermes isn't set up yet.")
+        raise ActionError("The engine isn't set up yet.")
     try:
         return hermes_cli.cli(core.engine, workspace_id, "kanban", *args)
     except EngineError as error:
         # Hermes said why it refused (an empty completion, a live worker, a parent
         # not done…): the owner reads Hermes's own words, not only that it failed.
         if error.reason:
-            raise ActionError(f"Hermes's Kanban refused: {error.reason}") from error
-        raise ActionError(f"Hermes's Kanban didn't answer: {error}") from error
+            raise ActionError(f"The board refused: {error.reason}") from error
+        raise ActionError(f"The board didn't answer: {error}") from error
 
 
 def tried(core: Core, workspace_id: str, *args: str, what: str = "kanban") -> bool:
@@ -69,8 +69,8 @@ def answer(text: str) -> Any:
     """The JSON a Kanban command printed (Hermes may print a line before it)."""
     start = min((i for i in (text.find("{"), text.find("[")) if i >= 0), default=-1)
     if start < 0:
-        raise ActionError("Hermes's Kanban gave no answer.")
+        raise ActionError("The board gave no answer.")
     try:
         return json.loads(text[start:])
     except ValueError as error:
-        raise ActionError("Hermes's Kanban gave an answer AGOS can't read.") from error
+        raise ActionError("The board gave an answer AGOS can't read.") from error

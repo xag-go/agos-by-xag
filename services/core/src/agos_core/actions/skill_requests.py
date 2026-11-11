@@ -54,7 +54,7 @@ DESCRIPTION = "Use when you lack a skill: find one, then ask AGOS for it."
 BODY = """\
 # Find skills: when you lack a capability mid-task
 
-Adapted from vercel-labs/skills find-skills, for this workspace's Hermes.
+Adapted from vercel-labs/skills find-skills, for this workspace.
 
 ## 1. Name the need
 The domain (e.g. invoices, React, deployment) and the exact task (e.g. check totals,
@@ -63,7 +63,7 @@ likely exists and you can't do it well from what you have.
 
 ## 2. This workspace's skills first
 Call `agos_skill_request` with action `search` and a short query: it lists this
-workspace's own skills (on and off) and Hermes's skills hub (which includes
+workspace's own skills (on and off) and the skills hub (which includes
 skills.sh). A workspace skill that fits: load it (skill_view) and carry on.
 
 ## 3. Check quality before you ask
@@ -78,7 +78,7 @@ Call `agos_skill_request` with action `request`:
 - `tests`: 1-2 test inputs taken from your real task, each with `expected` (what a
   good answer says);
 - `criteria`: optional, what every good answer must do (a short checklist).
-AGOS installs it through Hermes's hub and its security scan, tests it on your
+AGOS installs it through the skills hub and its security scan, tests it on your
 inputs, and asks the owner when it carries scripts or the scan warns. It is not
 usable until it lands: check with action `status`, and meanwhile do the task with
 what you have (say so in your work).
@@ -344,7 +344,7 @@ def request(
 
 
 _NEXT = (
-    "AGOS installs it through Hermes's hub and its scan, then tests it on your inputs; it "
+    "AGOS installs it through the skills hub and its scan, then tests it on your inputs; it "
     "is not usable until it lands (check with action status). Carry on with what you have."
 )
 
@@ -406,7 +406,7 @@ def _install_and_test(core: Core, workspace_id: str, request_id: int, force: boo
     try:
         name = src.skill_name(identifier)
     except (sources.SourceError, hermes_process.TimeoutExpired) as error:
-        _end(core, workspace_id, request_id, "failed", f"Hermes's hub didn't find it: {error}")
+        _end(core, workspace_id, request_id, "failed", f"The skills hub didn't find it: {error}")
         return
     _set(core, request_id, name=name)
     if not force and (
@@ -444,7 +444,13 @@ def _install_and_test(core: Core, workspace_id: str, request_id: int, force: boo
         workspace_skills.applied(core, workspace_id)
         if isinstance(error, sources.SourceError) and workspace_skills.SCAN_BLOCKED in said:
             if HARD_BLOCK in said or force:
-                _end(core, workspace_id, request_id, "refused", f"Hermes's scan blocked it: {said}")
+                _end(
+                    core,
+                    workspace_id,
+                    request_id,
+                    "refused",
+                    f"The install scan blocked it: {said}",
+                )
                 return
             # Hermes installs it only with --force: the owner decides first.
             _set(core, request_id, verdict="caution", scan=said[:2000])
@@ -553,11 +559,11 @@ def _ask_owner(core: Core, workspace_id: str, request_id: int) -> None:
     row = _get(core, workspace_id, request_id)
     why = []
     if row["item_id"] is None:
-        why.append("Hermes's scan wants a yes before it installs it (Install anyway)")
+        why.append("The install scan wants a yes before it installs it (Install anyway)")
     if row["scripts"]:
         why.append("it carries scripts")
     if str(row["verdict"]) == "caution" and row["item_id"] is not None:
-        why.append("Hermes's scan warned")
+        why.append("The install scan warned")
     payload = {
         "request": request_id,
         "name": str(row["name"]),

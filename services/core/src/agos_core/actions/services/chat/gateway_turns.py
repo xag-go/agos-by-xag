@@ -204,7 +204,7 @@ WHY = {
     "empty_response_exhausted": "The model kept giving empty answers",
     "pending_tool_result": "It stopped after a tool, without an answer",
     "context_compression_timeout": "Making the conversation shorter took too long",
-    "session_persistence_failed": "Hermes couldn't save the conversation",
+    "session_persistence_failed": "The engine couldn't save the conversation",
 }
 
 
@@ -289,7 +289,7 @@ def turn_ended(core: Core, workspace_id: str, turn_id: int, reason: str) -> None
 UNANSWERED_S = 60
 SETTLED_S = 30
 NO_AGENT = (
-    "Hermes answered without starting an agent (for example, this workspace has no "
+    "The engine answered without starting an agent (for example, this workspace has no "
     "AI login), so this message gets no answer."
 )
 _IDLE_SEEN: dict[int, dict[int, float]] = {}

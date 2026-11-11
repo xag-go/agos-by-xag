@@ -58,6 +58,7 @@ from agos_core.api import search as search_api
 from agos_core.api import skill_growth as skill_growth_api
 from agos_core.api import skill_studio as skill_studio_api
 from agos_core.api import tool_keys as tool_keys_api
+from agos_core.api import updates as updates_api
 from agos_core.api import vision as vision_api
 from agos_core.api import work_hours as work_hours_api
 from agos_core.api.deps import require_internal
@@ -65,6 +66,56 @@ from agos_core.config import Settings, load_settings
 from agos_core.context import open_core
 
 log = logging.getLogger("agos")
+
+# Every router behind the internal token (create_app mounts each with it).
+_PROTECTED_API_MODULES = (
+    workspaces,
+    chats,
+    automations,
+    overview,
+    models,
+    identity,
+    library,
+    preferences,
+    channels,
+    backups,
+    workers,
+    apps,
+    capabilities,
+    browse,
+    cofounder_actions,
+    log_api,
+    docs_api,
+    errors_api,
+    screen_api,
+    tool_keys_api,
+    proactive_api,
+    ongoing_api,
+    kanban_api,
+    card_docs_api,
+    artifacts_api,
+    inbox_api,
+    office_api,
+    hermes_update_api,
+    agos_update_api,
+    updates_api,
+    push_api,
+    skill_studio_api,
+    routines_api,
+    vision_api,
+    search_api,
+    portability_api,
+    pipelines_api,
+    card_services_api,
+    connections_api,
+    skill_growth_api,
+    founder_api,
+    remote_access_api,
+    work_hours_api,
+    folders_api,
+    read_vs_act_api,
+    ops_api,
+)
 
 
 def create_app(settings: Settings | None = None, *, background: bool = True) -> FastAPI:
@@ -125,52 +176,6 @@ def create_app(settings: Settings | None = None, *, background: bool = True) -> 
     app.include_router(read_vs_act_api.bridge_router)
 
     protected = [Depends(require_internal)]
-    for module in (
-        workspaces,
-        chats,
-        automations,
-        overview,
-        models,
-        identity,
-        library,
-        preferences,
-        channels,
-        backups,
-        workers,
-        apps,
-        capabilities,
-        browse,
-        cofounder_actions,
-        log_api,
-        docs_api,
-        errors_api,
-        screen_api,
-        tool_keys_api,
-        proactive_api,
-        ongoing_api,
-        kanban_api,
-        card_docs_api,
-        artifacts_api,
-        inbox_api,
-        office_api,
-        hermes_update_api,
-        agos_update_api,
-        push_api,
-        skill_studio_api,
-        routines_api,
-        vision_api,
-        search_api,
-        portability_api,
-        pipelines_api,
-        card_services_api,
-        connections_api,
-        skill_growth_api,
-        founder_api,
-        remote_access_api,
-        work_hours_api,
-        folders_api,
-        read_vs_act_api,
-        ops_api,
-    ):
+    for module in _PROTECTED_API_MODULES:
         app.include_router(module.router, dependencies=protected)
     return app

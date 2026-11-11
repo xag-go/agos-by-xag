@@ -9,6 +9,7 @@ export type Automation = S["Automation"];
 export type AutomationRun = S["AutomationRun"];
 export type AutomationEvent = S["AutomationEvent"];
 export type HookCondition = S["HookCondition"];
+export type StepCondition = S["StepCondition"];
 export type AutomationVariable = S["AutomationVariable"];
 export type AutomationRevision = S["AutomationRevision"];
 export type AutomationRunGroup = S["AutomationRunGroup"];

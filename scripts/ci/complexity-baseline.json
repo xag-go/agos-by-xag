@@ -430,7 +430,7 @@
     "services/core/src/agos_core/hermes_plugin/agos_guard/__init__.py::register": {
       "C901": 19,
       "PLR0915": 79,
-      "length": 177
+      "length": 172
     },
     "services/core/src/agos_core/hermes_plugin/agos_guard/bridge_platform.py::_agos_adapter": {
       "C901": 33,
@@ -1070,11 +1070,8 @@
     "apps/web/src/features/setup/schedule.ts::fromCron": {
       "complexity": 26
     },
-    "apps/web/src/features/setup/who-field.tsx::(anonymous)": {
-      "lines": 99
-    },
     "apps/web/src/features/setup/who-field.tsx::WhoField": {
-      "lines": 228
+      "lines": 201
     },
     "apps/web/src/features/shell/rail-order.ts::(anonymous)": {
       "complexity": 13

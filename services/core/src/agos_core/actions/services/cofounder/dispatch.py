@@ -19,11 +19,14 @@ from agos_core.actions.services.cofounder.action_cards import _KINDS, _UNDO, _ro
 from agos_core.actions.services.cofounder.automation_kinds import (
     automation_id_of,
     automation_snapshot,
+    changed_automation,
+    how_it_runs,
+    new_automation,
+    put_back,
     save_automation,
-    truthy,
 )
 from agos_core.actions.services.cofounder.chat_mode import _existing
-from agos_core.actions.services.cofounder.merges import _changed, merged_lines, merged_steps
+from agos_core.actions.services.cofounder.merges import _changed
 from agos_core.actions.services.cofounder.skill_kinds import (
     rename_item,
     restore_item,
@@ -32,8 +35,6 @@ from agos_core.actions.services.cofounder.skill_kinds import (
     write_rule_doc,
 )
 from agos_core.actions.services.cofounder.team_kinds import (
-    _agent_field,
-    _default_model,
     _file,
     _founder,
     _hire,
@@ -108,31 +109,9 @@ def _do(core: Core, workspace_id: str, action: str, p: dict[str, Any]) -> dict[s
 
         return {"method_id": brain.add(core, str(p["text"]), from_workspace=workspace_id)}
     if action == "create_automation":
-        new_id = save_automation(
-            core,
-            workspace_id,
-            None,
-            {
-                "name": p["name"],
-                "instructions": p["instructions"],
-                "schedule": str(p.get("schedule") or ""),
-                "model": _default_model(core, workspace_id),
-                "on": truthy(p.get("on")),
-                "agent": _agent_field(p.get("agent")),
-                "steps": p.get("steps") or [],
-                "webhook": truthy(p.get("webhook")) if "webhook" in p else None,
-                "check_first": truthy(p.get("check_first"), default=False),
-                **(
-                    {
-                        "webhook_events": list(p.get("webhook_events") or []),
-                        "webhook_conditions": list(p.get("webhook_conditions") or []),
-                    }
-                    if "webhook_conditions" in p or "webhook_events" in p
-                    else {}
-                ),
-            },
-        )
-        return {"automation_id": new_id}
+        spec = new_automation(core, workspace_id, p)
+        new_id = save_automation(core, workspace_id, None, spec)
+        return {"automation_id": new_id, "report": how_it_runs(core, workspace_id, new_id)}
     if action.startswith(("create_", "update_")) and action.split("_", 1)[1] in _KINDS:
         return save_library_item(
             core,
@@ -147,52 +126,7 @@ def _do(core: Core, workspace_id: str, action: str, p: dict[str, Any]) -> dict[s
     before = automation_snapshot(core, workspace_id, automation_id)
     kept: dict[str, Any] = before  # a delete: the whole job (H: cron/jobs.py remove_job)
     if action == "update_automation":
-        after = dict(before)
-        for key in ("name", "schedule", "instructions"):
-            if p.get(key):
-                after[key] = p[key]
-        if p.get("steps") or p.get("remove_steps"):
-            after["steps"] = merged_steps(
-                list(before.get("steps") or []),
-                list(p.get("steps") or []),
-                [str(k) for k in p.get("remove_steps") or []],
-            )
-            after["agent"] = None if after["steps"] else before.get("agent")
-        elif p.get("agent"):
-            after["agent"], after["steps"] = _agent_field(p["agent"]), []
-        if "on" in p:
-            after["on"] = truthy(p.get("on"))
-        if "webhook" in p:
-            after["webhook"] = truthy(p.get("webhook"))
-        if "webhook_events" in p or "remove_webhook_events" in p:
-            gone = {str(e) for e in p.get("remove_webhook_events") or []}
-            events = [str(e) for e in before.get("webhook_events") or []]
-            events += [str(e) for e in p.get("webhook_events") or [] if str(e) not in events]
-            after["webhook_events"] = [e for e in events if e not in gone]
-        if "webhook_conditions" in p or "remove_webhook_conditions" in p:
-            after["webhook_conditions"] = merged_lines(
-                list(before.get("webhook_conditions") or []),
-                list(p.get("webhook_conditions") or []),
-                list(p.get("remove_webhook_conditions") or []),
-            )
-        if "check_first" in p:
-            after["check_first"] = truthy(p.get("check_first"), default=False)
-        if "variables" in p or "remove_variables" in p:
-            # Variables by name: a sent one replaces its namesake, the rest stay.
-            gone = {str(n) for n in p.get("remove_variables") or []}
-            kept_vars = {
-                str(v.get("name")): v for v in before.get("variables") or [] if isinstance(v, dict)
-            }
-            for v in p.get("variables") or []:
-                if isinstance(v, dict) and v.get("name"):
-                    kept_vars[str(v["name"])] = {**kept_vars.get(str(v["name"]), {}), **v}
-            after["variables"] = [v for n, v in kept_vars.items() if n not in gone]
-        if p.get("policy"):
-            after["policy"] = str(p["policy"])
-        if p.get("catch_up") in ("once", "skip"):
-            after["catch_up"] = str(p["catch_up"])
-        if "schedule" in p and p.get("schedule") == "":
-            after["schedule"] = ""
+        after = changed_automation(before, p)
         if after == before:
             # Never a "done" card for a change that changed nothing.
             raise ActionError(
@@ -200,7 +134,11 @@ def _do(core: Core, workspace_id: str, action: str, p: dict[str, Any]) -> dict[s
                 "or the change wasn't readable."
             )
         save_automation(core, workspace_id, automation_id, after)
-        kept = _changed(before, after)
+        return {
+            "automation_id": automation_id,
+            "before": _changed(before, after),
+            "report": how_it_runs(core, workspace_id, automation_id),
+        }
     elif action in ("pause_automation", "resume_automation"):
         automation_actions.toggle(core, workspace_id, automation_id, action == "resume_automation")
         kept = {"on": before.get("on")}
@@ -284,15 +222,13 @@ def _undo(core: Core, workspace_id: str, action: str, result: dict[str, Any]) ->
     elif action == "update_automation":
         # The fields it changed, back onto the job as Hermes has it now.
         current = automation_snapshot(core, workspace_id, int(automation_id or 0))
-        save_automation(
-            core, workspace_id, int(automation_id or 0), {**current, **result["before"]}
-        )
+        put_back(core, workspace_id, int(automation_id or 0), {**current, **result["before"]})
     elif action in ("pause_automation", "resume_automation"):
         automation_actions.toggle(
             core, workspace_id, int(automation_id or 0), bool(result["before"].get("on"))
         )
     elif action == "delete_automation":
-        save_automation(core, workspace_id, None, result["before"])
+        put_back(core, workspace_id, None, result["before"])
 
 
 def _run(core: Core, row: Any) -> None:

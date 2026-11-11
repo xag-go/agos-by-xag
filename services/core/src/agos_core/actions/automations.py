@@ -42,6 +42,7 @@ owner.py (the owner's actions), sync_loop.py (the background loop). This module
 only re-exports what other modules use.
 """
 
+from agos_core.actions.services.automation.check import review_form as review_form
 from agos_core.actions.services.automation.cron import COFOUNDER as COFOUNDER
 from agos_core.actions.services.automation.cron import MISSING as MISSING
 from agos_core.actions.services.automation.cron import TICK_SECONDS as TICK_SECONDS

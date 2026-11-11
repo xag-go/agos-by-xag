@@ -239,15 +239,12 @@ def test_an_editing_link_never_starts_brand_voice(
     assert deliver(client, path, _link("Editing-Inspiration")).status_code == 200
     steps = _run_cards(core, ws)
     assert set(steps) == {"s2", "s3", "s4"}
-    # The run's lines and its delivery sit beside the board, before any card starts.
-    [kept] = list(
-        (core.engine.profile_home(ws) / "agos-automations" / f"{aid}.runs").glob("*.only-if.json")
-    )
+    # The saved lines and the run's delivery sit beside the board, before any card starts.
+    home = core.engine.profile_home(ws) / "agos-automations"
+    [kept] = list((home / f"{aid}.runs").glob("*.only-if.json"))
     data = json.loads(kept.read_text())
-    assert (
-        set(data["only_if"]) == {"s2", "s4"}
-        and data["payloads"][0]["sheet"] == "Editing-Inspiration"
-    )
+    assert set(json.loads((home / f"{aid}.lines.json").read_text())) == {"s2", "s4"}
+    assert "only_if" not in data and data["payloads"][0]["sheet"] == "Editing-Inspiration"
 
     hermes = Hermes(core, ws, monkeypatch)
     blocked = hermes.worker(monkeypatch, steps["s2"]["id"])
@@ -479,9 +476,9 @@ def test_pure_reading_of_a_check_answer() -> None:
     assert step_gate.answer_of("YES") is True and step_gate.answer_of("no") is False
     assert step_gate.answer_of("") is None and step_gate.answer_of("maybe") is None
     assert step_gate.answer_of("AH or LA") is None  # both: unsure, it runs
-    assert step_gate.card_parts("agos-automation:3:20261111T1Z:webhook:s2") == (
+    assert step_gate.card_parts("agos-automation:3:20261111T101010123456Z:webhook:s2") == (
         "3",
-        "20261111T1Z",
+        "20261111T101010123456Z",
         "s2",
     )
     assert step_gate.card_parts("agos-ticket:linear:1") is None

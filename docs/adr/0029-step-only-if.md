@@ -82,6 +82,17 @@ fallback goes away by itself at the Hermes upgrade.
   `payload.` lines (they hold); a run with several deliveries runs the step when
   any of them makes all its lines hold.
 
+## After review (lane b fixes)
+
+The lines a worker checks come only from the automation as AGOS saved it
+(`<root>/agos-automations/<id>.lines.json`, re-checked by the save rules); the run's
+file gives values only and is found from a strictly parsed card key, never through a
+link or outside its folder. Deliveries write under a lock; a card is decided at its
+first attempt only (Hermes's run history of the card); a close never lands after
+Hermes stopped waiting for the hook. A Co-Founder update keeps a step's `waits_on` and
+`kind` when it doesn't name them. Details and tests: the spec's "Safety rules" and
+"Decisions".
+
 ## Costs
 
 A skipped step still spawns its worker process (seconds of CPU, no tokens): Hermes

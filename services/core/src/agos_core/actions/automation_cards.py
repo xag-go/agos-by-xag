@@ -34,6 +34,7 @@ from pathlib import Path
 from typing import Any, Literal
 
 from agos_core.context import Core
+from agos_core.engine import step_conditions
 from agos_core.engine.team_steps import Step
 
 PREFIX = "agos-automation:"
@@ -399,7 +400,10 @@ def write_scripts(core: Core, automation: Any) -> None:
     home = core.engine.profile_home(automation.workspace_id)
     if not card_runs(automation):
         return
-    write_run_script(home, fire_script_name(int(automation.id)), plan(core, automation, "cron"))
+    fire = plan(core, automation, "cron")
+    # The steps' "Only if" lines, where the step workers read them (never a run file).
+    step_conditions.keep_saved(Path(fire["board"]), int(automation.id), list(fire["steps"]))
+    write_run_script(home, fire_script_name(int(automation.id)), fire)
     hook = home / "scripts" / hook_script_name(int(automation.id))
     if automation.hook:
         write_run_script(home, hook.name, plan(core, automation, "webhook"))

@@ -22,6 +22,7 @@ import sys
 import time
 import uuid
 from collections.abc import Iterator
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -29,6 +30,7 @@ import pytest
 import yaml
 from conftest import hermes_ready_home
 
+from agos_core.engine import step_conditions
 from agos_core.engine.guard_files import PLUGIN_SOURCE
 
 HERE = Path(__file__).resolve().parent
@@ -150,12 +152,16 @@ def _card(env: dict[str, str], card: str) -> dict[str, Any]:
 
 
 def _step(home: Path, env: dict[str, str], sheet: str) -> str:
-    """One automation step's card, and its run's lines + delivery beside the board."""
-    run = f"20261111T{int(time.time() * 1000) % 10**9:09d}Z"
+    """One automation step's card, its saved lines and its run's delivery beside the
+    board (as AGOS's save and the run script write them)."""
+    run = datetime.now(UTC).strftime("%Y%m%dT%H%M%S%fZ")
+    step_conditions.keep_saved(
+        home / "kanban.db", 9, [{"key": k, "only_if": v} for k, v in LINES.items()]
+    )
     runs = home / "agos-automations" / "9.runs"
     runs.mkdir(parents=True, exist_ok=True)
     (runs / f"{run}.only-if.json").write_text(
-        json.dumps({"only_if": LINES, "values": {}, "payloads": [{"sheet": sheet}]})
+        json.dumps({"values": {}, "payloads": [{"sheet": sheet}]})
     )
     out = _hermes(
         env,

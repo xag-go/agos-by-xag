@@ -36,3 +36,5 @@ bind_page(
     automation_actions.undo_hooks_address,
 )
 bind_page(specs.WATCH_TREE, automation_actions.do_watch_tree, automation_actions.undo_watch_tree)
+
+bind_page(specs.CHECK_AUTOMATION, automation_actions.do_check_automation)

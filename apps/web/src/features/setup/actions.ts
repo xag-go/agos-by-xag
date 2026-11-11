@@ -55,6 +55,61 @@ function parseVariables(raw: string): AutomationVariable[] | string {
   return out;
 }
 
+type AutomationBody = Record<string, unknown>;
+
+/** What the owner must still fill in, or null when the form can be sent. */
+function missingIn(form: FormData): string | null {
+  if (!field(form, "name")) return "Give the automation a name.";
+  if (!field(form, "instructions")) return "Write what it should do.";
+  const schedule = field(form, "schedule");
+  if (!schedule && field(form, "hook") !== "1")
+    return "Say when it starts: a schedule, a webhook, or both.";
+  // A light hint only: core checks the schedule with Hermes's own parser.
+  const problem = schedule ? scheduleHint(schedule) : null;
+  if (problem) return `Schedule: ${problem}.`;
+  return modelField(form) ? null : "Choose a model.";
+}
+
+/** The steps: the team plan's, or a ticket preset's one step. */
+function stepsOfForm(form: FormData): unknown[] {
+  const steps = parseSteps(field(form, "steps"));
+  if (field(form, "ticketSource") && steps.length === 0) {
+    // The preset's one step: the card's standing text and who works the issues.
+    return parseSteps(`[${field(form, "ticketStep")}]`);
+  }
+  return steps;
+}
+
+/** The form as the core takes it, or what the owner must still fill in. */
+function automationBody(
+  form: FormData,
+): { error: string } | { body: AutomationBody } {
+  const missing = missingIn(form);
+  if (missing) return { error: missing };
+  const variables = parseVariables(field(form, "variables"));
+  if (typeof variables === "string") return { error: variables };
+  const ticketSource = field(form, "ticketSource");
+  return {
+    body: {
+      name: field(form, "name"),
+      instructions: field(form, "instructions"),
+      schedule: field(form, "schedule"),
+      model: modelField(form),
+      on: checked(form, "on"),
+      agent: field(form, "agent") || null,
+      steps: stepsOfForm(form),
+      hook: field(form, "hook") === "1",
+      checkFirst: checked(form, "checkFirst"),
+      variables,
+      policy: field(form, "policy") || "skip_if_active",
+      catchUp: field(form, "catchUp") === "skip" ? "skip" : "once",
+      ticket: ticketSource
+        ? { source: ticketSource, member: field(form, "ticketMember") || null }
+        : null,
+    },
+  };
+}
+
 export async function saveAutomation(
   workspaceId: string,
   automationId: number | null,
@@ -62,50 +117,52 @@ export async function saveAutomation(
   form: FormData,
 ): Promise<FormState> {
   await requireAccess();
-  const schedule = field(form, "schedule");
-  const model = modelField(form);
-  if (!field(form, "name")) return { error: "Give the automation a name." };
-  if (!field(form, "instructions"))
-    return { error: "Write what it should do." };
-  const hook = field(form, "hook") === "1";
-  if (!schedule && !hook)
-    return { error: "Say when it starts: a schedule, a webhook, or both." };
-  // A light hint only: core checks the schedule with Hermes's own parser.
-  const problem = schedule ? scheduleHint(schedule) : null;
-  if (problem) return { error: `Schedule: ${problem}.` };
-  if (!model) return { error: "Choose a model." };
-  const variables = parseVariables(field(form, "variables"));
-  if (typeof variables === "string") return { error: variables };
-  const ticketSource = field(form, "ticketSource");
-  let steps = parseSteps(field(form, "steps"));
-  if (ticketSource && steps.length === 0) {
-    // The preset's one step: the card's standing text and who works the issues.
-    steps = parseSteps(`[${field(form, "ticketStep")}]`);
-  }
-  const body = {
-    name: field(form, "name"),
-    instructions: field(form, "instructions"),
-    schedule,
-    model,
-    on: checked(form, "on"),
-    agent: field(form, "agent") || null,
-    steps,
-    hook,
-    checkFirst: checked(form, "checkFirst"),
-    variables,
-    policy: field(form, "policy") || "skip_if_active",
-    catchUp: field(form, "catchUp") === "skip" ? "skip" : "once",
-    ticket: ticketSource
-      ? { source: ticketSource, member: field(form, "ticketMember") || null }
-      : null,
-  };
+  const made = automationBody(form);
+  if ("error" in made) return { error: made.error };
   const result = await attempt(() =>
     automationId === null
-      ? core("POST", base(workspaceId), body)
-      : core("PUT", `${base(workspaceId)}/${seg(automationId)}`, body),
+      ? core("POST", base(workspaceId), made.body)
+      : core("PUT", `${base(workspaceId)}/${seg(automationId)}`, made.body),
   );
   if (result.error) return result;
   redirect(`/w/${workspaceId}/automations`);
+}
+
+/** What the owner's Save asks first: every problem (fix before saving), or how it
+ * will run and any warnings. Nothing is saved. */
+export type AutomationCheck = {
+  error: string | null;
+  problems: string[];
+  warnings: string[];
+  preview: string;
+};
+
+export async function checkAutomation(
+  workspaceId: string,
+  automationId: number | null,
+  form: FormData,
+): Promise<AutomationCheck> {
+  await requireAccess();
+  const none = { problems: [], warnings: [], preview: "" };
+  const made = automationBody(form);
+  if ("error" in made) return { error: made.error, ...none };
+  const { CoreError } = await import("@/server/core");
+  try {
+    const found = await core<{
+      problems: string[];
+      warnings: string[];
+      preview: string;
+    }>(
+      "POST",
+      `${base(workspaceId)}/check${automationId === null ? "" : `?automation_id=${seg(automationId)}`}`,
+      made.body,
+    );
+    return { error: null, ...found };
+  } catch (error) {
+    if (error instanceof CoreError && error.status < 500)
+      return { error: error.detail, ...none };
+    throw error;
+  }
 }
 
 export async function toggleAutomation(

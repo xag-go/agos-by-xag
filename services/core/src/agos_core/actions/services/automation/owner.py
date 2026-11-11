@@ -15,6 +15,7 @@ from agos_core.actions import (
     hooks,
 )
 from agos_core.actions.errors import ActionError, NotFoundError
+from agos_core.actions.services.automation.check import refuse_if_broken
 from agos_core.actions.services.automation.cron import (
     MISSING,
     cron_bridge,
@@ -22,7 +23,6 @@ from agos_core.actions.services.automation.cron import (
     get_with_source,
     hermes_jobs,
     home_of,
-    schedule_problem,
 )
 from agos_core.actions.services.automation.instructions import file_path, write_file
 from agos_core.actions.services.automation.jobs import (
@@ -85,6 +85,7 @@ def save(
     who: str = "owner",
     restored_from: int | None = None,
     catch_up: str | None = None,
+    unchecked: bool = False,
 ) -> int:
     """Starts on its schedule, the moment something happens (hook), or both.
     hook: True turns the webhook on (keeps its address), False off, None leaves it.
@@ -95,25 +96,22 @@ def save(
     Hermes's job; the file keeps the instructions only while no job holds them.
     Every save that changed something appends a revision (`who` saved it).
     catch_up: a run missed while the server was off, "once" or "skip" (None keeps it;
-    actions/catch_up.py)."""
+    actions/catch_up.py). Every save is checked first (actions/services/automation/
+    check.py: all the problems at once); `unchecked` is for Undo, which puts back what was."""
     require_workspace(core, workspace_id)
     if catch_up is not None and catch_up not in ("once", "skip"):
         raise ActionError("If a run was missed: once (run it once when AGOS is back) or skip.")
     had_hook = automation_id is not None and automation_id in hooks.routes(core, workspace_id)
     if hook is None:
         hook = had_hook
-    problem = schedule_problem(core, workspace_id, schedule) if schedule else None
-    if problem:
-        raise ActionError(f"Schedule: {problem}.")
-    if not schedule and not hook:
-        raise ActionError(
-            "Say when it starts: a schedule, a webhook (the moment something happens), or both."
-        )
-    agent, clean_steps = check_who(core, workspace_id, agent, steps or [])
     current = repo.row(core.db, workspace_id, automation_id) if automation_id is not None else None
     if automation_id is not None and current is None:
         raise NotFoundError("This automation")
     kept = repo.from_row(current) if current is not None else None
+    if not unchecked:
+        said = (name, instructions, schedule, hook, agent, check_first)
+        refuse_if_broken(core, workspace_id, kept, said, steps or [], variables)
+    agent, clean_steps = check_who(core, workspace_id, agent, steps or [])
     clean_variables = (
         automation_variables.check_variables(variables)
         if variables is not None

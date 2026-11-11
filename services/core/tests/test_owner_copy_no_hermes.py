@@ -105,6 +105,7 @@ MODULES = [
     "actions/services/board/card_bulk.py",
     "actions/services/board/card_writes.py",
     "actions/services/board/kanban_cli.py",
+    "actions/services/board/status_jobs.py",
     "actions/services/channel/bot_setup.py",
     "actions/services/channel/connections.py",
     "actions/services/channel/topics.py",
@@ -120,6 +121,7 @@ MODULES = [
     "actions/services/library/catalog.py",
     "actions/services/library/github_token.py",
     "actions/services/library/growth_candidates.py",
+    "actions/services/library/growth_job.py",
     "actions/services/library/lifecycle.py",
     "actions/services/library/mcp_test.py",
     "actions/services/library/skills_hub.py",
@@ -138,6 +140,8 @@ MODULES = [
     "engine/apps.py",
     "engine/automation_run.py",
     "engine/backup.py",
+    "engine/cofounder_actions.py",
+    "engine/cofounder_parity/workspace.py",
     "engine/cron.py",
     "engine/envfile.py",
     "engine/github_token.py",
@@ -178,6 +182,8 @@ MODULES = [
     "api/hermes_update.py",
     "api/settings_health.py",
     "api/updates.py",
+    # domain/: the typed errors' owner words (means + what-to-do, served as-is)
+    "domain/errors.py",
     # hermes_gateway/: the gateway's owner-visible failure texts
     "hermes_gateway/chat_sessions.py",
     "hermes_gateway/errors.py",
@@ -193,11 +199,21 @@ ALLOWED: dict[str, list[str]] = {
     ],
 }
 
+# Functions whose strings are an AGENT's own prompt, not owner copy — the same
+# rationale as engine/identity.py (not in MODULES): the Co-Founder's instructions
+# name the engine by design (they carry the 'Never say "Hermes" to the owner'
+# rule). Only the named functions are skipped; the rest of the module (audit
+# titles, errors) stays scanned.
+AGENT_FACING: dict[str, set[str]] = {
+    "engine/cofounder_actions.py": {"instructions"},
+}
 
-def _skipped_ids(tree: ast.AST) -> set[int]:
-    """Constants the scan ignores: docstrings, log-call arguments, and regex
+
+def _skipped_ids(tree: ast.AST, agent_facing: set[str]) -> set[int]:
+    """Constants the scan ignores: docstrings, log-call arguments, regex
     patterns handed to ``re.compile`` (they parse the engine's own output —
-    e.g. its version banner — and are never shown to the owner)."""
+    e.g. its version banner — and are never shown to the owner), and every
+    string inside an AGENT_FACING function (an agent's own prompt)."""
     skip: set[int] = set()
     for node in ast.walk(tree):
         if isinstance(node, (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
@@ -209,6 +225,13 @@ def _skipped_ids(tree: ast.AST) -> set[int]:
                 and isinstance(body[0].value.value, str)
             ):
                 skip.add(id(body[0].value))
+        if (
+            isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+            and node.name in agent_facing
+        ):
+            for sub in ast.walk(node):
+                if isinstance(sub, ast.Constant):
+                    skip.add(id(sub))
         if (
             isinstance(node, ast.Call)
             and isinstance(node.func, ast.Attribute)
@@ -230,7 +253,7 @@ def _skipped_ids(tree: ast.AST) -> set[int]:
 def _offenders(rel: str) -> list[str]:
     path = SRC / rel
     tree = ast.parse(path.read_text(encoding="utf-8"))
-    skip = _skipped_ids(tree)
+    skip = _skipped_ids(tree, AGENT_FACING.get(rel, set()))
     allowed = ALLOWED.get(rel, [])
     out = []
     for node in ast.walk(tree):

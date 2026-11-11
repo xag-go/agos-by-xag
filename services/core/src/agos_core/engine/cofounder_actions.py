@@ -339,11 +339,11 @@ def title_of(action: Action) -> str:
         "update_file": f"Change the file “{action.get('path')}”",
         "add_owner_rule": f"Rule for all your workspaces: “{action.get('text')[:120]}”",
         "add_method": f"Way of working for every workspace (Brain): “{action.get('text')[:120]}”",
-        "change_hermes_setting": f"Hermes setting {action.get('key')} → {action.get('value')[:80]}"
+        "change_hermes_setting": f"Engine setting {action.get('key')} → {action.get('value')[:80]}"
         + _where(action),
-        "reset_hermes_setting": f"Hermes setting {action.get('key')} back to Hermes's default"
+        "reset_hermes_setting": f"Engine setting {action.get('key')} back to its default"
         + _where(action),
-        "show_hermes_setting": f"Hermes setting {action.get('key')}",
+        "show_hermes_setting": f"Engine setting {action.get('key')}",
         "approve_held_write": f"Approve held-back write {action.get('id')}",
         "reject_held_write": f"Reject held-back write {action.get('id')}",
         "list_held_writes": "Memory changes in the Inbox",
@@ -355,7 +355,7 @@ def title_of(action: Action) -> str:
         f"in the {action.get('provider')} pool",
         "set_pool_strategy": f"{action.get('provider')} pool: pick keys by "
         f"{action.get('strategy')}",
-        "list_pool_keys": "Keys per provider (Hermes's pools)",
+        "list_pool_keys": "Keys per provider (the engine's pools)",
         "hermes_health": "Engine checks (status and full check)",
         "secrets_check": "Secrets check (keys in chats and logs, file permissions)",
         "assign_founder": f"For you (Founder): “{action.get('title')[:120]}”"

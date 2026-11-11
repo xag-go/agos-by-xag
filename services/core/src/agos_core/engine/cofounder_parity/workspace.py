@@ -126,8 +126,8 @@ WORKSPACE_KINDS: dict[str, Kind] = {
     "rehearse_restore": Kind(
         WORKSPACE, (), "Rehearse a restore", "name (a backup; leave out = the last)", "once"
     ),
-    "check_hermes_update": Kind(WORKSPACE, (), "Check for a Hermes update", "(no fields)", "once"),
-    "run_hermes_update": Kind(WORKSPACE, (), "Update Hermes now", "(no fields)", "owner"),
+    "check_hermes_update": Kind(WORKSPACE, (), "Check for an engine update", "(no fields)", "once"),
+    "run_hermes_update": Kind(WORKSPACE, (), "Update the engine now", "(no fields)", "owner"),
     "undo_learned": Kind(
         WORKSPACE, ("entry",), "Undo a learned change ({entry})", "entry (from Learned)", "once"
     ),

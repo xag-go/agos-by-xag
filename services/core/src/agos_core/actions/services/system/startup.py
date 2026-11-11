@@ -38,6 +38,7 @@ from agos_core.actions import (
     memory_plugin,
     ops_watch,
     outbox_push,
+    rhythm,
     skill_requests,
     skills_move,
     staging,
@@ -139,6 +140,8 @@ _SKILLS: tuple[Step, ...] = (
     (team_design, "ensure_all", "team-design skill not installed"),
     # Every agent's find-skills skill, once per workspace (actions/skill_requests.py).
     (skill_requests, "ensure_all", "find-skills skill not installed"),
+    # The Co-Founder's rhythm jobs at this AGOS's prompts (actions/rhythm.py).
+    (rhythm, "refresh_all", "rhythm job prompts not refreshed"),
 )
 
 

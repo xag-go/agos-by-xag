@@ -264,3 +264,47 @@ def ensure(core: Core, workspace_id: str) -> None:
                 set_job(core, workspace_id, which, on=True, time=plan.time, day=plan.day)
     except (ActionError, CronError, EngineError, OSError, ValueError) as error:
         log.warning("the Co-Founder's jobs of %s not set up: %s", workspace_id, error)
+
+
+def refresh_prompts(core: Core, workspace_id: str) -> int:
+    """Each of the Co-Founder's rhythm jobs whose prompt is an older AGOS's text gets
+    this AGOS's prompt (Hermes's `cron edit`), its time, day and on/off kept. A job
+    AGOS holds for a while (archived, account pause) is left for later, so the edit
+    never turns it off for good. Never raises; the number of jobs changed."""
+    from agos_core.engine.cron import HELD_REASONS
+
+    if core.engine is None:
+        return 0
+    bridge = automation_actions.cron_bridge(core)
+    if bridge is None:
+        return 0
+    try:
+        home, jobs = _jobs(core, workspace_id)
+    except (CronError, OSError, ValueError, ActionError):
+        return 0
+    names = {plan.name: which for which, plan in JOBS.items()}
+    changed = 0
+    for job in jobs:
+        which = names.get(str(job.get("name")))
+        if which is None or str(job.get("prompt") or "") == PROMPTS[which]:
+            continue
+        enabled = bool(job.get("enabled"))
+        reason = job.get("paused_reason")
+        if not enabled and reason in HELD_REASONS and reason != WORK_HOURS_REASON:
+            continue
+        shown = _shown(which, job)
+        spec = _spec(core, workspace_id, which, shown["time"], shown["day"])
+        spec = JobSpec(**{**spec.as_dict(), "enabled": bool(shown["on"])})
+        try:
+            bridge.update(home, str(job["id"]), spec)
+            changed += 1
+        except (CronError, EngineError, OSError, ValueError):
+            log.exception("could not refresh %s for %s", job.get("name"), workspace_id)
+    return changed
+
+
+def refresh_all(core: Core) -> int:
+    """At start: every workspace's rhythm jobs at this AGOS's prompts."""
+    from agos_core.db import workspaces as workspaces_repo
+
+    return sum(refresh_prompts(core, w.id) for w in workspaces_repo.list_workspaces(core.db))

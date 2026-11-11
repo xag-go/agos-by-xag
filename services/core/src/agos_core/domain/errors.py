@@ -78,8 +78,8 @@ TEXTS: dict[ErrorCode, ErrorText] = {
         "Save it in one of the formats the message names, then try again.",
     ),
     ErrorCode.SERVICE_FAILED: ErrorText(
-        "Another program AGOS asked (Hermes, an app you connected, or the model "
-        "provider) answered with an error.",
+        "Another program AGOS asked (the agents' engine, an app you connected, or the "
+        "model provider) answered with an error.",
         "Try again in a minute. If it keeps failing, check the connection or key in "
         "Settings, and look at Settings → Errors for the details.",
     ),
@@ -101,21 +101,22 @@ TEXTS: dict[ErrorCode, ErrorText] = {
         'docs/troubleshooting.md, "The cage refused to start".',
     ),
     ErrorCode.ENGINE_ERROR: ErrorText(
-        "Hermes, the engine behind the agents, could not do what AGOS asked.",
-        "Try again. If it keeps failing, open Settings → Errors for what Hermes said.",
+        "The engine behind the agents could not do what AGOS asked.",
+        "Try again. If it keeps failing, open Settings → Errors for what the engine said.",
     ),
     ErrorCode.HERMES_FAILED: ErrorText(
-        "Hermes ran but refused or failed this request.",
-        "Read the message for Hermes's reason, fix what it names (a setting, a key, a "
+        "The engine ran but refused or failed this request.",
+        "Read the message for the engine's reason, fix what it names (a setting, a key, a "
         "name already in use) and try again.",
     ),
     ErrorCode.HERMES_TIMEOUT: ErrorText(
-        "Hermes did not answer in time: the server is busy, or the request was long.",
+        "The engine did not answer in time: the server is busy, or the request was long.",
         "Wait a minute and try again. If it happens often, the server may need more "
         'memory: see docs/INSTALL.md, "Minimum hardware".',
     ),
     ErrorCode.HERMES_UNAVAILABLE: ErrorText(
-        "Hermes is not answering right now, so AGOS paused calls to it for a short time.",
+        "The engine is not answering right now, so AGOS paused calls to it for a short "
+        "time.",
         "Wait a minute: AGOS tries again by itself. If it lasts, restart AGOS "
         "(`agos restart`) and look at Settings → Errors.",
     ),

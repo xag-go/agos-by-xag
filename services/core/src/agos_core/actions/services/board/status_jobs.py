@@ -50,7 +50,7 @@ def script_text(card_id: int) -> str:
     AGOS (the workspace's own bridge, key from agos-bridge.json in the profile
     home) for the scope's facts and prints them. A failure exits non-zero: Hermes
     reports it and never counts it as a change."""
-    return f'''"""AGOS status card {int(card_id)}: the facts Hermes's monitor compares (written by AGOS)."""
+    return f'''"""AGOS status card {int(card_id)}: the facts the engine's monitor compares (written by AGOS)."""
 import json
 import os
 import sys
@@ -288,7 +288,7 @@ def _shown(
             "lastStatus": job.get("last_status"),
             "changedAt": job.get("monitor_changed_at"),
             "problem": (
-                f"Paused by Hermes: {job.get('paused_reason')}"[:300]
+                f"Paused by the engine: {job.get('paused_reason')}"[:300]
                 if not job.get("enabled")
                 else None
             ),

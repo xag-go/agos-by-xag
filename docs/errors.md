@@ -66,7 +66,7 @@ AGOS can't read this kind of file here.
 
 ### `service_failed`
 
-Another program AGOS asked (Hermes, an app you connected, or the model provider) answered with an error.
+Another program AGOS asked (the agents' engine, an app you connected, or the model provider) answered with an error.
 
 **What to do:** Try again in a minute. If it keeps failing, check the connection or key in Settings, and look at Settings → Errors for the details.
 
@@ -80,25 +80,25 @@ A part AGOS needs is not running or not reachable right now.
 
 ### `ENGINE_ERROR`
 
-Hermes, the engine behind the agents, could not do what AGOS asked.
+The engine behind the agents could not do what AGOS asked.
 
-**What to do:** Try again. If it keeps failing, open Settings → Errors for what Hermes said.
+**What to do:** Try again. If it keeps failing, open Settings → Errors for what the engine said.
 
 ### `HERMES_FAILED`
 
-Hermes ran but refused or failed this request.
+The engine ran but refused or failed this request.
 
-**What to do:** Read the message for Hermes's reason, fix what it names (a setting, a key, a name already in use) and try again.
+**What to do:** Read the message for the engine's reason, fix what it names (a setting, a key, a name already in use) and try again.
 
 ### `HERMES_TIMEOUT`
 
-Hermes did not answer in time: the server is busy, or the request was long.
+The engine did not answer in time: the server is busy, or the request was long.
 
 **What to do:** Wait a minute and try again. If it happens often, the server may need more memory: see docs/INSTALL.md, "Minimum hardware".
 
 ### `HERMES_UNAVAILABLE`
 
-Hermes is not answering right now, so AGOS paused calls to it for a short time.
+The engine is not answering right now, so AGOS paused calls to it for a short time.
 
 **What to do:** Wait a minute: AGOS tries again by itself. If it lasts, restart AGOS (`agos restart`) and look at Settings → Errors.
 

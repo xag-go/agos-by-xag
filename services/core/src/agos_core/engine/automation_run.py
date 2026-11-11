@@ -43,11 +43,13 @@ nothing else, read back from the board (read only) by AGOS and by this script.
   gets no event context). So the script drops a retry itself: the same body again
   within an hour is a duplicate (a sender's retry resends it as is).
 - a step's "Only if" lines (PLAN step "only_if", engine/step_conditions.py): before
-  the run's first card, the run's lines, values and delivery go to
+  the run's first card, the run's values and delivery go to
   `<root>/agos-automations/<automation>.runs/<run>.only-if.json` (a delivery that joins a
-  waiting run is added); the step's worker reads them before its first model call
-  and closes its card `agos-skipped: <reason>` when a line doesn't hold
-  (hermes_plugin/agos_guard/step_gate.py). No line in the plan = no file.
+  waiting run is added, under the folder's lock); the step's worker reads them with
+  the lines AGOS saved (`<automation>.lines.json`) before its first model call and
+  closes its card `agos-skipped: <reason>` when a line doesn't hold
+  (hermes_plugin/agos_guard/step_gate.py). No line in the plan = no file. A file
+  that can't be written never stops the run: its steps then run.
 
 Standard library only: Hermes runs it with the Python it uses for scripts.
 """
@@ -57,13 +59,21 @@ from __future__ import annotations
 import contextlib
 import hashlib
 import json
+import os
 import re
 import sqlite3
 import subprocess
 import sys
+import tempfile
+from collections.abc import Iterator
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+
+try:
+    import fcntl
+except ImportError:  # no flock on this system: one writer at a time is not kept
+    fcntl = None  # type: ignore[assignment]
 
 PREFIX = "agos-automation:"
 TICKET_PREFIX = "agos-ticket:"
@@ -345,14 +355,43 @@ def note(event: str, shown: str, status: str, detail: str, body_hash: str = "") 
         },
         ensure_ascii=False,
     )
+    with _locked(path.with_name(path.name + ".lock")):
+        try:
+            kept = path.read_text(encoding="utf-8").splitlines()[-(LOG_LINES - 1) :]
+        except OSError:
+            kept = []
+        _replace(path, "\n".join([*kept, line]) + "\n")
+
+
+@contextlib.contextmanager
+def _locked(lock: Path) -> Iterator[None]:
+    """One writer at a time (deliveries run side by side: Hermes runs each route
+    script in its own thread). The agos-guard plugin reads under a shared lock."""
+    lock.parent.mkdir(parents=True, exist_ok=True)
+    with lock.open("a") as handle:
+        if fcntl is not None:
+            fcntl.flock(handle, fcntl.LOCK_EX)
+        try:
+            yield
+        finally:
+            if fcntl is not None:
+                fcntl.flock(handle, fcntl.LOCK_UN)
+
+
+def _replace(path: Path, text: str) -> None:
+    """The whole file at once, through a temp file of its own (never shared)."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, raw = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.")
+    tmp = Path(raw)
     try:
-        kept = path.read_text(encoding="utf-8").splitlines()[-(LOG_LINES - 1) :]
-    except OSError:
-        kept = []
-    tmp = path.with_suffix(".tmp")
-    tmp.write_text("\n".join([*kept, line]) + "\n", encoding="utf-8")
-    tmp.chmod(0o600)
-    tmp.replace(path)
+        with os.fdopen(fd, "w", encoding="utf-8") as out:
+            out.write(text)
+        tmp.chmod(0o600)
+        tmp.replace(path)
+    except BaseException:
+        with contextlib.suppress(OSError):
+            tmp.unlink()
+        raise
 
 
 # ---- one run -------------------------------------------------------------------------
@@ -372,7 +411,10 @@ def start(
     values = values_of(None) if values is None else values
     if any(s.get("only_if") for s in PLAN["steps"]):
         # Before any card exists (one may start at once): its worker reads them here.
-        keep_run(run_id, values, payload)
+        try:
+            keep_run(run_id, values, payload)
+        except OSError as error:  # when in doubt it runs: no values = every step runs
+            print(f"Only if values not kept ({error}): this run's steps all run.", file=sys.stderr)
     cards: dict[str, str] = {}
     for step in PLAN["steps"]:
         body = fill(str(step["body"]), values, payload)
@@ -418,45 +460,67 @@ def runs_dir() -> Path:
 
 
 def _kept(payload: Any) -> Any:
+    """A delivery as its lines judge it; None = too big to keep (it can't be judged,
+    so its payload lines hold). Never a key the sender could send itself."""
     text = json.dumps(payload, ensure_ascii=False, default=str)
-    return payload if len(text) <= PAYLOAD_KEPT else {"agos_too_big": True}
+    return payload if len(text) <= PAYLOAD_KEPT else None
 
 
 def _write(path: Path, data: dict[str, Any]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_suffix(".tmp")
-    tmp.write_text(json.dumps(data, ensure_ascii=False, default=str), encoding="utf-8")
-    tmp.chmod(0o600)
-    tmp.replace(path)
+    _replace(path, json.dumps(data, ensure_ascii=False, default=str))
+
+
+def _lock_of(folder: Path) -> Path:
+    return folder / ".lock"
+
+
+def _on_board() -> set[str]:
+    """The runs that still have an open card (their files are never pruned)."""
+    try:
+        return {str(r["id"]) for r in runs() if going(r)}
+    except (OSError, sqlite3.Error, ValueError):
+        return set()
 
 
 def keep_run(run_id: str, values: dict[str, str], payload: Any) -> None:
-    """The run's \"Only if\" lines (frozen for the run), its values and its delivery."""
-    lines = {str(s["key"]): s["only_if"] for s in PLAN["steps"] if s.get("only_if")}
+    """The run's values and its delivery (its steps' lines are the saved ones)."""
     folder = runs_dir()
-    _write(
-        folder / f"{run_id}.only-if.json",
-        {
-            "only_if": lines,
-            "values": values,
-            "payloads": [] if payload is None else [_kept(payload)],
-        },
-    )
-    for old in sorted(folder.glob("*.only-if.json"))[:-RUNS_KEPT]:
-        with contextlib.suppress(OSError):
-            old.unlink()
+    with _locked(_lock_of(folder)):
+        _write(
+            folder / f"{run_id}.only-if.json",
+            {"values": values, "payloads": [] if payload is None else [_kept(payload)]},
+        )
+    old = sorted(folder.glob("*.only-if.json"))[:-RUNS_KEPT]
+    if not old:
+        return
+    still = _on_board() | {run_id}
+    for path in old:
+        if path.name.split(".", 1)[0] not in still:
+            with contextlib.suppress(OSError):
+                path.unlink()
 
 
-def joined(run_id: str, payload: Any) -> None:
-    """A delivery taken by a run that hasn't begun: its lines see this one too."""
-    path = runs_dir() / f"{run_id}.only-if.json"
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, ValueError):
-        return  # no lines in this run
-    if isinstance(data, dict) and isinstance(data.get("payloads"), list):
-        data["payloads"].append(_kept(payload))
-        _write(path, data)
+def joined(run_id: str, payload: Any) -> bool:
+    """A delivery taken by a run that hasn't begun: its lines see this one too.
+    False when the run began meanwhile (the delivery then starts its own run)."""
+    folder = runs_dir()
+    path = folder / f"{run_id}.only-if.json"
+    if not path.exists():
+        return True  # no lines in this run: nothing to add
+    with _locked(_lock_of(folder)):
+        run = next((r for r in runs() if str(r["id"]) == run_id), None)
+        if run is not None and begun(run):
+            return False
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+            if isinstance(data, dict) and isinstance(data.get("payloads"), list):
+                data["payloads"].append(_kept(payload))
+                _write(path, data)
+        except (OSError, ValueError):
+            # Not added: no values to judge this run by, so its steps all run.
+            with contextlib.suppress(OSError):
+                path.unlink()
+    return True
 
 
 def _given(stdin: str) -> dict[str, str]:
@@ -624,9 +688,13 @@ def main(argv: list[str], stdin: str = "") -> int:
         newest = known[0] if known else None
         if PLAN.get("ticket"):
             note(event, shown, "started", take_tickets(payload, happened), body_hash)
-        elif newest is not None and going(newest) and not begun(newest):
+        elif (
+            newest is not None
+            and going(newest)
+            and not begun(newest)
+            and joined(str(newest["id"]), payload)
+        ):
             first = first_cards(newest)
-            joined(str(newest["id"]), payload)
             for card in first:
                 _cli(["comment", card, f"## Also happened\n{happened}", "--author", "owner"])
             note(

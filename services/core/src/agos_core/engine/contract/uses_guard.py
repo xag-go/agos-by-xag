@@ -469,10 +469,12 @@ USES: tuple[Use, ...] = (
     _u("hermes_cli.kanban", "_cmd_edit", "function", "kanban", _REVIEW, pos=1),
     *_hooks("on_room_member_activity", _ROOMS),
     # A step's "Only if" lines, before its worker's first model call (agos_guard
-    # step_gate.py): the run's file beside the board, a check in the worker's own
+    # step_gate.py): the saved lines and the run's file beside the board, decided at
+    # the card's first attempt only (its run history), a check in the worker's own
     # sandbox, then Hermes's pre_llm_call veto where it has one (newer Hermes; its
     # marker is looked up, not pinned) or the done card's worker ending itself.
     _u("hermes_cli.kanban_db", "kanban_db_path", "function", "kanban", _ONLY_IF),
+    _u("hermes_cli.kanban_db", "list_runs", "function", "kanban", _ONLY_IF, pos=2),
     # (terminal_tool's command / timeout / task_id / workdir: uses_engine_apps.py)
     _u("agent.turn_context", "", "module", "hooks", _ONLY_IF),
     _u("tools.terminal_tool_lifecycle", "cleanup_vm", "function", "guard", _ONLY_IF, pos=1),

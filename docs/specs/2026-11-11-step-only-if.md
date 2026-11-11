@@ -54,10 +54,66 @@ values, decides, and on "no" completes the card itself (Hermes's own
 prefetch). Data written by an earlier step is there because the check runs after
 the parents are done.
 
-The run script (`engine/automation_run.py`, no agent) writes, only when a step has
-lines, one small file per run: `<root>/agos-automations/<automation>.runs/<run>.only-if.json`
-= `{"only_if": {step: [lines]}, "values": {...}, "payloads": [...]}` (the lines are
-frozen for the run; a delivery that joins a waiting run is appended). 50 newest kept.
+Two small files beside the board, in the workspace's engine root (no sandbox mounts
+it; `/workspace` is the files folder):
+
+- on every save, AGOS writes the automation's lines:
+  `<root>/agos-automations/<automation>.lines.json` = `{step: [lines]}`
+  (`engine/step_conditions.py keep_saved`; no line = no file). The plugin takes a
+  step's lines from here only, and checks each line again by the save rules;
+- the run script (`engine/automation_run.py`, no agent) writes, only when a step has
+  lines, one file per run with the run's values only:
+  `<root>/agos-automations/<automation>.runs/<run>.only-if.json` = `{"values": {...},
+"payloads": [...]}` (a delivery that joins a waiting run is appended). 50 newest
+  kept, never one of a run still on the board.
+
+The lines in force are the saved ones at the moment the step starts (an edit during
+a run applies to its steps that haven't started).
+
+## Safety rules (review of lane b, fixed with a failing-first test each:
+
+`services/core/tests/test_step_only_if_safety.py`)
+
+- **What runs comes only from AGOS (M1).** A card key is read only when its parts
+  are exactly what the run script makes (automation digits, run
+  `YYYYMMDDTHHMMSSffffffZ`, source manual/schedule/webhook, a step key); the files
+  are read only when they sit right inside their folder (no link, no `..`, no
+  absolute path); the lines come from the saved file, never from the run's file;
+  a line that breaks the save rules is never run (the step runs). An agent can set
+  a card's key (`kanban_create`) and write `/workspace`, but neither reaches these.
+- **A burst loses nothing (M2).** Deliveries run side by side: the run script
+  writes the run file and the deliveries log under a lock, each write through its
+  own temp file; a delivery joining a run that began meanwhile starts its own run;
+  the plugin reads under a shared lock. A join that can't write drops the run's
+  values (its steps then run) and the delivery is still commented and noted.
+- **Decided once per card (M3).** Only a card's first attempt checks. A later
+  attempt (a retry after a crash or a time-out, an unblock, review rework) sees an
+  earlier run of the card in Hermes's own run history and runs, without running
+  the check again (a check script with state, like `inspiration_gate.py`, would
+  answer differently the second time). An attempt whose worker never started
+  (`spawn_failed`) doesn't count.
+- **Unsure = run (L2, L3, L4).** A delivery too big to keep is kept as "can't
+  judge" (its payload lines hold), never as a key a sender could send; a run whose
+  values can't be written still starts its cards (its steps run); pruning never
+  removes a run's file while that run has an open card.
+- **One log line per check (L6).** `AGOS: Only if check of card <id> ran <script>
+(exit <code>): yes|no|unsure` on the guard's logger (the worker's log).
+
+## Decisions
+
+- **Late close and the old-Hermes exit (L1): keep, bounded.** Hermes waits for a
+  plugin hook up to `plugins.hook_callback_timeout` (the owner's "A stuck plugin
+  step", AGOS default 600 s). The plugin closes a card only within that wait minus
+  5 s (never later than 25 s after the hook started); a close that lands later
+  still stands (the card is done, Hermes refuses the worker's own result) but the
+  worker is never ended then, since it may already be working. On a Hermes without
+  the veto (live's), ending the worker right after a timely close stays: the card
+  is done, so its worker has nothing left to do and would only spend tokens.
+- **A Co-Founder change keeps what it doesn't name (L5): kept.** Before this lane,
+  an `update_automation` step without `waits_on` or `kind` reset them to `[]` /
+  `"work"`. Now it keeps the old values, like every other step field: the base
+  rule is that a Co-Founder update never wipes what it doesn't name. Pinned by
+  `test_a_cofounder_change_keeps_a_steps_kind_and_waits_it_does_not_name`.
 
 ## Never blocks the chain
 

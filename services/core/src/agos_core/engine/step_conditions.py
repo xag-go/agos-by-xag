@@ -13,18 +13,36 @@ Two kinds of line:
 - a check line: {"check": "/workspace/<script> [args]"}, a workspace script run in
   the step agent's own sandbox; its last line says YES/AH (run) or NO/LA (skip).
 
-Owns: the lines' shape and the save-time refusals (plain words).
+The saved lines also go, on every save, to `<root>/agos-automations/<automation>.lines.json`
+beside the workspace's board (`keep_saved`): the plugin takes a step's lines from
+there only (never from a run's file or anything under /workspace), and checks each
+again by these rules.
+
+Owns: the lines' shape, the save-time refusals (plain words), the saved-lines file.
 Must not: evaluate a line (the plugin does, inside Hermes).
 """
 
 from __future__ import annotations
 
+import contextlib
+import json
+import os
 import posixpath
 import re
 import shlex
+import tempfile
+from pathlib import Path
 from typing import Any
 
-__all__ = ["MAX_LINES", "OPS", "ConditionError", "describe", "parse_only_if"]
+__all__ = [
+    "MAX_LINES",
+    "OPS",
+    "ConditionError",
+    "describe",
+    "keep_saved",
+    "parse_only_if",
+    "saved_lines_file",
+]
 
 MAX_LINES = 20
 OPS = ("is", "is_not", "contains", "not_contains")
@@ -143,3 +161,41 @@ def describe(raw: object) -> str:
         op = _OP_WORDS.get(str(line.get("op") or "is").strip().lower(), "is")
         parts.append(f"{field} {op} {wanted}")
     return " and ".join(parts)
+
+
+def saved_lines_file(board: Path, automation_id: int) -> Path:
+    """Where an automation's saved lines are: beside its workspace's board, in the
+    engine's root (no sandbox mounts it; /workspace is the files folder)."""
+    return board.parent / "agos-automations" / f"{int(automation_id)}.lines.json"
+
+
+def keep_saved(board: Path, automation_id: int, steps: list[dict[str, Any]]) -> None:
+    """The automation's lines as saved ({step key: lines}), for the step workers'
+    check; no line in any step = no file. Rewritten only when it changed."""
+    path = saved_lines_file(board, automation_id)
+    lines = {
+        str(s["key"]): [
+            {k: v for k, v in dict(x).items() if v not in (None, "", [])} for x in s["only_if"]
+        ]
+        for s in steps
+        if s.get("only_if")
+    }
+    if not lines:
+        path.unlink(missing_ok=True)
+        return
+    text = json.dumps(lines, ensure_ascii=False, sort_keys=True)
+    with contextlib.suppress(OSError):
+        if path.read_text(encoding="utf-8") == text and not path.is_symlink():
+            return
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, raw = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.")
+    tmp = Path(raw)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as out:
+            out.write(text)
+        tmp.chmod(0o600)
+        tmp.replace(path)
+    except BaseException:
+        with contextlib.suppress(OSError):
+            tmp.unlink()
+        raise

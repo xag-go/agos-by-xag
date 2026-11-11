@@ -131,35 +131,6 @@ def _more_undo() -> frozenset[str]:
     return frozenset(cofounder_more.UNDOES)
 
 
-_UNDO = {
-    rules.BUNDLE,
-    "add_owner_rule",
-    "add_method",
-    "update_doc",
-    "update_file",
-    "rename",
-    "update_skill",
-    "update_agent",
-    "update_mcp",
-    "create_automation",
-    "create_skill",
-    "create_agent",
-    "hire_agent",
-    "create_mcp",
-    "update_automation",
-    "pause_automation",
-    "resume_automation",
-    "delete_automation",
-    # Hermes's settings, held-back writes and key pools (actions/cofounder_hermes.py)
-    "change_hermes_setting",
-    "reset_hermes_setting",
-    "approve_held_write",
-    "reject_held_write",
-    "add_pool_key",
-    "remove_pool_key",
-    "move_pool_key",
-    "set_pool_strategy",
-    # The rest of the owner's pages (actions/cofounder_more.py): those with an Undo
-    *_more_undo(),
-    "assign_founder",
-}
+# The kinds with an Undo: a bundle, and every declared kind whose gate gives its card one
+# (ops/specs; actions/cofounder_more.py lists their undo).
+_UNDO = {rules.BUNDLE, *_more_undo()}

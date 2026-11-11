@@ -14,57 +14,16 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from agos_core.engine import cofounder_parity as parity
+from agos_core.engine.cofounder_kind import CHAT
 
 MAX_PER_TURN = 1_000  # no real cap: every action of the turn is kept
 # The actions that ask for a new member: never done on the spot, in any mode (the
 # hire card in his Inbox is where he decides; actions/cofounder_actions.py _hire).
 HIRES = ("hire_agent", "create_agent")
 
-# action -> required fields (all strings)
-ACTIONS: dict[str, tuple[str, ...]] = {
-    "create_automation": ("name", "instructions"),
-    "update_automation": ("automation",),
-    "pause_automation": ("automation",),
-    "resume_automation": ("automation",),
-    "run_automation": ("automation",),
-    "delete_automation": ("automation",),
-    "create_skill": ("name", "description", "instructions"),
-    # The old way to a new agent: an agent of that name is changed as before, a new
-    # one becomes the same hire card as hire_agent (same checks), never an agent.
-    "create_agent": ("name",),
-    # A new team member as a HIRE: ALWAYS a proposal card the owner approves, revises
-    # or rejects in his Inbox (actions/proposals.py), in every autonomy mode.
-    "hire_agent": ("name", "title", "role"),
-    "create_mcp": ("name", "url"),
-    "update_skill": ("name",),
-    "update_agent": ("name",),
-    "update_mcp": ("name",),
-    "rename": ("kind", "name", "title"),
-    "update_doc": ("path", "why"),
-    "update_file": ("path", "why"),
-    "add_owner_rule": ("text",),
-    "add_method": ("text",),
-    # Hermes's own settings and stores (actions/cofounder_hermes.py)
-    "change_hermes_setting": ("key",),  # and value (false and 0 are values too)
-    "reset_hermes_setting": ("key",),
-    "show_hermes_setting": ("key",),
-    "approve_held_write": ("id",),
-    "reject_held_write": ("id",),
-    "list_held_writes": (),
-    "add_pool_key": ("provider", "key"),
-    "remove_pool_key": ("provider", "label"),
-    "move_pool_key": ("provider", "label", "position"),
-    "set_pool_strategy": ("provider", "strategy"),
-    "list_pool_keys": (),
-    "hermes_health": (),
-    "secrets_check": (),
-    # The rest of the owner's pages (engine/cofounder_parity/, actions/cofounder_more.py)
-    **{name: kind.required for name, kind in parity.KINDS.items()},
-    # The Founder: the owner himself, a person (actions/founder.py). A task only a
-    # human can do goes on the board for him; his "done" told in a chat closes it.
-    "assign_founder": ("title",),
-    "founder_done": ("card",),
-}
+# action -> required fields (all strings): every kind's declaration in the operation
+# registry (ops/specs), the base kinds the prompt teaches and the rest of the pages alike.
+ACTIONS: dict[str, tuple[str, ...]] = {name: kind.required for name, kind in parity.KINDS.items()}
 
 
 @dataclass(frozen=True)
@@ -308,7 +267,7 @@ def title_of(action: Action) -> str:
     """A one-line label for the card."""
     if action.do == BUNDLE:
         return str(action.fields.get("title") or "Changes")
-    if action.do in parity.KINDS:
+    if action.do in parity.KINDS and parity.KINDS[action.do].domain != CHAT:
         return parity.title(action.do, action.fields)
     name = action.get("name") or action.get("automation")
     return {

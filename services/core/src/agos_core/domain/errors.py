@@ -115,8 +115,7 @@ TEXTS: dict[ErrorCode, ErrorText] = {
         'memory: see docs/INSTALL.md, "Minimum hardware".',
     ),
     ErrorCode.HERMES_UNAVAILABLE: ErrorText(
-        "The engine is not answering right now, so AGOS paused calls to it for a short "
-        "time.",
+        "The engine is not answering right now, so AGOS paused calls to it for a short time.",
         "Wait a minute: AGOS tries again by itself. If it lasts, restart AGOS "
         "(`agos restart`) and look at Settings → Errors.",
     ),

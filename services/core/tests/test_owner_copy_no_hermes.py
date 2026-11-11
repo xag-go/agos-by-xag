@@ -225,10 +225,7 @@ def _skipped_ids(tree: ast.AST, agent_facing: set[str]) -> set[int]:
                 and isinstance(body[0].value.value, str)
             ):
                 skip.add(id(body[0].value))
-        if (
-            isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
-            and node.name in agent_facing
-        ):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name in agent_facing:
             for sub in ast.walk(node):
                 if isinstance(sub, ast.Constant):
                     skip.add(id(sub))

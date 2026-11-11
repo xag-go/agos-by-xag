@@ -93,7 +93,7 @@ def create(
     raw = kanban_cli.answer(kanban_cli.run(core, workspace_id, *args))
     card_id = str((raw.get("task") or raw).get("id") or "") if isinstance(raw, dict) else ""
     if not card_id:
-        raise ActionError("Hermes's Kanban didn't make the card.")
+        raise ActionError("The board didn't make the card.")
     return card_id
 
 
@@ -152,16 +152,16 @@ def _flags(*, goal: bool, parents: list[str], triage: bool, once: str, blocked: 
 def estimate(core: Core, workspace_id: str, card_id: str) -> dict[str, Any]:
     """Hermes's own estimate (its auxiliary model): rough tokens and S / M / L."""
     if core.engine is None:
-        raise ActionError("Hermes isn't set up yet.")
+        raise ActionError("The engine isn't set up yet.")
     try:
         # A plugin command: Hermes imports the root's plugins, so it runs walled.
         out = kanban_cli.plugin(core, workspace_id, "agos-estimate", card_id, timeout=120)
     except EngineError as error:
-        raise ActionError(f"Hermes didn't estimate it: {error}") from error
+        raise ActionError(f"The engine didn't estimate it: {error}") from error
     found = kanban_cli.answer(out)
     if not isinstance(found, dict) or not found.get("ok"):
         reason = found.get("reason") if isinstance(found, dict) else ""
-        raise ActionError(f"Hermes couldn't estimate it: {reason or 'no answer'}.")
+        raise ActionError(f"The engine couldn't estimate it: {reason or 'no answer'}.")
     return {
         "tokens": int(found.get("est_tokens") or 0),
         "complexity": str(found.get("complexity") or ""),

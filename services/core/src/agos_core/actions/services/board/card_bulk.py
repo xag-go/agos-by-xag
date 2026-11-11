@@ -142,7 +142,7 @@ def act_many(
         return {"done": list(cards), "failed": {}}
     except ActionError:
         if len(cards) == 1:
-            return {"done": [], "failed": {cards[0]: "Hermes refused it."}}
+            return {"done": [], "failed": {cards[0]: "The engine refused it."}}
     done: list[str] = []
     failed: dict[str, str] = {}
     for card in cards:

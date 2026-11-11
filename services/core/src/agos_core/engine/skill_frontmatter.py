@@ -79,8 +79,8 @@ class HermesFrontmatter:
         )
         hermes_contract.ran(done)
         if done.returncode != 0:
-            raise RuntimeError(f"Hermes did not read the skill: {done.stderr.strip()[-300:]}")
+            raise RuntimeError(f"The engine did not read the skill: {done.stderr.strip()[-300:]}")
         rows: Any = json.loads(done.stdout)
         if not isinstance(rows, list) or len(rows) != len(texts):
-            raise RuntimeError("Hermes answered something else.")
+            raise RuntimeError("The engine answered something else.")
         return [(dict(row[0]), str(row[1])) for row in rows]

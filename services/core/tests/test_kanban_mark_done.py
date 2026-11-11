@@ -53,7 +53,7 @@ def test_mark_done_asks_for_words_and_sends_them_as_hermess_summary(env: Any) ->
         runner.calls.clear()
         r = client.post(f"/workspaces/{ws}/kanban/{card}/act", json=body)
         assert r.status_code == 400, r.text
-        assert r.json()["detail"] == f"Hermes's Kanban refused: {EMPTY.format(card)}"
+        assert r.json()["detail"] == f"The board refused: {EMPTY.format(card)}"
         assert _asked(runner) == [["kanban", "complete", card]]
         assert board[card]["status"] == "ready"
 
@@ -131,10 +131,10 @@ def test_any_refused_board_write_says_hermess_reason(env: Any) -> None:  # noqa:
     r = client.post(f"/workspaces/{ws}/kanban/{card}/act", json={"action": "block"})
     assert r.status_code == 400
     assert r.json()["detail"] == (
-        f"Hermes's Kanban refused: cannot block {card} (unknown id or terminal state)"
+        f"The board refused: cannot block {card} (unknown id or terminal state)"
     )
     r = client.post(f"/workspaces/{ws}/kanban/{card}/act", json={"action": "archive"})
-    assert r.json()["detail"] == "Hermes's Kanban didn't answer: hermes did not answer"
+    assert r.json()["detail"] == "The board didn't answer: hermes did not answer"
 
 
 class _Masking:

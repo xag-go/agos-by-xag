@@ -197,7 +197,7 @@ def scrub(files: dict[str, str], known: dict[str, str]) -> tuple[dict[str, str],
     for path, text in zip(paths, masked, strict=True):
         if out[path] and text == hermes_redact.HIDDEN:
             raise ActionError(
-                "Hermes couldn't check the bundle for secrets, so nothing was exported. "
+                "The engine couldn't check the bundle for secrets, so nothing was exported. "
                 "Try again in a moment.",
                 503,
             )

@@ -84,7 +84,7 @@ def _listed(core: Core, home: Path, *, kept: bool) -> dict[str, Any]:
     last list at once when only auth.json moved)."""
     engine = core.engine
     if engine is None:
-        raise ActionError("Hermes isn't available.", status=503)
+        raise ActionError("The engine isn't available.", status=503)
     return copy.deepcopy(
         _LISTS.get(
             (str(home), _settings(core, home)),
@@ -107,7 +107,7 @@ def _home_statuses(core: Core, home: Path, *, kept: bool) -> list[dict[str, Any]
     def ask() -> list[dict[str, Any]]:
         found = general_sync.hermes_logins(engine, home)
         if found is None:
-            raise EngineError(f"Hermes's logins in {home} not read")
+            raise EngineError(f"The engine's logins in {home} not read")
         return list(found.get("pool") or [])
 
     try:
@@ -213,13 +213,13 @@ def _view(core: Core, found: dict[str, Any], *, kept: bool = False) -> dict[str,
 def _pool(core: Core, job: dict[str, Any], *, kept: bool = False) -> dict[str, Any]:
     engine = core.engine
     if engine is None:
-        raise ActionError("Hermes isn't available.", status=503)
+        raise ActionError("The engine isn't available.", status=503)
     try:
         if job == {"do": "list"}:
             return _listed(core, engine.settings.hermes_home, kept=kept)
         return engine.credential_pool(engine.settings.hermes_home, job)
     except (EngineError, OSError, ValueError) as error:
-        raise ActionError(f"Hermes's key pool couldn't be read: {error}", status=502) from error
+        raise ActionError(f"The engine's key pool couldn't be read: {error}", status=502) from error
 
 
 def _root_pool(core: Core, workspace_id: str, name: str, *, kept: bool = False) -> dict[str, Any]:
@@ -238,7 +238,7 @@ def _root_pool(core: Core, workspace_id: str, name: str, *, kept: bool = False) 
     try:
         found = _listed(core, engine.profile_home(workspace_id), kept=kept)
     except (EngineError, OSError, ValueError) as error:
-        out["problem"] = f"Hermes's key pool couldn't be read here: {error}"[:300]
+        out["problem"] = f"The engine's key pool couldn't be read here: {error}"[:300]
         return out
     for p in (found.get("pool") or {}).get("providers") or []:
         entries = [
@@ -303,11 +303,11 @@ def read_ahead(core: Core) -> None:
 def _keys(core: Core, job: dict[str, Any]) -> dict[str, Any]:
     engine = core.engine
     if engine is None:
-        raise ActionError("Hermes isn't available.", status=503)
+        raise ActionError("The engine isn't available.", status=503)
     try:
         done = engine.managed_keys(job)
     except (EngineError, OSError, ValueError) as error:
-        raise ActionError(f"Hermes didn't take it: {error}", status=502) from error
+        raise ActionError(f"The engine didn't take it: {error}", status=502) from error
     from agos_core.actions import hermes_all_settings
 
     hermes_all_settings.warm_after_write(core)  # the managed .env: its .env rows
@@ -317,7 +317,7 @@ def _keys(core: Core, job: dict[str, Any]) -> dict[str, Any]:
 def _check(provider: str) -> str:
     provider = provider.strip().lower()
     if not _PROVIDER.match(provider):
-        raise ActionError("Pick one of Hermes's providers.")
+        raise ActionError("Pick one of the engine's providers.")
     return provider
 
 
@@ -329,7 +329,7 @@ def _entry(
             for e in p["entries"]:
                 if e["label"] == label:
                     return dict(e), list(p["entries"])
-    raise ActionError("No such key in Hermes's pool.", status=404)
+    raise ActionError("No such key in the engine's pool.", status=404)
 
 
 def add(core: Core, provider: str, key: str, *, at: int | None = None) -> dict[str, Any]:
@@ -346,7 +346,7 @@ def add(core: Core, provider: str, key: str, *, at: int | None = None) -> dict[s
     base = (_pool(core, {"do": "list", "providers": [provider]}).get("bases") or {}).get(provider)
     if not base:
         raise ActionError(
-            "Hermes reads several keys only for providers that take an API key from "
+            "The engine reads several keys only for providers that take an API key from "
             ".env; this one signs in or has its own endpoint settings.",
             status=422,
         )
@@ -404,7 +404,7 @@ def _everywhere(core: Core, job: dict[str, Any]) -> dict[str, Any]:
     .env key for, which therefore could not move into the managed .env)."""
     engine = core.engine
     if engine is None:
-        raise ActionError("Hermes isn't available.", status=503)
+        raise ActionError("The engine isn't available.", status=503)
     failed: list[str] = []
 
     def one(home: Path) -> None:
@@ -417,7 +417,7 @@ def _everywhere(core: Core, job: dict[str, Any]) -> dict[str, Any]:
     with ThreadPoolExecutor(max_workers=4) as pool:
         list(pool.map(one, homes(core)))
     if failed:
-        raise ActionError(f"Hermes didn't take it in {'; '.join(failed)}", status=502)
+        raise ActionError(f"The engine didn't take it in {'; '.join(failed)}", status=502)
     return read(core)
 
 
@@ -433,7 +433,7 @@ def move(core: Core, provider: str, label: str, priority: int) -> dict[str, Any]
     managed = _managed_names(core)
     if not (a and b) or a[1] != b[1] or not {label, other} <= managed:
         raise ActionError(
-            "Only the keys added here change places, among themselves; Hermes tries "
+            "Only the keys added here change places, among themselves; the engine tries "
             "Settings → Models' key and sign-ins first.",
             status=409,
         )
@@ -470,7 +470,7 @@ def set_strategy(core: Core, provider: str, strategy: str | None) -> dict[str, A
         else:
             hermes_managed.write(core, {name: strategy})
     except (EngineError, OSError) as error:
-        raise ActionError(f"Hermes didn't take it: {error}", status=502) from error
+        raise ActionError(f"The engine didn't take it: {error}", status=502) from error
     return read(core)
 
 

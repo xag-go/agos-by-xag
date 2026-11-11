@@ -245,12 +245,12 @@ def test_a_key_hermes_keeps_for_itself_gets_a_tools_copy(keys: Any) -> None:
 @pytest.mark.parametrize(
     ("app", "name", "said"),
     [
-        ("OpenRouter", "OPENROUTER_API_KEY", "Hermes keeps"),
+        ("OpenRouter", "OPENROUTER_API_KEY", "the engine keeps"),
         ("Hermes", "API_SERVER_KEY", ""),
-        ("Telegram", "TELEGRAM_BOT_TOKEN", "Hermes keeps"),
+        ("Telegram", "TELEGRAM_BOT_TOKEN", "the engine keeps"),
         ("Webhook", "WEBHOOK_PORT", ""),
-        ("Clock", "TERMINAL_TIMEOUT", "kept for Hermes and AGOS"),
-        ("Apps", "AGOS_MCP_GITHUB_TOKEN", "kept for Hermes and AGOS"),
+        ("Clock", "TERMINAL_TIMEOUT", "kept for the engine and AGOS"),
+        ("Apps", "AGOS_MCP_GITHUB_TOKEN", "kept for the engine and AGOS"),
         ("Bad", "lower_case", "A-Z"),
     ],
 )

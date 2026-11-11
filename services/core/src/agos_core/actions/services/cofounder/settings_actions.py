@@ -186,7 +186,7 @@ def undo_time_limits(core: Core, ws: str, r: Result) -> None:
     from agos_core.actions import hermes_time_limits
 
     if not r.get("before"):
-        raise ActionError("Hermes's earlier values weren't readable: set them again by hand.")
+        raise ActionError("The engine's earlier values weren't readable: set them again by hand.")
     hermes_time_limits.write(core, {str(k): int(v) for k, v in dict(r["before"]).items()})
 
 

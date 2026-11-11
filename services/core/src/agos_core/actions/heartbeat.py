@@ -129,7 +129,7 @@ def _home_and_jobs(core: Core, workspace_id: str, agent: str) -> tuple[Any, list
     if home is None:
         raise NotFoundError("This member")
     if not (home / "config.yaml").is_file():
-        raise ActionError("This member's Hermes profile isn't set up yet.", 409)
+        raise ActionError("This member's profile isn't set up yet.", 409)
     custom = getattr(core.engine, "cron_bridge", None)
     from agos_core.engine.cron import read_jobs
 
@@ -160,7 +160,7 @@ def _view(agent: str, job: dict[str, Any] | None) -> Heartbeat:
             if reason == PARKED_REASON
             else "Paused off-hours: it wakes the agent at check-in."
             if reason == WORK_HOURS_REASON
-            else f"Paused by Hermes: {reason}"[:300]
+            else f"Paused by the engine: {reason}"[:300]
             if not enabled and reason
             else None
         ),

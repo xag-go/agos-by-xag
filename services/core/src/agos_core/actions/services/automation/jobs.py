@@ -95,7 +95,7 @@ def runner(core: Core, automation: Automation, current: str | None = None) -> st
         return agent
     if current is not None:
         return current
-    raise CronError(f"@{agent}'s own Hermes profile isn't set up yet")
+    raise CronError(f"@{agent}'s own profile isn't set up yet")
 
 
 def _spec(core: Core, automation: Automation, owner: str = COFOUNDER) -> JobSpec:
@@ -250,7 +250,7 @@ def _place(
     assert core.engine is not None
     home = homes(core, automation.workspace_id).get(owner)
     if home is None or not (home / "config.yaml").is_file():
-        raise CronError(f"@{owner}'s own Hermes profile isn't set up yet")
+        raise CronError(f"@{owner}'s own profile isn't set up yet")
     linked = repo.job_id(core.db, automation.id)
     mine = [j for j in jobs.values() if str(j["id"]) == linked or _its_job(automation, spec, j)]
     here = sorted((j for j in mine if j["owner"] == owner), key=lambda j: str(j["id"]) != linked)

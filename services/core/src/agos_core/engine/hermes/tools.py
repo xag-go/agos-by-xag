@@ -107,7 +107,7 @@ for entry in tc.CONFIGURABLE_TOOLSETS:
                 ],
                 "nous": bool(p.get("requires_nous_auth")),
                 "login": str(p.get("post_setup") or ""),
-                # Hermes's own list of post_setup steps that are sign-ins, not installs.
+                # the engine's own list of post_setup steps that are sign-ins, not installs.
                 "login_is_auth": str(p.get("post_setup") or "") in _AUTH,
             })
     about = str((TOOLSETS.get(key) or {}).get("description") or hint or "")
@@ -241,7 +241,7 @@ def _check_tools(self: "HermesEngine", home: Path) -> dict[str, bool]:
     lines = [ln for ln in done.stdout.splitlines() if ln.startswith("AGOS-TOOLS ")]
     if done.returncode != 0 or not lines:
         log.info("tool check failed (%s): %s", done.returncode, done.stderr[-300:])
-        raise EngineError(f"Hermes's tool check failed ({done.returncode})")
+        raise EngineError(f"The engine's tool check failed ({done.returncode})")
     return {str(k): bool(v) for k, v in json.loads(lines[-1][len("AGOS-TOOLS ") :]).items()}
 
 
@@ -264,7 +264,7 @@ def tools_catalog(self: "HermesEngine") -> list[dict[str, Any]]:
     hermes_contract.ran(done)
     lines = [ln for ln in done.stdout.splitlines() if ln.startswith("AGOS-CATALOG ")]
     if done.returncode != 0 or not lines:
-        raise EngineError(f"Hermes's tools list not read: {done.stderr[-300:]}")
+        raise EngineError(f"The engine's tools list not read: {done.stderr[-300:]}")
     found: list[dict[str, Any]] = json.loads(lines[-1][len("AGOS-CATALOG ") :])
     return found
 
@@ -293,7 +293,7 @@ def save_credentials(
     hermes_contract.ran(done)
     if done.returncode != 0 or "AGOS-CREDENTIALS ok" not in done.stdout:
         tail = done.stderr.strip().splitlines()[-1:] or ["no answer"]
-        raise EngineError(f"Hermes didn't save the keys: {tail[0][:200]}")
+        raise EngineError(f"The engine didn't save the keys: {tail[0][:200]}")
 
 
 def set_tool_service(self: "HermesEngine", home: Path, job: dict[str, Any]) -> str | None:
@@ -318,7 +318,7 @@ def set_tool_service(self: "HermesEngine", home: Path, job: dict[str, Any]) -> s
     hermes_contract.ran(done)
     if done.returncode != 0 or "AGOS-SERVICE ok" not in done.stdout:
         tail = done.stderr.strip().splitlines()[-1:] or ["no answer"]
-        raise EngineError(f"Hermes didn't take it: {tail[0][:200]}")
+        raise EngineError(f"The engine didn't take it: {tail[0][:200]}")
     self._tools_seen.drop()
     steps = [ln[13:].strip() for ln in done.stdout.splitlines() if ln.startswith("AGOS-INSTALL ")]
     return steps[-1] if steps else None
@@ -362,7 +362,7 @@ def _tool_services_now(self: "HermesEngine", home: Path) -> dict[str, str | None
     hermes_contract.ran(done)
     lines = [ln for ln in done.stdout.splitlines() if ln.startswith("AGOS-ACTIVE ")]
     if done.returncode != 0 or not lines:
-        raise EngineError(f"Hermes's tool services not read: {done.stderr[-300:]}")
+        raise EngineError(f"The engine's tool services not read: {done.stderr[-300:]}")
     found = {
         str(k): (str(v) if v else None)
         for k, v in json.loads(lines[-1][len("AGOS-ACTIVE ") :]).items()
@@ -406,7 +406,7 @@ def _read_menu(self: "HermesEngine", home: Path) -> list[dict[str, str]]:
     hermes_contract.ran(done)
     lines = [ln for ln in done.stdout.splitlines() if ln.startswith("AGOS-MENU ")]
     if done.returncode != 0 or not lines:
-        raise EngineError(f"Hermes's command menu not read: {done.stderr[-300:]}")
+        raise EngineError(f"The engine's command menu not read: {done.stderr[-300:]}")
     return [
         {"command": str(c.get("command") or ""), "description": str(c.get("description") or "")}
         for c in json.loads(lines[-1][len("AGOS-MENU ") :])
@@ -449,7 +449,7 @@ def tool_keys(
     try:
         python = hermes_python(self.settings)
     except (OSError, RuntimeError) as error:
-        raise EngineError("Hermes isn't installed where the settings say") from error
+        raise EngineError("The engine isn't installed where the settings say") from error
     lock = (
         home_write_lock(home)
         if job.get("do") in ("save", "remove", "share")
@@ -469,14 +469,14 @@ def tool_keys(
             )
         hermes_contract.ran(done)
     except (OSError, subprocess.TimeoutExpired) as error:
-        raise EngineError("Hermes didn't answer about the key") from error
+        raise EngineError("The engine didn't answer about the key") from error
     lines = [ln for ln in done.stdout.splitlines() if ln.startswith("AGOS-TOOLKEYS ")]
     if done.returncode != 0 or not lines:
         # Never Hermes's stderr: a traceback could quote a value.
         log.info("tool key job %s failed (exit %s)", job.get("do"), done.returncode)
-        raise EngineError("Hermes didn't answer about the key")
+        raise EngineError("The engine didn't answer about the key")
     found: dict[str, Any] = json.loads(lines[-1][len("AGOS-TOOLKEYS ") :])
     if found.get("error"):
         log.info("tool key job %s: Hermes said %s", job.get("do"), found["error"])
-        raise EngineError("Hermes didn't take the key")
+        raise EngineError("The engine didn't take the key")
     return found

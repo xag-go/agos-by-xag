@@ -207,7 +207,7 @@ def check_updates(core: Core, workspace_id: str) -> list[Update]:
         try:
             checked = _hub_states(src, kept=True)
         except (sources.SourceError, hermes_process.TimeoutExpired) as error:
-            raise ActionError(f"Hermes's skills hub didn't answer: {error}", 503) from error
+            raise ActionError(f"The skills hub didn't answer: {error}", 503) from error
         if checked is None:
             hub = None
         else:
@@ -232,7 +232,7 @@ def check_updates(core: Core, workspace_id: str) -> list[Update]:
                         item_id=row["id"],
                         name=name,
                         has_update=True,
-                        detail="Not in Hermes's hub yet: Update installs it again from the web",
+                        detail="Not in the skills hub yet: Update installs it again from the web",
                     )
                 )
                 continue

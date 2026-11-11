@@ -69,7 +69,7 @@ def _root_unit_name(self: "HermesEngine", workspace_id: str) -> str:
     hermes_contract.ran(done)
     lines = [ln for ln in done.stdout.splitlines() if ln.startswith("AGOS-UNIT ")]
     if done.returncode != 0 or not lines:
-        raise EngineError("Hermes did not name this workspace's gateway service")
+        raise EngineError("The engine did not name this workspace's gateway service")
     unit = lines[-1][len("AGOS-UNIT ") :].strip() + ".service"
     root_unit.remember(self.root(workspace_id), unit)
     return unit
@@ -88,8 +88,8 @@ def _runtime_dropin(self: "HermesEngine", workspace_id: str) -> None:
     folder = unit.with_name(unit.name + ".d")
     folder.mkdir(parents=True, exist_ok=True)
     lines = [
-        "# Written by AGOS (ADR 0020): the Hermes install's own runtime, the",
-        "# settings that are one value for every workspace (Hermes's Managed Scope)",
+        "# Written by AGOS (ADR 0020): the engine install's own runtime, the",
+        "# settings that are one value for every workspace (the engine's Managed Scope)",
         "# and the wall around this workspace's gateway (rewritten when its folders change).",
         "[Service]",
     ]

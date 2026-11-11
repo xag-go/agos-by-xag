@@ -139,8 +139,8 @@ def save_timezone(core: Core, timezone: str) -> str:
     if name and zone_of(name) is None:
         raise ActionError(f"“{name}” isn't a timezone (e.g. Europe/London).")
     if core.engine is None:
-        raise ActionError("Hermes isn't available.", status=503)
+        raise ActionError("The engine isn't available.", status=503)
     failed = set_zone(core, name)
     if core.engine.settings.hermes_home in failed:
-        raise ActionError("Hermes didn't save the timezone. Try again in a moment.", status=502)
+        raise ActionError("The engine didn't save the timezone. Try again in a moment.", status=502)
     return name

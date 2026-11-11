@@ -245,7 +245,7 @@ def test_a_web_skill_not_in_the_roots_hub_lock_is_installed_again_on_update(
     hub = _Hub()
     _use_hub(monkeypatch, core, hub)
     [update] = _updates(core, a)
-    assert update.has_update and "Hermes's hub" in update.detail
+    assert update.has_update and "the skills hub" in update.detail
     workspace_skills.apply_update(core, a, item_id)
     assert hub.lock == {"invoice-check": "openai/skills/invoice-check"}
     assert [u.has_update for u in workspace_skills.check_updates(core, a)] == [False]

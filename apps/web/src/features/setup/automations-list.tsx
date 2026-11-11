@@ -14,19 +14,7 @@ import { formatWhen } from "@/shared/format";
 import { toggleAutomation } from "./actions";
 import { RunNowButton } from "./automation-runs";
 import { describeCron } from "./schedule";
-
-/** Steps in order, one badge per run of the same member (parallel steps of
- * one agent — e.g. one per style — read once, with how many). */
-function flow(steps: { agent?: string | null }[]) {
-  const out: { agent: string | null; count: number }[] = [];
-  for (const s of steps) {
-    const agent = s.agent ?? null;
-    const last = out.at(-1);
-    if (last && last.agent === agent) last.count += 1;
-    else out.push({ agent, count: 1 });
-  }
-  return out;
-}
+import { doneBy } from "./step-levels";
 
 export function AutomationsList({
   workspaceId,
@@ -117,15 +105,31 @@ export function AutomationsList({
               <p className="mt-1.5 flex flex-wrap items-center gap-1 text-xs text-ink-2">
                 <span className="text-ink-3">Done by</span>
                 {(a.steps ?? []).length > 0 ? (
-                  flow(a.steps ?? []).map(({ agent, count }, i) => (
+                  doneBy(a.steps ?? []).map((level, i) => (
                     <span key={i} className="flex items-center gap-1">
                       {i > 0 && <span className="text-ink-3">→</span>}
-                      <span className="rounded-full bg-sunken px-2 py-0.5">
-                        {titleOf(agent)}
-                        {count > 1 && (
-                          <span className="text-ink-3"> ×{count}</span>
-                        )}
-                      </span>
+                      {level.length > 1 && (
+                        <span
+                          className="text-ink-3"
+                          title="These work at the same time"
+                        >
+                          (
+                        </span>
+                      )}
+                      {level.map(({ agent, count }, j) => (
+                        <span key={j} className="flex items-center gap-1">
+                          {j > 0 && <span className="text-ink-3">+</span>}
+                          <span className="rounded-full bg-sunken px-2 py-0.5">
+                            {titleOf(agent)}
+                            {count > 1 && (
+                              <span className="text-ink-3"> ×{count}</span>
+                            )}
+                          </span>
+                        </span>
+                      ))}
+                      {level.length > 1 && (
+                        <span className="text-ink-3">)</span>
+                      )}
                     </span>
                   ))
                 ) : (

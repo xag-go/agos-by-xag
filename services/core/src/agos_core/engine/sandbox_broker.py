@@ -197,8 +197,8 @@ def walled(engine: HermesEngine, key: str, command: list[str]) -> list[str]:
 
 def policy(engine: HermesEngine, workspace_id: str) -> dict[str, Any]:
     """What this workspace's gateway may ask Docker for (engine/sandboxd.py):
-    its root's and members' sandbox labels, AGOS's sandbox image(s), its own
-    internal network, and binds from its profiles' own config (engine/cage.py)."""
+    its root's and members' sandbox labels, AGOS's sandbox image(s), the root's
+    and members' own internal networks, and binds from its profiles' own config (engine/cage.py)."""
     from agos_core.engine import config_file
     from agos_core.engine.hermes import sandbox_label_of
     from agos_core.engine.rules import WORKSPACE_MOUNT, screen_image
@@ -217,7 +217,9 @@ def policy(engine: HermesEngine, workspace_id: str) -> dict[str, Any]:
     return cage.policy(
         labels=[sandbox_label_of(engine.profile(k)) for k in keys],
         images=[image, screen_image(image)],
-        network=net.network_name(engine.profile(root_id)),
+        # The exact network each profile's own config asks for (engine/network.py
+        # sandbox_settings): the root's and every member's own internal one.
+        networks=[net.network_name(engine.profile(k)) for k in keys],
         root=root,
         temp_dir=engine.temp_dir(root_id),
         configs=[config_file.read(engine.profile_home(k)) for k in keys],

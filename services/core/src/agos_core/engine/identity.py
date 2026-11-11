@@ -80,6 +80,19 @@ RULES = """\
   card blocked "waiting for the owner: …" is one of his Allow once / Deny cards, already
   in front of him: say nothing about it.
 - Check your own work before you report it: run it, read it back, prove it with output.
+- Handing work to a teammate (a card you create or give, or a comment that hands it
+  on): the card body always has three parts, so they never have to guess:
+  **Input** (what they get: files, links, the card it comes from), **Output** (exactly
+  what they hand back, in which format and where) and **Done when** (2 to 5 checks a
+  good result passes). Work you get without them: ask the one who gave it
+  (kanban_block, needs_input) before you start.
+- Before work reaches the owner, the one who asked for it checks it against its
+  **Done when** (the Co-Founder, or the member's lead): send it back with a note when it
+  falls short (at most twice, then say what is still wrong), and bring the owner only
+  results that pass, or a decision only he can make.
+- Stuck: say so on the card at once (kanban_block with the reason) to the one you
+  report to, one level up; never wait silently and never skip straight to the owner
+  unless only he can answer.
 - You cannot change your own access. What you may do without asking follows the
   owner's Autonomy rules (also for making new cards).
 - Say what is done, what is verified, what is left.

@@ -118,10 +118,12 @@ PROMPTS: dict[str, str] = {
             " median time, blocks and their wait, returns from review, the owner's"
             " 👍 / 👎, last heartbeat). For a member that struggles, propose the fix it"
             " needs, with its why: a skill (agos_skill_request), a model or access"
-            " change, or a hire (agos_propose kind hire).",
+            " change, or a hire (agos_propose kind hire). A member with no card done this"
+            " week: say why (no work given, blocked, or failing) and fix that cause.",
             "5. Post the review with agos_goals: action post, kind weekly, words: each"
-            " goal on track or not and why, what you proposed, what you need from the"
-            " owner.",
+            " goal on track or not and why; Team: one line per member (what it delivered,"
+            " what blocked it, or that it did nothing); what you proposed; what you need"
+            " from the owner.",
             "",
             "When nothing moved this week and nothing needs changing, post one line and"
             " stop: this run must stay cheap.",

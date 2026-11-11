@@ -39,29 +39,35 @@ export interface Who {
 }
 type WhoStep = LevelStep & { agent?: string | null };
 
+/** One level's members: steps of one member read once, with how many. */
+function members(level: WhoStep[]): Who[] {
+  const people: Who[] = [];
+  for (const s of level) {
+    const agent = s.agent ?? null;
+    const same = people.find((p) => p.agent === agent);
+    if (same) same.count += 1;
+    else people.push({ agent, count: 1 });
+  }
+  return people;
+}
+
+/** The single member of `level` when the previous entry is that same single member. */
+function sameAlone(last: Who[] | undefined, people: Who[]): Who | undefined {
+  const prev = last?.length === 1 ? last[0] : undefined;
+  const only = people.length === 1 ? people[0] : undefined;
+  return prev && only && prev.agent === only.agent ? prev : undefined;
+}
+
 /** "Done by": one entry per level; each holds the members of that level (steps
  * of one member read once, with how many). A straight chain gives one member per
  * entry, and neighbours of the same member merge (@a ×2), as the list always did. */
 export function doneBy(steps: WhoStep[]): Who[][] {
   const out: Who[][] = [];
   for (const level of stepLevels(steps)) {
-    const people: Who[] = [];
-    for (const s of level) {
-      const agent = s.agent ?? null;
-      const same = people.find((p) => p.agent === agent);
-      if (same) same.count += 1;
-      else people.push({ agent, count: 1 });
-    }
-    const last = out.at(-1);
-    const only = people[0];
-    if (last?.length === 1 && people.length === 1 && only) {
-      const prev = last[0];
-      if (prev && prev.agent === only.agent) {
-        prev.count += only.count;
-        continue;
-      }
-    }
-    out.push(people);
+    const people = members(level);
+    const prev = sameAlone(out.at(-1), people);
+    if (prev) prev.count += people[0]?.count ?? 0;
+    else out.push(people);
   }
   return out;
 }

@@ -16,7 +16,7 @@ import { toggleAutomation } from "./actions";
 import { RunNowButton } from "./automation-runs";
 import { MonthCost } from "./run-steps";
 import { describeCron } from "./schedule";
-import { doneBy } from "./step-levels";
+import { DoneByLevels } from "./done-by-levels";
 
 /** What the list's search matches: the name, the schedule and who does it. */
 function searchText(
@@ -118,33 +118,7 @@ export function AutomationsList({
               <p className="mt-1.5 flex flex-wrap items-center gap-1 text-xs text-ink-2">
                 <span className="text-ink-3">Done by</span>
                 {(a.steps ?? []).length > 0 ? (
-                  doneBy(a.steps ?? []).map((level, i) => (
-                    <span key={i} className="flex items-center gap-1">
-                      {i > 0 && <span className="text-ink-3">→</span>}
-                      {level.length > 1 && (
-                        <span
-                          className="text-ink-3"
-                          title="These work at the same time"
-                        >
-                          (
-                        </span>
-                      )}
-                      {level.map(({ agent, count }, j) => (
-                        <span key={j} className="flex items-center gap-1">
-                          {j > 0 && <span className="text-ink-3">+</span>}
-                          <span className="rounded-full bg-sunken px-2 py-0.5">
-                            {titleOf(agent)}
-                            {count > 1 && (
-                              <span className="text-ink-3"> ×{count}</span>
-                            )}
-                          </span>
-                        </span>
-                      ))}
-                      {level.length > 1 && (
-                        <span className="text-ink-3">)</span>
-                      )}
-                    </span>
-                  ))
+                  <DoneByLevels steps={a.steps ?? []} titleOf={titleOf} />
                 ) : (
                   <span className="rounded-full bg-sunken px-2 py-0.5">
                     {titleOf(a.agent)}

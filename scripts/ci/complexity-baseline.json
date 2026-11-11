@@ -1021,10 +1021,10 @@
     },
     "apps/web/src/features/setup/automations-list.tsx::(anonymous)": {
       "complexity": 18,
-      "lines": 151
+      "lines": 141
     },
     "apps/web/src/features/setup/automations-list.tsx::AutomationsList": {
-      "lines": 188
+      "lines": 178
     },
     "apps/web/src/features/setup/connector-config.tsx::ConnectorConfig": {
       "complexity": 12,

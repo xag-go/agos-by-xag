@@ -2,7 +2,6 @@
 
 import type { ModelSelection } from "@agos/core";
 import { useState, useTransition } from "react";
-import { AllHermesSettingsLink } from "./hermes-settings";
 import type { HermesFallback } from "@/data/queries";
 import type { CatalogProvider } from "@/data/types";
 import { firstChoice } from "@/features/models/first-choice";
@@ -294,7 +293,6 @@ export function FallbackCard({
           )}
         </div>
       </div>
-      <AllHermesSettingsLink search="fallback" />
     </PanelSection>
   );
 }

@@ -32,10 +32,10 @@ export function stamp(fields: Field[]): string {
 
 export function where(f: Field): string {
   if (f.spread.length > 0) return "workspaces differ";
-  if (f.isDefault) return "Hermes's default";
+  if (f.isDefault) return "the default";
   return f.managed
     ? "set for every workspace"
-    : "set in the workspaces' own Hermes";
+    : "set in the workspaces themselves";
 }
 
 /** "GPT 5.4 Mini (OpenAI)" for a provider + model, as the picker names them. */

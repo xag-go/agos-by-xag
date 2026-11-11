@@ -114,9 +114,9 @@ export function InboxView({
   return (
     <div className="flex flex-col gap-4">
       <p className="max-w-xl text-sm text-ink-2">
-        What the team waits on you for: Hermes Kanban cards (your answer goes on
-        the card and the agent carries on) and changes an agent wants to make to
-        its memory or skills.{" "}
+        What the team waits on you for: Kanban cards (your answer goes on the
+        card and the agent carries on) and changes an agent wants to make to its
+        memory or skills.{" "}
         <span className="text-ink-3">
           j / k move · a / r decide · e dismiss
         </span>

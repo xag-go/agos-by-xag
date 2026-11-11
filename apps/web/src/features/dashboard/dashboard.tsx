@@ -550,7 +550,7 @@ function AutomationsCard({
               </span>
               <span className="shrink-0 text-xs text-ink-3">
                 {a.state === "error"
-                  ? "Hermes can't schedule it"
+                  ? "Can't be scheduled"
                   : a.state === "completed"
                     ? "Done"
                     : a.state === "paused" && a.enabled

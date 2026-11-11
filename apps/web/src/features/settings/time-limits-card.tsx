@@ -93,9 +93,8 @@ export function TimeLimitsCard({ limits }: { limits: HermesTimeLimits }) {
           <span className="block text-sm text-ink-2">{l.hint}</span>
           <span className="mt-0.5 block font-mono text-xs text-ink-3">
             {l.key}
-            {l.restart && " · applies when the workspace's Hermes next starts"}
-            {!l.readByHermes &&
-              " · this Hermes doesn't read it yet (kept for when it does)"}
+            {l.restart && " · applies when the workspace next starts"}
+            {!l.readByHermes && " · not read yet (kept for when it is)"}
           </span>
           {l.spread.length > 0 && (
             <span className="mt-1 block text-sm text-warn">
@@ -149,12 +148,12 @@ export function TimeLimitsCard({ limits }: { limits: HermesTimeLimits }) {
     <PanelSection id="time-limits" className="scroll-mt-6 p-5">
       <h3 className="font-medium">Time limits</h3>
       <p className="mt-1 text-sm text-ink-2">
-        Every clock Hermes puts on the team&apos;s work, one value for every
-        workspace and every member ({limits.profiles} Hermes profiles), saved
-        once into Hermes&apos;s managed settings, which they all read. No limit
-        is 0 where Hermes reads 0 as no limit, and 24 hours where it
-        doesn&apos;t (there 0 would stop things at once). New workspaces and
-        members use the same values. Which model each helper uses is on{" "}
+        Every clock on the team&apos;s work, one value for every workspace and
+        every member ({limits.profiles} profiles), saved once into the shared
+        settings, which they all read. No limit is 0 where 0 means no limit, and
+        24 hours where it doesn&apos;t (there 0 would stop things at once). New
+        workspaces and members use the same values. Which model each helper uses
+        is on{" "}
         <Link href="/settings/helper-models" className="underline">
           Helper models
         </Link>
@@ -186,7 +185,7 @@ export function TimeLimitsCard({ limits }: { limits: HermesTimeLimits }) {
           setNote(null);
           startSave(async () => {
             const r = await saveHermesTimeLimits(values);
-            setNote(r.error ?? "Saved in Hermes.");
+            setNote(r.error ?? "Saved.");
           });
         }}
       >

@@ -63,19 +63,19 @@ export function KeyPoolsCard({
           Several keys per provider
         </h3>
         <p className="mt-1 text-sm text-ink-2">
-          Hermes&apos;s own credential pool: when one key is out of credit or
-          rate-limited, Hermes moves to the next. A key added here is one line
-          of Hermes&apos;s managed .env (named after the provider&apos;s key,
-          with _2, _3…), so every workspace uses it, new ones too; a
-          workspace&apos;s own line of the same name wins there. The key itself
-          is never shown again, only Hermes&apos;s short preview. How Hermes
-          picks among them is its credential_pool_strategies setting, one value
+          When one key is out of credit or rate-limited, the next takes over. A
+          key added here is one shared .env line (named after the
+          provider&apos;s key, with _2, _3…), so every workspace uses it, new
+          ones too; a workspace&apos;s own line of the same name wins there. The
+          key itself is never shown again, only a short preview. How one is
+          picked among them is the credential_pool_strategies setting, one value
           for every workspace.
         </p>
       </div>
       {pools === null ? (
         <p className="text-sm text-ink-2">
-          Hermes isn&apos;t answering, so its key pool can&apos;t be shown now.
+          The engine isn&apos;t answering, so the key pool can&apos;t be shown
+          now.
         </p>
       ) : pools.providers.length === 0 ? (
         <p className="text-sm text-ink-2">
@@ -87,7 +87,7 @@ export function KeyPoolsCard({
             <li key={p.provider} className="flex flex-col gap-2">
               <div className="flex flex-wrap items-end justify-between gap-3">
                 <span className="text-sm font-medium">{p.provider}</span>
-                <Field label="How Hermes picks" className="w-80">
+                <Field label="How keys are picked" className="w-80">
                   <Select
                     value={p.strategy}
                     disabled={busy}
@@ -159,7 +159,7 @@ export function KeyPoolsCard({
                           onClick={() => {
                             void confirm({
                               title: `Remove ${e.label} from ${p.provider}?`,
-                              body: "No workspace's Hermes uses it any more.",
+                              body: "No workspace uses it any more.",
                               confirmLabel: "Remove",
                             }).then((yes) => {
                               if (yes)
@@ -181,7 +181,7 @@ export function KeyPoolsCard({
       {pools !== null && (pools.workspaces ?? []).length > 0 ? (
         <details className="border-t border-line pt-4">
           <summary className="cursor-pointer text-sm font-medium">
-            Each workspace&apos;s pool, as its Hermes has it
+            Each workspace&apos;s pool, as that workspace has it
           </summary>
           <ul className="mt-3 flex flex-col gap-3">
             {(pools.workspaces ?? []).map((w) => (

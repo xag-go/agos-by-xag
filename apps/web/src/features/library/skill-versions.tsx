@@ -16,9 +16,9 @@ import {
 const AUTHOR: Record<string, string> = {
   owner: "You",
   cofounder: "Co-Founder",
-  curator: "Hermes's curator",
-  hub: "Hermes's hub",
-  outside: "Outside Hermes's skill tool",
+  curator: "The skills curator",
+  hub: "The skills hub",
+  outside: "Outside the skill tool",
 };
 
 export function when(iso: string): string {
@@ -60,7 +60,7 @@ export function VersionsTab({
     void (async () => {
       const ok = await confirm({
         title: `Restore version ${number}?`,
-        body: `The skill's folder becomes version ${number}, as one Hermes write. The current state stays as version ${latest}: restoring it undoes this.`,
+        body: `The skill's folder becomes version ${number}, as one write. The current state stays as version ${latest}: restoring it undoes this.`,
         confirmLabel: "Restore",
       });
       if (!ok) return;
@@ -76,7 +76,7 @@ export function VersionsTab({
           result.restored
             ? `Restored as version ${result.version}.${
                 result.skipped?.length
-                  ? ` Left as they are (Hermes's skill tool doesn't write them): ${result.skipped.join(", ")}.`
+                  ? ` Left as they are (the skill tool doesn't write them): ${result.skipped.join(", ")}.`
                   : ""
               }`
             : "The skill is already in that state: nothing written.",
@@ -92,9 +92,9 @@ export function VersionsTab({
     <div className="flex flex-col gap-4">
       {dialog}
       <p className="text-sm text-ink-2">
-        Every write to this skill, from Hermes&apos;s skill ledger: who, when,
-        what. Compare two versions, or restore one (the restore itself becomes
-        the next version, so it can be undone by restoring the one before it).
+        Every write to this skill, from the skill ledger: who, when, what.
+        Compare two versions, or restore one (the restore itself becomes the
+        next version, so it can be undone by restoring the one before it).
       </p>
       {versions.length === 0 ? (
         <p className="text-sm text-ink-3">No version yet.</p>

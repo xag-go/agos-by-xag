@@ -34,7 +34,7 @@ export async function run(
     return login ? { error: null, login } : { error: null };
   } catch (error) {
     if (error instanceof CoreError)
-      return { error: error.detail || "Hermes didn't answer. Try again." };
+      return { error: error.detail || "The engine didn't answer. Try again." };
     return { error: "AGOS didn't answer. Try again." };
   }
 }

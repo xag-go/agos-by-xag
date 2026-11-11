@@ -65,10 +65,9 @@ export function HermesLimitsCard({ limits }: { limits: HermesLimitsShown }) {
         Loop detector, time limit and members at once
       </h3>
       <p className="mt-1 text-sm text-ink-2">
-        Hermes&apos;s own settings, one value for every workspace (tasks, chats,
-        Telegram and automations), saved once into Hermes&apos;s managed
-        settings, which every workspace reads. An empty number is Hermes&apos;s
-        own default (shown in grey).
+        One value for every workspace (tasks, chats, Telegram and automations),
+        saved once into the shared settings, which every workspace reads. An
+        empty number is the default (shown in grey).
       </p>
       <form
         className="mt-4 flex flex-col gap-5"
@@ -84,7 +83,7 @@ export function HermesLimitsCard({ limits }: { limits: HermesLimitsShown }) {
               timeLimitMinutes: timeOn ? numberOrNull(minutes) : null,
               membersAtOnce: ownCap ? numberOrNull(atOnce) : null,
             });
-            setNote(r.error ?? "Saved in Hermes.");
+            setNote(r.error ?? "Saved.");
           });
         }}
       >
@@ -102,9 +101,8 @@ export function HermesLimitsCard({ limits }: { limits: HermesLimitsShown }) {
             <span>
               <span className="block text-sm font-medium">Loop detector</span>
               <span className="block text-sm text-ink-2">
-                Hermes always warns the agent when it repeats itself. On: it
-                also stops the answer after these many tries. Off: it only
-                warns.
+                The agent is always warned when it repeats itself. On: it also
+                stops the answer after these many tries. Off: it only warns.
               </span>
             </span>
           </label>
@@ -153,9 +151,9 @@ export function HermesLimitsCard({ limits }: { limits: HermesLimitsShown }) {
             <span>
               <span className="block text-sm font-medium">Time limit</span>
               <span className="block text-sm text-ink-2">
-                The longest one answer of an agent can take. At 80% Hermes tells
-                it to wrap up; at the limit it stops, and a task that
-                wasn&apos;t done shows Blocked with why. Off: no limit.
+                The longest one answer of an agent can take. At 80% it is told
+                to wrap up; at the limit it stops, and a task that wasn&apos;t
+                done shows Blocked with why. Off: no limit.
               </span>
             </span>
           </label>
@@ -190,13 +188,13 @@ export function HermesLimitsCard({ limits }: { limits: HermesLimitsShown }) {
               </span>
               <span className="block text-sm text-ink-2">
                 On a workspace&apos;s Kanban, how many team members work on
-                cards at the same time. More cards wait their turn
-                (Hermes&apos;s own cap, for each workspace).{" "}
+                cards at the same time. More cards wait their turn (a cap for
+                each workspace).{" "}
                 {ownCap
                   ? "On: your number."
                   : (hermes.membersAtOnce ?? null) !== null
-                    ? `Off: Hermes decides from this machine's memory (${hermes.membersAtOnce} at once now).`
-                    : "Off: Hermes decides from this machine's memory."}
+                    ? `Off: decided from this machine's memory (${hermes.membersAtOnce} at once now).`
+                    : "Off: decided from this machine's memory."}
               </span>
             </span>
           </label>

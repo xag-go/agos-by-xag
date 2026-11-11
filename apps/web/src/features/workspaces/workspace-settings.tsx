@@ -83,12 +83,12 @@ export function WorkspaceSettings({
         </Group>
 
         <Group
-          title="Goal mode (Hermes)"
-          description="Type /goal and what you want done, in any chat: Hermes keeps working on it and its judge checks after each answer whether it's done. This is Hermes's own setting for this workspace, saved in its Hermes."
+          title="Goal mode"
+          description="Type /goal and what you want done, in any chat: the member keeps working on it and a judge checks after each answer whether it's done. Saved per workspace."
         >
           <Field
             label="Turns at most"
-            hint={`Hermes stops the goal after this many turns, so it never uses tokens without end. Leave it empty to use Hermes's default${hermes.defaults["goals.max_turns"] ? ` (${hermes.defaults["goals.max_turns"]})` : ""}.`}
+            hint={`The goal stops after this many turns, so it never uses tokens without end. Leave it empty for the default${hermes.defaults["goals.max_turns"] ? ` (${hermes.defaults["goals.max_turns"]})` : ""}.`}
           >
             <Input
               name="hermes:goals.max_turns"

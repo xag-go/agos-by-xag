@@ -1526,6 +1526,14 @@
             "title": "Kind",
             "type": "string"
           },
+          "onlyIf": {
+            "items": {
+              "$ref": "#/components/schemas/StepCondition"
+            },
+            "maxItems": 20,
+            "title": "Onlyif",
+            "type": "array"
+          },
           "reviews": {
             "anyOf": [
               {
@@ -15883,6 +15891,63 @@
           }
         },
         "title": "StayBody",
+        "type": "object"
+      },
+      "StepCondition": {
+        "additionalProperties": false,
+        "description": "One \"Only if\" line of a team step (engine/step_conditions.py): a match line\n(field, op, values: the webhook's tests on the run's values) or a check line\n(check: a /workspace script whose last line says YES/AH or NO/LA).",
+        "properties": {
+          "check": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Check"
+          },
+          "field": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field"
+          },
+          "op": {
+            "anyOf": [
+              {
+                "enum": [
+                  "is",
+                  "is_not",
+                  "contains",
+                  "not_contains"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Op"
+          },
+          "values": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 100,
+            "title": "Values",
+            "type": "array"
+          }
+        },
+        "title": "StepCondition",
         "type": "object"
       },
       "Strategies": {

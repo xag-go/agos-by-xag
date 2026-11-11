@@ -5,6 +5,12 @@ import type { Automation, LibraryItem } from "@/data/types";
 import { Button } from "@/shared/ui/button";
 import { Input, Textarea } from "@/shared/ui/field";
 import { cn } from "@/shared/ui/cn";
+import {
+  StepOnlyIf,
+  fromStepLines,
+  toStepLines,
+  type StepLine,
+} from "./step-only-if";
 
 type Step = {
   key: string;
@@ -14,6 +20,7 @@ type Step = {
   agent: string | null;
   waitsOn: string[];
   reviews: string | null;
+  onlyIf: StepLine[];
 };
 
 const stepsOf = (a: Automation | null): Step[] =>
@@ -25,6 +32,7 @@ const stepsOf = (a: Automation | null): Step[] =>
     agent: s.agent ?? null,
     waitsOn: s.waitsOn ?? [],
     reviews: s.reviews ?? null,
+    onlyIf: toStepLines(s.onlyIf),
   }));
 type Mode = "one" | "team";
 
@@ -36,6 +44,7 @@ const blank = (n: number): Step => ({
   agent: null,
   waitsOn: [],
   reviews: null,
+  onlyIf: [],
 });
 
 const selectClass =
@@ -87,6 +96,7 @@ export function WhoField({
           ...s,
           title: s.title.trim() || s.key,
           agent: s.agent || null,
+          onlyIf: fromStepLines(s.onlyIf),
         }))
       : [];
 
@@ -244,6 +254,13 @@ export function WhoField({
                         </select>
                       </label>
                     </div>
+                  )}
+                  {s.kind !== "approval" && (
+                    <StepOnlyIf
+                      step={i + 1}
+                      lines={s.onlyIf}
+                      onChange={(onlyIf) => patch(i, { onlyIf })}
+                    />
                   )}
                 </li>
               );

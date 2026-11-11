@@ -119,6 +119,7 @@ _QUESTION = "an agent's typed question / a card blocked for a teammate (step 45)
 _HOLD = "Pause / Resume / Cancel of a card's subtree (step 45)"
 _REVIEW = "a card's review stages, round cap and plan-first (step 52)"
 _FOUNDER = "the Founder's tasks: board cards assigned to the owner himself, never given a worker"
+_ONLY_IF = "an automation step's Only if lines: a step with nothing to do spends no tokens"
 _THREADS = (
     "card threads (step 58): an agent's comment and its @mentions, the Board's bulk "
     "assign / labels in one Hermes process, who follows a card"

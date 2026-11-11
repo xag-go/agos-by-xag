@@ -92,6 +92,12 @@ FILES: dict[str, Owned] = {
         "dedupe), beside the script in the workspace's Hermes home",
         "H: gateway/platforms/webhook.py (its dedupe is per-process memory)",
     ),
+    "{}.only-if.json": agos(
+        'one automation run\'s step "Only if" lines, values and deliveries, written by '
+        "its Hermes script beside the board (agos-automations/<id>.runs/, 50 kept) and "
+        "read by the step's worker before its first model call (agos_guard step_gate)",
+        "H: hermes_cli/kanban_db.py (a card holds no structured run data a hook can read)",
+    ),
     "agos-kanban-allowed.json": agos(
         "the plugin's control file: the card actions the owner allowed or denied for a "
         "Kanban worker (his answers to a card ask)",

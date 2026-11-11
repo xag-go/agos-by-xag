@@ -144,6 +144,21 @@ class AutomationRun(Record):
     caught_up: str | None = None
 
 
+class StepCondition(Record):
+    """One "Only if" line of a team step (engine/step_conditions.py): a match line
+    (field, op, values: the webhook's tests on the run's values) or a check line
+    (check: a /workspace script whose last line says YES/AH or NO/LA)."""
+
+    model_config = ConfigDict(
+        alias_generator=to_camel, populate_by_name=True, frozen=True, extra="forbid"
+    )
+
+    field: str | None = Field(default=None, max_length=200)
+    op: Literal["is", "is_not", "contains", "not_contains"] | None = None
+    values: list[str] = Field(default_factory=list, max_length=100)
+    check: str | None = Field(default=None, max_length=300)
+
+
 class AutomationStep(Record):
     """One step of a team automation (the same shape as a team plan's step)."""
 
@@ -154,6 +169,8 @@ class AutomationStep(Record):
     agent: str | None = None  # None = the Co-Founder (approval: the owner)
     waits_on: list[str] = Field(default_factory=list)
     reviews: str | None = None
+    # Its "Only if" lines: none = it always runs.
+    only_if: list[StepCondition] = Field(default_factory=list, max_length=20)
 
 
 class HookCondition(Record):

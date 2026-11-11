@@ -5,6 +5,7 @@ import type { Automation, LibraryItem } from "@/data/types";
 import { Button } from "@/shared/ui/button";
 import { Input, Textarea } from "@/shared/ui/field";
 import { cn } from "@/shared/ui/cn";
+import { StepAfter } from "./step-after";
 import {
   StepOnlyIf,
   fromStepLines,
@@ -211,49 +212,14 @@ export function WhoField({
                     onChange={(e) => patch(i, { description: e.target.value })}
                   />
                   {earlier.length > 0 && (
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-2">
-                      <span className="text-ink-3">Starts after:</span>
-                      {earlier.map((e) => (
-                        <label key={e.key} className="flex items-center gap-1">
-                          <input
-                            type="checkbox"
-                            checked={
-                              s.waitsOn.includes(e.key) || s.reviews === e.key
-                            }
-                            disabled={s.reviews === e.key}
-                            onChange={(ev) =>
-                              patch(i, {
-                                waitsOn: ev.target.checked
-                                  ? [...s.waitsOn, e.key]
-                                  : s.waitsOn.filter((w) => w !== e.key),
-                              })
-                            }
-                          />
-                          {nameOf(e.key)}
-                        </label>
-                      ))}
-                      <label className="ml-auto flex items-center gap-1">
-                        <span className="text-ink-3">Checks</span>
-                        <select
-                          aria-label={`Step ${String(i + 1)} checks`}
-                          className="h-7 rounded border border-line-strong bg-panel px-1 text-xs"
-                          value={s.reviews ?? ""}
-                          onChange={(e) =>
-                            patch(i, {
-                              reviews: e.target.value || null,
-                              kind: e.target.value ? "review" : "work",
-                            })
-                          }
-                        >
-                          <option value="">nothing</option>
-                          {earlier.map((e) => (
-                            <option key={e.key} value={e.key}>
-                              {nameOf(e.key)}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                    </div>
+                    <StepAfter
+                      step={i + 1}
+                      earlier={earlier.map((e) => e.key)}
+                      waitsOn={s.waitsOn}
+                      reviews={s.reviews}
+                      nameOf={nameOf}
+                      onChange={(change) => patch(i, change)}
+                    />
                   )}
                   {s.kind !== "approval" && (
                     <StepOnlyIf

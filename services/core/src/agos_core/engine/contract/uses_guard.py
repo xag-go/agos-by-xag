@@ -472,7 +472,7 @@ USES: tuple[Use, ...] = (
     # step_gate.py): the run's file beside the board, a check in the worker's own
     # sandbox, then Hermes's pre_llm_call veto where it has one (newer Hermes; its
     # marker is looked up, not pinned) or the done card's worker ending itself.
-    _u("hermes_cli.kanban_db", "kanban_home", "function", "kanban", _ONLY_IF),
+    _u("hermes_cli.kanban_db", "kanban_db_path", "function", "kanban", _ONLY_IF),
     # (terminal_tool's command / timeout / task_id / workdir: uses_engine_apps.py)
     _u("agent.turn_context", "", "module", "hooks", _ONLY_IF),
     _u("tools.terminal_tool_lifecycle", "cleanup_vm", "function", "guard", _ONLY_IF, pos=1),

@@ -80,7 +80,7 @@ class Hermes:
         self.answer = {"output": "GATE: AH", "exit_code": 0}
         kb = types.ModuleType("hermes_cli.kanban_db")
         kb.get_task = self.get_task  # type: ignore[attr-defined]
-        kb.kanban_home = lambda: core.engine.profile_home(ws)  # type: ignore[attr-defined]
+        kb.kanban_db_path = lambda: core.engine.profile_home(ws) / "kanban.db"  # type: ignore[attr-defined]
         kb.complete_task = self.complete_task  # type: ignore[attr-defined]
         kbc = types.ModuleType("hermes_cli.kanban_db_connect")
         kbc.connect = lambda board=None: types.SimpleNamespace(close=lambda: None)  # type: ignore[attr-defined]
@@ -117,9 +117,8 @@ class Hermes:
 
     def worker(self, monkeypatch: pytest.MonkeyPatch, card: str, **kw: Any) -> Any:
         """Hermes's dispatcher started the card's worker: its first turn's hook."""
-        monkeypatch.setenv("HERMES_KANBAN_TASK", card)
-        monkeypatch.setenv("HERMES_KANBAN_RUN_ID", "7")
-        return step_gate.pre_llm_call(task_id="task-1", is_first_turn=True, **kw)
+        del monkeypatch
+        return step_gate.pre_llm_call(card=card, run=7, task_id="task-1", is_first_turn=True, **kw)
 
 
 def _watcher(client: Any, ws: str) -> tuple[int, str]:
@@ -374,10 +373,8 @@ def test_only_the_workers_first_turn_decides(watcher: Env, monkeypatch: pytest.M
     hermes = Hermes(core, ws, monkeypatch)
     # A subagent of the card's worker, a later turn, a chat (no card): never.
     assert hermes.worker(monkeypatch, s2, parent_session_id="p1") is None
-    monkeypatch.setenv("HERMES_KANBAN_TASK", s2)
-    assert step_gate.pre_llm_call(task_id="t", is_first_turn=False) is None
-    monkeypatch.delenv("HERMES_KANBAN_TASK")
-    assert step_gate.pre_llm_call(task_id="t", is_first_turn=True) is None
+    assert step_gate.pre_llm_call(card=s2, run=7, task_id="t", is_first_turn=False) is None
+    assert step_gate.pre_llm_call(card="", task_id="t", is_first_turn=True) is None
     assert hermes.completed == []
     # Hermes refusing to close the card (not this run's any more): the step runs.
     monkeypatch.setattr(hermes, "complete_task", lambda *_a, **_k: False)
@@ -462,6 +459,18 @@ def test_the_cofounder_is_told_how(watcher: Env) -> None:
     text = cofounder_actions.instructions(core, ws)
     assert '"only_if" lines' in text and "agos-skipped: <why>" in text
     assert '{"check": "/workspace/tools/<script>"}' in text  # one brace: the text is filled
+
+
+def test_the_guard_hands_hermes_its_worker_card_and_run() -> None:
+    """Registered on Hermes's pre_llm_call with the card and run id Hermes's
+    dispatcher gave this worker (runtime._current_card, review._run_id)."""
+    import inspect
+
+    import agos_core.hermes_plugin.agos_guard as guard
+
+    source = inspect.getsource(guard.register)
+    assert '"pre_llm_call", lambda **kw: runtime._sibling("step_gate").pre_llm_call(' in source
+    assert 'card=runtime._current_card(), run=runtime._sibling("review")._run_id()' in source
 
 
 def test_pure_reading_of_a_check_answer() -> None:

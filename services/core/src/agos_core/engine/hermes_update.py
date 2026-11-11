@@ -74,7 +74,7 @@ def installed(engine: HermesEngine) -> Release:
     text = engine.runner.run([engine.settings.hermes_bin, "--version"], timeout=300)
     found = _VERSION.search(text)
     if not found:
-        raise EngineError("Hermes didn't say its version.")
+        raise EngineError("The engine didn't say its version.")
     return Release(version=found.group(1), sha=found.group(2))
 
 
@@ -202,7 +202,7 @@ def install(engine: HermesEngine, target: Release) -> None:
     engine.runner.run([engine.settings.hermes_bin, "pm", "repair"], timeout=3600)
     now = installed(engine)
     if not (now.sha.startswith(target.sha) or target.sha.startswith(now.sha)):
-        raise EngineError(f"Hermes is at {now.version} after the update, not {target.version}.")
+        raise EngineError(f"The engine is at {now.version} after the update, not {target.version}.")
 
 
 def roll_back_code(engine: HermesEngine, before: Release) -> None:

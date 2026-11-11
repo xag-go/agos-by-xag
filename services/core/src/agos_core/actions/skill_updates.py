@@ -43,9 +43,9 @@ SCHEDULE = "0 4 * * *"  # Hermes's cron, in the owner's timezone: nightly
 # in this root (its hub lock). Prints one line per skill for the job's output.
 SCRIPT_TEXT = r'''"""AGOS: auto-update of this workspace's skills from their source (no agent).
 
-Hermes's cron runs this in the workspace's root; each flagged skill is updated with
-Hermes's own `hermes skills update` (the root's hub lock keeps the source). Written
-by AGOS (actions/skill_updates.py); rewritten when the flagged skills change."""
+The engine's cron runs this in the workspace's root; each flagged skill is updated
+with the engine's own `hermes skills update` (the root's hub lock keeps the source).
+Written by AGOS (actions/skill_updates.py); rewritten when the flagged skills change."""
 
 import json
 import subprocess
@@ -57,7 +57,7 @@ PLAN = json.loads(@PLAN@)
 def main() -> int:
     failed = 0
     for name in PLAN["skills"]:
-        done = subprocess.run(  # noqa: S603 - Hermes's own CLI, fixed argv, no shell
+        done = subprocess.run(  # noqa: S603 - the engine's own CLI, fixed argv, no shell
             [PLAN["hermes"], "skills", "update", name, "--force"],
             capture_output=True,
             text=True,

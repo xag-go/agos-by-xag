@@ -215,7 +215,7 @@ export function GeneralSettings({
               [
                 "direct",
                 "Does it at once",
-                "Like Hermes. Each thing it did shows as a card with Undo. An app that needs your login still waits for you.",
+                "Each thing it did shows as a card with Undo. An app that needs your login still waits for you.",
               ],
               [
                 "ask",

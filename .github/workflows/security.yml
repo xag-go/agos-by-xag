@@ -108,6 +108,10 @@ jobs:
           uv export --frozen --all-groups --format cyclonedx1.5 -o "$RUNNER_TEMP/sbom/agos-core.cdx.json"
       # cdxgen reads the lockfile; no install, no install scripts.
       - name: Node (cdxgen, pnpm-lock.yaml)
+        env:
+          # npx's cache folder is racy when two jobs of one account use it (the server
+          # runs several side by side): one per runner folder, kept between jobs.
+          npm_config_cache: ${{ runner.tool_cache }}/npm-cache
         run: >-
           npx --yes @cyclonedx/cdxgen@12.9.0 -t pnpm --no-install-deps --spec-version 1.5
           -o "$RUNNER_TEMP/sbom/agos-web.cdx.json" .

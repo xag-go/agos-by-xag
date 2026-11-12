@@ -108,4 +108,4 @@ def remove_job(core: Core, workspace_id: str, job_id: str) -> None:
     try:
         hermes_cli.cli(core.engine, workspace_id, "cron", "remove", job_id)
     except (EngineError, OSError) as error:
-        raise ActionError(f"Hermes didn't remove it: {error}", status=502) from error
+        raise ActionError(f"The engine didn't remove it: {error}", status=502) from error

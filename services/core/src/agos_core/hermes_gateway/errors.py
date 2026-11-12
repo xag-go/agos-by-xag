@@ -52,7 +52,9 @@ class HermesUnavailable(EngineError, ConnectionError):
     code = HERMES_UNAVAILABLE
 
     def __init__(self, root: str) -> None:
-        EngineError.__init__(self, "Hermes isn't answering right now; AGOS tries again shortly.")
+        EngineError.__init__(
+            self, "The engine isn't answering right now; AGOS tries again shortly."
+        )
         self.root = root
 
 

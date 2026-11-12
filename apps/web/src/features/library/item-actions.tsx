@@ -65,7 +65,7 @@ export function ItemActions({
               body: users.length
                 ? `It is on in: ${users.join(", ")}. Deleting turns it off there too.`
                 : item.kind === "skill"
-                  ? "The Co-Founder and the agents of this workspace stop using it. Hermes archives it, so it can be restored."
+                  ? "The Co-Founder and the agents of this workspace stop using it. It is archived, so it can be restored."
                   : undefined,
               confirmLabel: "Delete",
               danger: true,

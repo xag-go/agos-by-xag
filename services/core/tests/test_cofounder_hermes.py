@@ -99,7 +99,7 @@ def test_the_cofounder_changes_a_hermes_setting_and_undo_puts_each_value_back(en
     assert card["status"] == "failed" and "can't be changed here" in card["error"]
     [shown] = _run(core, a, {"do": "show_hermes_setting", "key": "checkpoints.max_snapshots"})
     assert shown["status"] == "done" and not shown["canUndo"]
-    assert "Hermes's default: 50" in shown["detail"]
+    assert "The engine's default: 50" in shown["detail"]
 
 
 def test_held_writes_are_decided_from_chat_and_undo_takes_it_back(env: Any) -> None:  # noqa: F811
@@ -273,6 +273,15 @@ def test_hermes_health_is_hermess_own_status_and_doctor(env: Any) -> None:  # no
     assert card["status"] == "done" and not card["canUndo"]
     assert "problems: yes" in card["detail"] and "✗ .env file missing" in card["detail"]
     assert "Managed scope active" in card["detail"]
+
+
+def test_the_health_card_title_never_names_the_engine() -> None:
+    """Spec 2026-11-04 (no engine name): the card's title the owner sees says
+    "Engine checks", not the engine's name."""
+    from agos_core.engine.cofounder_actions import Action, title_of
+
+    title = title_of(Action(do="hermes_health"))
+    assert "Engine checks" in title and "Hermes" not in title
 
 
 def test_doctors_exit_code_decides_yes_or_no_not_the_marks(env: Any) -> None:  # noqa: F811

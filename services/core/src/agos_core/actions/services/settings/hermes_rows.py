@@ -47,7 +47,7 @@ def _with_partner(key: str) -> set[str]:
 _NEW_MODEL = (
     "A new workspace starts on this home's model (actions/engine.py shared_model). "
     "Afterwards each workspace has its own (Workspace → Default model); change this one "
-    "with `hermes model` in your own Hermes."
+    "with `hermes model` yourself."
 )
 SHARED_WHY: dict[str, str] = {
     "model.provider": _NEW_MODEL,
@@ -55,7 +55,7 @@ SHARED_WHY: dict[str, str] = {
     "agent.reasoning_effort": _NEW_MODEL,
     "credential_pool_strategies": (
         "Settings → Models (several keys per provider) writes the strategy once, into "
-        "Hermes's managed config.yaml, for every workspace; this home's own line counts "
+        "the managed config.yaml, for every workspace; this home's own line counts "
         "only for a `hermes` you run yourself."
     ),
 }
@@ -236,8 +236,8 @@ def _env_rows(
                         {
                             "label": t.label,
                             "value": str(shown(used)),
-                            "reason": "Hermes's managed scope (one value for every "
-                            f"workspace) beats this .env line: Hermes uses {shown(used)}.",
+                            "reason": "The managed scope (one value for every "
+                            f"workspace) beats this .env line: the engine uses {shown(used)}.",
                         }
                     )
                 continue
@@ -246,25 +246,21 @@ def _env_rows(
                 continue
             yaml_key = yaml_key_for(var.name, str(yaml_value), configs.get(t.key, {}))
             where = (
-                f"config.yaml {yaml_key}"
-                if yaml_key
-                else "config.yaml (its value or Hermes's default)"
+                f"config.yaml {yaml_key}" if yaml_key else "config.yaml (its value or the default)"
             )
             if used is not None and str(used) == str(value):
-                reason = (
-                    f".env beats {where} ({shown(yaml_value, False)}): Hermes uses the .env value."
-                )
+                reason = f".env beats {where} ({shown(yaml_value, False)}): the engine uses the .env value."
                 if yaml_key and yaml_key in yaml_rows:
                     yaml_rows[yaml_key]["notes"].append(
                         {
                             "label": t.label,
                             "value": str(shown(used)),
-                            "reason": f"Hermes uses this instead: the .env line {var.name} beats "
+                            "reason": f"The engine uses this instead: the .env line {var.name} beats "
                             "this setting.",
                         }
                     )
             elif used is not None and str(used) == str(yaml_value):
-                reason = f"{where} beats this .env line: Hermes uses {yaml_value}."
+                reason = f"{where} beats this .env line: the engine uses {yaml_value}."
             else:
                 continue
             notes.append(
@@ -281,7 +277,7 @@ def _env_rows(
                 "group": var.group,
                 "type": "string",
                 "description": var.description
-                or f"Hermes reads it from .env ({var.category or 'setting'}).",
+                or f"The engine reads it from .env ({var.category or 'setting'}).",
                 "default": None,
                 "options": [],
                 "in_defaults": var.listed,
@@ -328,7 +324,7 @@ def _env_rule(var: hs.EnvVar, cards: dict[str, str]) -> dict[str, Any] | None:
 # returns for container paths) and :1041 (terminal), and /rollback refuses to restore
 # (gateway/slash_commands.py :726, tools/checkpoint_manager.py unsupported_backend_reason).
 _NO_CHECKPOINTS = (
-    "No effect in AGOS: Hermes takes no checkpoints while terminal.backend is a container "
+    "No effect in AGOS: the engine takes no checkpoints while terminal.backend is a container "
     "(AGOS runs every command in the workspace's Docker sandbox), and its /rollback refuses "
     "to restore there (agent/tool_executor.py _ensure_file_checkpoint, "
     "tools/checkpoint_manager.py unsupported_backend_reason). AGOS keeps its own document "

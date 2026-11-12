@@ -114,8 +114,6 @@ bind_page(
 )
 bind_page(preferences.RUN_BACKUP, settings_actions.do_run_backup)
 bind_page(preferences.REHEARSE_RESTORE, settings_actions.do_rehearse)
-bind_page(preferences.CHECK_HERMES_UPDATE, settings_actions.do_check_update)
-bind_page(preferences.RUN_HERMES_UPDATE, settings_actions.do_run_update)
 bind_page(preferences.UNDO_LEARNED, settings_actions.undo_learned)
 bind_page(folders.CREATE_FOLDER, folder_actions.do_create_folder, folder_actions.undo_create_folder)
 bind_page(

@@ -10,12 +10,6 @@ import { DiagnosticsButton } from "./diagnostics-button";
 import { markErrorFixed, reopenError } from "./errors-actions";
 import { PanelSection } from "@/shared/ui/panel";
 
-const SOURCES = {
-  core: "AGOS core",
-  web: "Web app",
-  hermes: "Hermes",
-} as const;
-
 const select =
   "h-8 rounded-md border border-line bg-transparent px-2 text-sm text-ink";
 
@@ -45,7 +39,7 @@ function Issue({
         <div className="min-w-0">
           <p className="text-xs text-ink-3">
             <span className="font-medium text-ink-2">#{issue.id}</span> ·{" "}
-            {SOURCES[issue.source]} · {workspace}
+            {workspace}
             {issue.route ? <> · {issue.route}</> : null}
           </p>
           <p className="text-sm break-words text-ink">
@@ -111,7 +105,6 @@ export function ErrorsView({
   workspaces: { id: string; name: string }[];
 }) {
   const [status, setStatus] = useState<"open" | "fixed" | "all">("open");
-  const [source, setSource] = useState("");
   const [workspace, setWorkspace] = useState("");
   const [undo, setUndo] = useState<number | null>(null);
   const [undoError, setUndoError] = useState<string | null>(null);
@@ -126,7 +119,6 @@ export function ErrorsView({
   const shown = data.issues.filter(
     (i) =>
       (status === "all" || i.status === status) &&
-      (!source || i.source === source) &&
       (!workspace ||
         (workspace === "-"
           ? i.workspaceId === null
@@ -176,19 +168,6 @@ export function ErrorsView({
           <option value="open">Open</option>
           <option value="fixed">Fixed</option>
           <option value="all">All</option>
-        </select>
-        <select
-          aria-label="Source"
-          className={select}
-          value={source}
-          onChange={(e) => setSource(e.target.value)}
-        >
-          <option value="">Every source</option>
-          {Object.entries(SOURCES).map(([key, label]) => (
-            <option key={key} value={key}>
-              {label}
-            </option>
-          ))}
         </select>
         <select
           aria-label="Workspace"

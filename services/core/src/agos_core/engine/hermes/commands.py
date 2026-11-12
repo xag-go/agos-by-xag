@@ -133,7 +133,7 @@ def _in_runtime(
     extra: dict[str, str] | None = None,
 ) -> str:
     """One script in Hermes's runtime with HERMES_HOME=home; its tagged line."""
-    off_loop(f"Hermes runtime script {tag}")
+    off_loop(f"The runtime script {tag}")
     argv = list(self._runtime_argv())
     argv[-1] = argv[-1].replace(JUDGE_RUN, "exec(sys.stdin.read())")
     env = child_env({**self._env(), **(extra or {}), "HERMES_HOME": str(home)})
@@ -149,12 +149,12 @@ def _in_runtime(
             start_new_session=True,
         )
     except (OSError, subprocess.TimeoutExpired) as error:
-        raise EngineError(f"Hermes didn't answer: {error}") from error
+        raise EngineError(f"The engine didn't answer: {error}") from error
     hermes_contract.ran(done)
     lines = [ln for ln in done.stdout.splitlines() if ln.startswith(f"{tag} ")]
     if done.returncode != 0 or not lines:
         tail = done.stderr.strip().splitlines()[-1:] or ["no answer"]
-        raise EngineError(f"Hermes didn't answer: {tail[0][:300]}")
+        raise EngineError(f"The engine didn't answer: {tail[0][:300]}")
     return lines[-1][len(tag) + 1 :]
 
 
@@ -235,13 +235,13 @@ def _config_writes(
     for command in commands:
         args = [a for a in command[2:] if a != "--force"]
         if command[0] != "config" or command[1] not in ("set", "unset"):
-            raise ValueError(f"not a Hermes config write: {command[:2]}")
+            raise ValueError(f"not a config write: {command[:2]}")
         if command[1] == "set" and len(args) == 2:
             ops.append(["set", args[0], args[1], "--force" in command[2:]])
         elif command[1] == "unset" and len(args) == 1:
             ops.append(["unset", args[0]])
         else:
-            raise ValueError(f"not a Hermes config write: {command[:2]}")
+            raise ValueError(f"not a config write: {command[:2]}")
     if not ops:
         return []
     off_loop("hermes config writes")
@@ -283,8 +283,8 @@ def _runtime_argv(self: "HermesEngine") -> list[str]:
         try:
             argv = json.loads(out)
         except ValueError as error:
-            raise EngineError("this Hermes did not say how it runs its modules") from error
+            raise EngineError("this install did not say how it runs its modules") from error
         if not argv or JUDGE_RUN not in argv[-1]:
-            raise EngineError("this Hermes can't run its goal judge for AGOS")
+            raise EngineError("this install can't run its goal judge for AGOS")
         self._judge_argv = argv
     return self._judge_argv

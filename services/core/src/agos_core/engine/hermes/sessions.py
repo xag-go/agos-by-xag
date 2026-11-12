@@ -68,7 +68,7 @@ def archive_sessions(
             if error.code == 404:
                 continue
             log.info("session %s not archived (%s)", sid, error.code)
-            raise EngineError("Hermes did not archive the chat") from error
+            raise EngineError("The engine did not archive the chat") from error
         except OSError as error:
             raise EngineError("the workspace's gateway didn't answer") from error
         done.append(sid)

@@ -34,7 +34,7 @@ class _Unkept(Exception):
     """A read that met an error of Hermes's store: its answer is used this once."""
 
     def __init__(self, value: Any) -> None:
-        super().__init__("Hermes's store did not answer every read")
+        super().__init__("The engine's store did not answer every read")
         self.value = value
 
 

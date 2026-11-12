@@ -112,7 +112,7 @@ def _scan_root(core: Core, root: Path) -> dict[str, Any]:
     )
     lines = [ln for ln in done.stdout.splitlines() if ln.startswith(_MARK)]
     if done.returncode != 0 or not lines:
-        raise RuntimeError(f"Hermes's runtime ended with {done.returncode}")
+        raise RuntimeError(f"The engine's runtime ended with {done.returncode}")
     found: dict[str, Any] = json.loads(lines[-1][len(_MARK) :])
     return found
 
@@ -131,7 +131,7 @@ def run(core: Core, workspace_id: str | None = None) -> dict[str, Any]:
     not_checked: list[str] = []
     more = 0
     if engine is None and shown:
-        not_checked.append("Hermes isn't available here: chat history and logs not checked.")
+        not_checked.append("The engine isn't available here: chat history and logs not checked.")
 
     def one(item: tuple[Any, Path]) -> tuple[Any, dict[str, Any] | None, str]:
         w, root = item
@@ -144,7 +144,7 @@ def run(core: Core, workspace_id: str | None = None) -> dict[str, Any]:
     with ThreadPoolExecutor(max_workers=2) as pool:
         for w, found, error in pool.map(one, roots):
             if found is None:
-                not_checked.append(f"{w.name}: Hermes couldn't check it ({error[:120]})")
+                not_checked.append(f"{w.name}: the engine couldn't check it ({error[:120]})")
                 continue
             where = {"workspace_id": w.id, "workspace": w.name}
             chats += [{**where, **c} for c in found.get("chats", [])]

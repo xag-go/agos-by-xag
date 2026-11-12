@@ -78,7 +78,7 @@ def _aux(task: str, label: str, hint: str, read: bool = True) -> TimeLimit:
         key=f"auxiliary.{task}.timeout",
         group=HELPERS,
         label=label,
-        hint=hint + " Hermes's helper call; 0 would end it at once, so No limit is 24 hours.",
+        hint=hint + " The engine's helper call; 0 would end it at once, so No limit is 24 hours.",
         zero_is_no_limit=False,
         default=NO_LIMIT_SECONDS,
         read=read,
@@ -95,7 +95,7 @@ TIME_LIMITS: tuple[TimeLimit, ...] = (
         "timeouts.tools.sequential_call",
         TOOLS,
         "One tool call",
-        "The longest one tool call can run before Hermes gives up on it.",
+        "The longest one tool call can run before it's cut off.",
         zero_is_no_limit=True,
         default=0,
         code_default=420,
@@ -116,7 +116,7 @@ TIME_LIMITS: tuple[TimeLimit, ...] = (
         TOOLS,
         "One call to a connected app (MCP)",
         "The longest a connected app's tool can take to answer. Here 0 is not "
-        "'no limit': Hermes falls back to its 5-minute default, so No limit is 24 hours.",
+        "'no limit': it falls back to the 5-minute default, so No limit is 24 hours.",
         zero_is_no_limit=False,
         default=NO_LIMIT_SECONDS,
         code_default=300,
@@ -137,7 +137,7 @@ TIME_LIMITS: tuple[TimeLimit, ...] = (
         TOOLS,
         "A command the agent waits on",
         "Above this a command moves to the background and the agent is told when it "
-        "ends. Kept in each profile's .env (Hermes's own setting); 0 would send every "
+        "ends. Kept in each profile's .env (the engine's own setting); 0 would send every "
         "command to the background.",
         zero_is_no_limit=False,
         default=NO_LIMIT_SECONDS,
@@ -178,8 +178,8 @@ TIME_LIMITS: tuple[TimeLimit, ...] = (
         "agent.restart_after_turn_timeout",
         TOOLS,
         "A restart waits for running work",
-        "When Hermes restarts (an update, /restart) it first waits this long for "
-        "running answers to finish. Here 0 is not 'no limit': Hermes restarts at once "
+        "When the workspace restarts (an update, /restart) it first waits this long for "
+        "running answers to finish. Here 0 is not 'no limit': it restarts at once "
         "and cuts them, so No limit is 24 hours.",
         zero_is_no_limit=False,
         default=NO_LIMIT_SECONDS,
@@ -192,7 +192,7 @@ TIME_LIMITS: tuple[TimeLimit, ...] = (
         "Browser",
         "One browser step",
         "The longest one browser step (open a page, click, screenshot) can take. "
-        "Hermes never goes under 5 seconds.",
+        "It never goes under 5 seconds.",
         zero_is_no_limit=False,
         default=NO_LIMIT_SECONDS,
         source="tools/browser_tool.py:218 (max(int(v), 5))",
@@ -202,7 +202,7 @@ TIME_LIMITS: tuple[TimeLimit, ...] = (
         "browser.inactivity_timeout",
         "Browser",
         "An idle browser",
-        "Closes a browser nobody used for this long. Hermes never goes under 30 seconds.",
+        "Closes a browser nobody used for this long. The engine never goes under 30 seconds.",
         zero_is_no_limit=False,
         default=NO_LIMIT_SECONDS,
         source="tools/browser_tool.py:397 (max(int(v), 30))",
@@ -214,7 +214,7 @@ TIME_LIMITS: tuple[TimeLimit, ...] = (
         WAIT,
         "A command waiting for your yes",
         "How long a risky command waits for your answer before it's refused. 0 would "
-        "refuse it at once, so No limit is Hermes's own maximum (one year).",
+        "refuse it at once, so No limit is the maximum (one year).",
         zero_is_no_limit=False,
         default=HERMES_MAX_SECONDS,
         source="tools/approval_gateway_wait.py:58, tools/approval_context.py:256 (cap 1 year)",
@@ -224,10 +224,10 @@ TIME_LIMITS: tuple[TimeLimit, ...] = (
         "plugins.hook_callback_timeout",
         WAIT,
         "A stuck plugin step",
-        "Hermes's guard for every plugin step before or after a tool or an answer: a "
+        "The guard for every plugin step before or after a tool or an answer: a "
         "step stuck this long is skipped (a tool's check refuses the tool), so one "
         "stuck plugin can't freeze a chat. Your yes while Full access is on is asked "
-        "outside it and waits with no limit. Hermes's own maximum is 10 minutes.",
+        "outside it and waits with no limit. The maximum is 10 minutes.",
         zero_is_no_limit=True,
         default=HOOK_GUARD_SECONDS,
         source="hermes_cli/plugins.py:1125 _resolve_hook_callback_timeout (<= 0: no timeout; "
@@ -276,7 +276,7 @@ TIME_LIMITS: tuple[TimeLimit, ...] = (
     _aux("compression", "Summing up a long chat", "Compacting older turns."),
     _aux("skills_hub", "Skills hub", "Searching and reading skills."),
     _aux("approval", "Risk check of a command", "The model that rates a command."),
-    _aux("mcp", "Connected apps helper", "Hermes's helper for connected apps."),
+    _aux("mcp", "Connected apps helper", "The engine's helper for connected apps."),
     _aux("title_generation", "Chat titles", "Naming a chat."),
     _aux("memory_query_rewrite", "Memory search", "Rewriting a memory search."),
     _aux("tts_audio_tags", "Voice tags", "Tagging text before it's spoken."),
@@ -296,7 +296,7 @@ TIME_LIMITS: tuple[TimeLimit, ...] = (
         "auxiliary.vision.timeout",
         HELPERS,
         "Looking at a picture or a video",
-        "The model call that reads a picture or a video (Hermes gives video at least "
+        "The model call that reads a picture or a video (video gets at least "
         "3 minutes). 0 would end it at once.",
         zero_is_no_limit=False,
         default=NO_LIMIT_SECONDS,
@@ -316,11 +316,11 @@ TIME_LIMITS: tuple[TimeLimit, ...] = (
         "auxiliary.video.timeout",
         HELPERS,
         "Video helper",
-        "Kept for video's own helper; Hermes v0.22.2 times video with the picture setting above.",
+        "Kept for video's own helper; engine v0.22.2 times video with the picture setting above.",
         zero_is_no_limit=False,
         default=NO_LIMIT_SECONDS,
         read=False,
-        source="not read by Hermes v0.22.2 (`hermes config set` warns it's unrecognized)",
+        source="not read by engine v0.22.2 (`hermes config set` warns it's unrecognized)",
     ),
 )
 

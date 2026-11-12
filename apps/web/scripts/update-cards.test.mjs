@@ -1,7 +1,7 @@
-// Settings → General's two update cards (Update AGOS, Hermes update) drawn in each state they
-// can be in, compared with the stored HTML in scripts/snapshots/update-cards.json. The cards
-// share their parts (update-card-parts.tsx); the stored HTML was taken from the two cards as
-// they were before, so a refactor that changes one character of what the owner sees fails.
+// Settings → General's Updates card drawn in each state it can be in, compared with the
+// stored HTML in scripts/snapshots/update-cards.json. The stored HTML is the agreed look
+// of the one-button update (docs/specs/2026-11-04-no-engine-name.md), so a refactor that
+// changes one character of what the owner sees fails.
 //   UPDATE_SNAPSHOTS=1 node --test --import ./scripts/tsx-loader.mjs scripts/update-cards.test.mjs
 import assert from "node:assert/strict";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
@@ -10,10 +10,8 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { withState } from "./test-stubs/react-scripted.mjs";
 
-const { AgosUpdateCard } =
-  await import("../src/features/settings/agos-update-card.tsx");
-const { HermesUpdateCard } =
-  await import("../src/features/settings/hermes-update-card.tsx");
+const { UpdatesCard } =
+  await import("../src/features/settings/updates-card.tsx");
 
 const STORED = new URL("./snapshots/update-cards.json", import.meta.url);
 const updating = process.env.UPDATE_SNAPSHOTS === "1";
@@ -22,186 +20,96 @@ const stored = existsSync(STORED)
   : {};
 const now = {};
 
-const SHA = "0123456789abcdef";
-const TO = "fedcba9876543210";
 const steps = (...names) => names.map((name, i) => ({ name, at: String(i) }));
+// Core's real installer wording, in the field core really sends (agos_note —
+// the flat `note` only carries the one verdict: ready / up to date / failed).
+const NOTE =
+  "This AGOS wasn't installed with the installer: update it the way you installed it.";
 
-// Update AGOS: useState order status, check, busy, away, error, watching.
-const agos = (s = {}) => [
-  s.status ?? null,
+// Updates card: useState order check, state, busy, away, error, watching.
+const card = (s = {}) => [
   s.check ?? null,
+  s.state ?? null,
   s.busy ?? false,
   s.away ?? false,
   s.error ?? "",
   s.watching ?? 0,
 ];
-const installed = (
-  current = { version: "0.4.0", sha: SHA, date: "2026-11-01" },
-  state = null,
-) => ({
-  installed: true,
-  current,
-  check: null,
-  state,
-});
-const offer = {
-  at: "t",
-  ref: "main",
-  current: SHA,
-  target: TO,
-  target_version: "0.5.0",
-  news: ["Faster board", "New inbox"],
-  hermes_changes: true,
-};
-const AGOS = {
-  "first draw": agos(),
-  "not installed by the installer": agos({
-    status: {
-      installed: false,
-      current: { sha: "", date: "" },
-      check: null,
-      state: null,
+const STATES = {
+  "first draw": card(),
+  checking: card({ busy: true }),
+  "up to date": card({ check: { ready: false, note: "You're up to date." } }),
+  "up to date, with a note": card({
+    check: { ready: false, note: "You're up to date.", agos_note: NOTE },
+  }),
+  "the check failed": card({
+    check: {
+      ready: false,
+      note: "The check failed.",
+      agos_note: "git fetch failed: no network",
     },
   }),
-  "installed, with a version": agos({ status: installed() }),
-  "installed, no version": agos({
-    status: installed({ sha: SHA, date: "2026-11-01" }),
-  }),
-  checking: agos({ status: installed(), busy: true }),
-  "up to date": agos({
-    status: installed(),
-    check: { ...offer, target: null, news: [] },
-  }),
-  "a release is out": agos({ status: installed(), check: offer }),
-  "a release is out, older format": agos({
-    status: installed(),
-    check: { ...offer, target_version: "", news: [], hermes_changes: false },
-  }),
-  running: agos({
-    status: installed(undefined, {
+  "an update is ready": card({ check: { ready: true } }),
+  "ready, with a note": card({ check: { ready: true, agos_note: NOTE } }),
+  running: card({
+    state: {
       phase: "build",
-      to: TO,
-      steps: steps("backup", "code", "build"),
-    }),
+      steps: steps("backup", "stopping", "code", "build"),
+    },
   }),
-  "running, unknown step": agos({
-    status: installed(undefined, {
-      phase: "build",
-      steps: steps("backup", "mystery", "build"),
-    }),
+  "running, an engine step": card({
+    state: {
+      phase: "install",
+      steps: steps("backups", "gateways-off", "install"),
+    },
   }),
-  "restarting (away)": agos({
-    status: installed(undefined, {
-      phase: "starting-up",
-      to: TO,
-      steps: steps("backup", "starting-up"),
-    }),
+  "running, unknown step": card({
+    state: { phase: "build", steps: steps("backup", "mystery", "build") },
+  }),
+  "restarting (away)": card({
+    state: { phase: "starting-up", steps: steps("backup", "starting-up") },
     away: true,
     watching: 1,
   }),
-  "away before any state": agos({
-    status: installed(),
-    away: true,
-    watching: 1,
+  "away before any state": card({ away: true, watching: 1 }),
+  done: card({ state: { phase: "done" } }),
+  "done, the engine part still pending": card({
+    state: { phase: "done", engine_pending: true },
   }),
-  done: agos({
-    status: installed(undefined, { phase: "done", from: SHA, to: TO }),
+  "failed, rolled back": card({
+    state: { phase: "failed", error: "build broke", rolled_back: true },
   }),
-  "failed, rolled back": agos({
-    status: installed(undefined, {
+  "failed, not rolled back": card({
+    state: { phase: "failed", error: "disk full" },
+  }),
+  "failed, half done (AGOS updated, the engine part stopped)": card({
+    state: {
       phase: "failed",
-      error: "build broke",
+      error: "the fit check refused",
       rolled_back: true,
-    }),
+      half_done: true,
+    },
   }),
-  "failed, not rolled back": agos({
-    status: installed(undefined, { phase: "failed", error: "disk full" }),
-  }),
-  "rolled back by agos rollback": agos({
-    status: installed(undefined, {
+  "rolled back on purpose": card({
+    state: {
       phase: "rolled-back",
-      from: TO,
-      to: SHA,
       steps: [{ name: "rollback", at: "1", detail: "the owner asked" }],
-    }),
+    },
   }),
-  "an error": agos({
-    status: installed(),
+  "an error": card({
+    check: { ready: true },
     error: "Only the owner can update AGOS.",
   }),
 };
 
-// Hermes update: useState order check, state, asking, busy, error, watching.
-const hermes = (s = {}) => [
-  s.check ?? null,
-  s.state ?? null,
-  s.asking ?? false,
-  s.busy ?? false,
-  s.error ?? "",
-  s.watching ?? 0,
-];
-const found = {
-  at: "t",
-  current: { version: "0.9.1", sha: SHA },
-  target: { version: "0.10.0", sha: TO },
-  fits: true,
-  report: "",
-  news: ["Better memory", "Faster tools"],
-};
-const HERMES = {
-  "first draw": hermes(),
-  "up to date": hermes({ check: { ...found, target: null, news: [] } }),
-  checking: hermes({ busy: true }),
-  "found, fits, popup open": hermes({ check: found, asking: true }),
-  "found, does not fit, popup open": hermes({
-    check: { ...found, fits: false, news: [] },
-    asking: true,
-  }),
-  "found, popup closed": hermes({ check: found }),
-  running: hermes({
-    state: {
-      phase: "install",
-      target: found.target,
-      steps: steps("backups", "gateways-off", "install"),
-    },
-  }),
-  "running, no target, unknown step": hermes({
-    state: { phase: "prepare", steps: steps("backups", "mystery", "prepare") },
-  }),
-  done: hermes({
-    state: {
-      phase: "done",
-      report: {
-        from: "0.9.1",
-        to: "0.10.0",
-        backups: "/backups/x",
-        workspaces: 3,
-      },
-    },
-  }),
-  "done, no report": hermes({ state: { phase: "done" } }),
-  "failed, rolled back": hermes({
-    state: { phase: "failed", error: "boom", rolled_back: true },
-  }),
-  "failed, not rolled back": hermes({
-    state: { phase: "failed", error: "boom" },
-  }),
-  "an error": hermes({ check: found, error: "Hermes could not be reached." }),
-};
-
-for (const [card, Component, states] of [
-  ["agos", AgosUpdateCard, AGOS],
-  ["hermes", HermesUpdateCard, HERMES],
-]) {
-  for (const [name, values] of Object.entries(states)) {
-    test(`${card} update card: ${name}`, () => {
-      const html = withState(values, () =>
-        renderToStaticMarkup(createElement(Component)),
-      );
-      now[`${card}: ${name}`] = html;
-      if (!updating) assert.equal(html, stored[`${card}: ${name}`]);
-    });
-  }
+for (const [name, values] of Object.entries(STATES)) {
+  test(`updates card: ${name}`, () => {
+    const html = withState(values, () =>
+      renderToStaticMarkup(createElement(UpdatesCard)),
+    );
+    now[`updates: ${name}`] = html;
+    if (!updating) assert.equal(html, stored[`updates: ${name}`]);
+  });
 }
 
 test("every stored state is still drawn", () => {

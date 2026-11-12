@@ -19,10 +19,9 @@ class ChangeHermesSetting(CofounderFields):
 CHANGE_HERMES_SETTING: OperationSpec[ChangeHermesSetting] = OperationSpec(
     name="change_hermes_setting",
     input_model=ChangeHermesSetting,
-    audit_title="Hermes setting {key} → {value}",
+    audit_title="Engine setting {key} → {value}",
     gate="undo",
     agent_tool=None,
-    web_action="saveHermesSetting",
     cofounder_domain=CHAT,
 )
 
@@ -34,7 +33,7 @@ class ResetHermesSetting(CofounderFields):
 RESET_HERMES_SETTING: OperationSpec[ResetHermesSetting] = OperationSpec(
     name="reset_hermes_setting",
     input_model=ResetHermesSetting,
-    audit_title="Hermes setting {key} back to Hermes's default",
+    audit_title="Engine setting {key} back to its default",
     gate="undo",
     agent_tool=None,
     cofounder_domain=CHAT,
@@ -48,7 +47,7 @@ class ShowHermesSetting(CofounderFields):
 SHOW_HERMES_SETTING: OperationSpec[ShowHermesSetting] = OperationSpec(
     name="show_hermes_setting",
     input_model=ShowHermesSetting,
-    audit_title="Hermes setting {key}",
+    audit_title="Engine setting {key}",
     gate="once",
     agent_tool=None,
     effect="read",
@@ -172,7 +171,7 @@ class ListPoolKeys(CofounderFields):
 LIST_POOL_KEYS: OperationSpec[ListPoolKeys] = OperationSpec(
     name="list_pool_keys",
     input_model=ListPoolKeys,
-    audit_title="Keys per provider (Hermes's pools)",
+    audit_title="Keys per provider (the engine's pools)",
     gate="once",
     agent_tool=None,
     effect="read",
@@ -187,7 +186,7 @@ class HermesHealth(CofounderFields):
 HERMES_HEALTH: OperationSpec[HermesHealth] = OperationSpec(
     name="hermes_health",
     input_model=HermesHealth,
-    audit_title="Hermes's checks (status and doctor)",
+    audit_title="Engine checks (Status and Full check)",
     gate="once",
     agent_tool=None,
     effect="read",

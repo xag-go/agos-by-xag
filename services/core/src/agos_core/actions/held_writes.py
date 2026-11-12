@@ -42,7 +42,7 @@ def read(core: Core, workspace_id: str) -> dict[str, Any]:
     require_workspace(core, workspace_id)
     engine = core.engine
     if engine is None:
-        raise ActionError("Hermes isn't available.", status=503)
+        raise ActionError("The engine isn't available.", status=503)
     profiles = _profiles(core, workspace_id)
     found: dict[str, dict[str, Any]] = {}
     failed: list[str] = []
@@ -142,17 +142,19 @@ def decide(
         raise ActionError("No such agent in this workspace.", status=404)
     engine = core.engine
     if engine is None:
-        raise ActionError("Hermes isn't available.", status=503)
+        raise ActionError("The engine isn't available.", status=503)
     try:
         done = engine.decide_pending(
             engine.profile_home(profile), subsystem, pending_id, approve, keep=keep
         )
     except (EngineError, OSError, ValueError) as error:
-        raise ActionError(f"Hermes didn't take it: {error}", status=502) from error
+        raise ActionError(f"The engine didn't take it: {error}", status=502) from error
     if not done.get("found"):
         raise ActionError("That write isn't held any more.", status=404)
     if not done.get("gone"):
-        raise ActionError(f"Hermes didn't apply it: {done.get('text') or 'no answer'}", status=502)
+        raise ActionError(
+            f"The engine didn't apply it: {done.get('text') or 'no answer'}", status=502
+        )
     out = {**read(core, workspace_id), "said": str(done.get("text") or "")}
     if keep:
         out["undo"] = done.get("undo")
@@ -251,7 +253,7 @@ def decide_group(
         raise ActionError("No such agent in this workspace.", status=404)
     engine = core.engine
     if engine is None:
-        raise ActionError("Hermes isn't available.", status=503)
+        raise ActionError("The engine isn't available.", status=503)
     home = engine.profile_home(profile)
     said = ""
     try:
@@ -269,7 +271,7 @@ def decide_group(
             done = engine.apply_pending_rest(home, ids[-1])
             if not done.get("gone"):
                 raise ActionError(
-                    f"Hermes didn't apply it: {done.get('text') or 'no answer'}", status=502
+                    f"The engine didn't apply it: {done.get('text') or 'no answer'}", status=502
                 )
             said = str(done.get("text") or "")
         elif approve:
@@ -278,7 +280,7 @@ def decide_group(
                 raise ActionError("That write isn't held any more.", status=404)
             if not done.get("gone"):
                 raise ActionError(
-                    f"Hermes didn't apply it: {done.get('text') or 'no answer'}", status=502
+                    f"The engine didn't apply it: {done.get('text') or 'no answer'}", status=502
                 )
             said = str(done.get("text") or "")
         for pending_id in ids[:-1] if approve else ids:
@@ -286,7 +288,7 @@ def decide_group(
             if not approve and done.get("found"):
                 said = str(done.get("text") or said)
     except (EngineError, OSError, ValueError) as error:
-        raise ActionError(f"Hermes didn't take it: {error}", status=502) from error
+        raise ActionError(f"The engine didn't take it: {error}", status=502) from error
     return {"said": said, "waiting": len(groups(core, workspace_id))}
 
 
@@ -332,18 +334,18 @@ def explain(core: Core, workspace_id: str, profile: str, subsystem: str, pending
             return _EXPLAINED[key]
     engine = core.engine
     if engine is None:
-        raise ActionError("Hermes isn't available.", status=503)
+        raise ActionError("The engine isn't available.", status=503)
     try:
         said = hermes_cli.walled_cli(
             engine, workspace_id, "agos-explain", json.dumps(job, ensure_ascii=False), timeout=120
         )
     except EngineError as error:
-        raise ActionError(f"Hermes didn't explain it: {error}", status=502) from error
+        raise ActionError(f"The engine didn't explain it: {error}", status=502) from error
     found = _last_json(said)
     text = str(found.get("text") or "").strip()
     if not found.get("ok") or not text:
         raise ActionError(
-            f"Hermes couldn't explain it: {found.get('reason') or 'no answer'}", status=502
+            f"The engine couldn't explain it: {found.get('reason') or 'no answer'}", status=502
         )
     with _EXPLAIN_LOCK:
         if len(_EXPLAINED) >= _EXPLAINED_MAX:
@@ -381,16 +383,16 @@ def undo(core: Core, workspace_id: str, profile: str, subsystem: str, kept: Any)
     if profile not in {key for key, _label in _profiles(core, workspace_id)}:
         raise ActionError("That agent isn't in this workspace any more.", status=404)
     if not isinstance(kept, dict):
-        raise ActionError("Hermes gave nothing to put it back with.", status=409)
+        raise ActionError("The engine gave nothing to put it back with.", status=409)
     engine = core.engine
     if engine is None:
-        raise ActionError("Hermes isn't available.", status=503)
+        raise ActionError("The engine isn't available.", status=503)
     try:
         done = engine.undo_pending(engine.profile_home(profile), subsystem, kept)
     except (EngineError, OSError, ValueError) as error:
-        raise ActionError(f"Hermes didn't take it: {error}", status=502) from error
+        raise ActionError(f"The engine didn't take it: {error}", status=502) from error
     if not done.get("ok"):
-        raise ActionError(str(done.get("error") or "Hermes didn't put it back."), status=409)
+        raise ActionError(str(done.get("error") or "The engine didn't put it back."), status=409)
 
 
 def read_ahead(core: Core) -> None:

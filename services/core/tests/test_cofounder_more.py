@@ -214,7 +214,7 @@ def test_a_delete_or_an_import_waits_for_the_owner_even_in_direct_mode(
     for args, ask in (
         ({"do": "delete_label", "label": "urgent"}, True),
         ({"do": "import_bundle", "path": "team.zip"}, True),
-        ({"do": "run_hermes_update"}, True),
+        ({"do": "run_updates"}, True),
         ({"do": "approve_person", "request": "ABC123"}, True),
         ({"do": "create_label", "name": "urgent"}, False),
         ({"do": "card_action", "card": "t_1", "action": "archive"}, True),

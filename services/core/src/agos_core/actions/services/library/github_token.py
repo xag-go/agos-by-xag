@@ -82,7 +82,7 @@ def github_token_status(core: Core) -> GithubTokenState:
     try:
         return _token_state(_token_status(core, kept=True))
     except (RuntimeError, ValueError, hermes_process.TimeoutExpired) as error:
-        raise ActionError("Hermes didn't answer about GitHub. Try again.", 502) from error
+        raise ActionError("The engine didn't answer about GitHub. Try again.", 502) from error
 
 
 def save_github_token(core: Core, token: str) -> GithubTokenState:
@@ -91,7 +91,7 @@ def save_github_token(core: Core, token: str) -> GithubTokenState:
     except TokenProblem as error:
         raise ActionError(str(error), 400) from error
     except (RuntimeError, ValueError, hermes_process.TimeoutExpired) as error:
-        raise ActionError("Hermes did not save the token. Try again.", 502) from error
+        raise ActionError("The engine did not save the token. Try again.", 502) from error
     log.info("GitHub token for the skills hub saved in Hermes")
     return state
 
@@ -100,7 +100,7 @@ def remove_github_token(core: Core) -> None:
     try:
         _github_token(core).remove()
     except (RuntimeError, hermes_process.TimeoutExpired) as error:
-        raise ActionError("Hermes did not remove the token. Try again.", 502) from error
+        raise ActionError("The engine did not remove the token. Try again.", 502) from error
     log.info("GitHub token for the skills hub removed from Hermes")
 
 

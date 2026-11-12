@@ -161,7 +161,7 @@ REMOVE_SCHEDULED_JOB: OperationSpec[RemoveScheduledJob] = OperationSpec(
     agent_tool=None,
     web_action="removeScheduled",
     cofounder_domain=AUTOMATIONS,
-    cofounder_fields="job (Hermes's job id, from Ongoing)",
+    cofounder_fields="job (the engine's job id, from Ongoing)",
 )
 
 

@@ -59,7 +59,7 @@ def start_bot_setup(core: Core, workspace_id: str | None, bot_name: str) -> BotS
     if workspace_id is not None:
         live_workspace(core, workspace_id)
     if core.engine is None:
-        raise ActionError("Hermes isn't available.", 503)
+        raise ActionError("The engine isn't available.", 503)
     try:
         pairing = telegram_setup.start(
             core.engine.settings, bot_name.strip()[:60] or "AGOS", workspace_id

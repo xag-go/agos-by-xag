@@ -235,7 +235,7 @@ def _grade(core: Core, workspace_id: str, job: dict[str, str]) -> tuple[bool | N
     from agos_core.engine.hermes import EngineError
 
     if core.engine is None:
-        return None, "Hermes isn't set up."
+        return None, "The engine isn't set up."
     try:
         said = hermes_cli.walled_cli(
             core.engine,

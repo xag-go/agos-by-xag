@@ -318,37 +318,6 @@ describe("settings", () => {
     assert.equal(hermes.shownValue({ a: 1 }), '{"a":1}');
   });
 
-  test("search, changed-from-default and the edit box's first text", () => {
-    const row = {
-      key: "agent.max_turns",
-      description: "Turns per answer",
-      rule: { reason: "AGOS sets it" },
-      value: 40,
-      default: 90,
-      same: true,
-      type: "int",
-    };
-    assert.equal(hermes.matches(row, []), true);
-    assert.equal(hermes.matches(row, ["turns", "agos"]), true);
-    assert.equal(hermes.matches(row, ["model"]), false);
-    assert.equal(hermes.changedFromDefault(row), true);
-    assert.equal(hermes.changedFromDefault({ ...row, value: 90 }), false);
-    assert.equal(
-      hermes.changedFromDefault({ ...row, value: 90, same: false }),
-      true,
-    );
-    assert.equal(hermes.initialText(row), "40");
-    assert.equal(hermes.initialText({ ...row, value: null }), "");
-    assert.equal(
-      hermes.initialText({ ...row, type: "list", value: null }),
-      "[]",
-    );
-    assert.equal(
-      hermes.initialText({ ...row, type: "object", value: { a: 1 } }),
-      '{\n  "a": 1\n}',
-    );
-  });
-
   test("sections have unique slugs and known groups", () => {
     const slugs = sections.settingsSections.map((s) => s.slug);
     assert.equal(new Set(slugs).size, slugs.length);

@@ -51,7 +51,7 @@ LOCKED: dict[str, str] = {
 WORDS: dict[str, str] = {
     "code_execution": "Run Python in the workspace's sandbox.",
     "delegation": "Split work between helper agents in the same sandbox.",
-    "image_gen": "Create images with a picture service set up in Hermes.",
+    "image_gen": "Create images with a picture service set up in the engine.",
     "tts": "Turn text into speech.",
     "vision": "Look at pictures in the workspace (read inside its sandbox only).",
     "video": "Watch videos in the workspace (read inside its sandbox only).",
@@ -59,7 +59,7 @@ WORDS: dict[str, str] = {
     "computer_use": "Use the workspace's own virtual desktop: mouse, keyboard, apps (inside its sandbox).",
     "x_search": "Search posts and threads on X (Twitter). Needs an xAI sign-in or key.",
     "video_gen": "Make videos from text or a picture, with a video service.",
-    "context_engine": "Extra tools of Hermes's context engine, when one is set up.",
+    "context_engine": "Extra tools of the context engine, when one is set up.",
 }
 
 

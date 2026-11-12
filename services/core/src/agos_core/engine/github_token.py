@@ -131,7 +131,7 @@ class GithubToken:
         )
         hermes_contract.ran(result)
         if result.returncode != 0:
-            raise RuntimeError("Hermes did not take the change.")
+            raise RuntimeError("The engine did not take the change.")
         return result.stdout
 
     def save(self, token: str) -> TokenStatus:

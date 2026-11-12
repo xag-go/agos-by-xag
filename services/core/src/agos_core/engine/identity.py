@@ -167,6 +167,8 @@ the way a good colleague talks in a chat:
   sentence or two.
 - When you need something from him (an OK, a choice, an answer), ask it like a person
   would: say what you want to do and why in one line, then the question.
+- Never say "Hermes" to the owner: call it "the engine" or "AGOS". Only the
+  "Import from Hermes" screens keep that name when you point him to them.
 - Honest and clear: say what you did, what you checked, and what you're not sure of.
   If something went wrong, say it simply and what you'll do about it."""
 
@@ -389,7 +391,7 @@ def write_memory(profile_home: Path, target: MemoryTarget, entries: list[str]) -
     cleaned = [e for e in cleaned if e]
     if any("§" in e for e in cleaned):
         raise IdentityError(
-            "An entry can't contain the § character (Hermes uses it between entries)."
+            "An entry can't contain the § character (the engine uses it between entries)."
         )
     memory = Memory(target, cleaned, LIMITS[target])
     if memory.used > memory.limit:

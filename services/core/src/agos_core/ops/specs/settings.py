@@ -19,6 +19,8 @@ from agos_core.engine.cofounder_kind import WORKSPACE
 from agos_core.ops.spec import CofounderFields, OperationSpec
 
 __all__ = [
+    "CHECK_UPDATES",
+    "RUN_UPDATES",
     "SET_FALLBACK",
     "SET_HELPER_MODELS",
     "SET_HERMES_LIMITS",
@@ -26,6 +28,8 @@ __all__ = [
     "SET_VOICE",
     "SET_WORKSPACE_SETTINGS",
     "SPECS",
+    "CheckUpdates",
+    "RunUpdates",
     "SetFallback",
     "SetHelperModels",
     "SetHermesLimits",
@@ -52,7 +56,7 @@ SET_WORKSPACE_SETTINGS: OperationSpec[SetWorkspaceSettings] = OperationSpec(
     cofounder_domain=WORKSPACE,
     cofounder_fields=(
         "model (its default model: the model id, or {provider, model, effort}), name, "
-        "description, values (object: the page's other Hermes settings keys)"
+        "description, values (object: the page's other engine settings keys)"
     ),
     cofounder_structured=("values",),
 )
@@ -77,7 +81,7 @@ SET_HERMES_LIMITS: OperationSpec[SetHermesLimits] = OperationSpec(
     cofounder_domain=WORKSPACE,
     cofounder_fields=(
         "loop_on, same_error, same_tool_failing, no_progress, time_limit_minutes, "
-        'members_at_once (each optional; "" = Hermes\'s default)'
+        'members_at_once (each optional; "" = the engine\'s default)'
     ),
 )
 
@@ -153,6 +157,40 @@ SET_FALLBACK: OperationSpec[SetFallback] = OperationSpec(
     cofounder_structured=("chain",),
 )
 
+
+class CheckUpdates(CofounderFields):
+    pass
+
+
+CHECK_UPDATES: OperationSpec[CheckUpdates] = OperationSpec(
+    name="check_updates",
+    input_model=CheckUpdates,
+    audit_title="Check for updates",
+    gate="once",
+    agent_tool=None,
+    effect="read",
+    web_action="checkUpdates",
+    cofounder_domain=WORKSPACE,
+    cofounder_fields="(no fields)",
+)
+
+
+class RunUpdates(CofounderFields):
+    pass
+
+
+RUN_UPDATES: OperationSpec[RunUpdates] = OperationSpec(
+    name="run_updates",
+    input_model=RunUpdates,
+    audit_title="Install the update",
+    gate="owner",
+    agent_tool=None,
+    web_action="runUpdates",
+    cofounder_domain=WORKSPACE,
+    cofounder_fields="(no fields)",
+    idempotent=True,
+)
+
 SPECS: tuple[OperationSpec[Any], ...] = (
     SET_WORKSPACE_SETTINGS,
     SET_HERMES_LIMITS,
@@ -160,4 +198,6 @@ SPECS: tuple[OperationSpec[Any], ...] = (
     SET_HELPER_MODELS,
     SET_VOICE,
     SET_FALLBACK,
+    CHECK_UPDATES,
+    RUN_UPDATES,
 )

@@ -69,7 +69,7 @@ def load(core: Core, refresh: bool) -> dict[str, list[dict[str, object]]]:
         return catalog.load(refresh=refresh)
     except (OSError, RuntimeError, ValueError) as error:
         log.warning("model catalog failed: %s", error)
-        raise ActionError("Hermes did not list the models.", 503) from error
+        raise ActionError("The engine did not list the models.", 503) from error
 
 
 def hermes_first(catalog: list[dict[str, Any]], default: Any) -> list[dict[str, Any]]:

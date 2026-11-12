@@ -286,6 +286,22 @@ def test_hermes_errors_are_parsed_and_counted_once_per_entry(
     )
 
 
+def test_the_alerts_place_label_never_names_the_engine(client: TestClient) -> None:
+    """Spec 2026-11-04 (no engine name): the alert the owner reads says "the engine",
+    never "Hermes"; the `source` field itself stays as it is (diagnostics)."""
+    core = core_of(client)
+    issue_id, _ = error_issues.record(
+        core.db, source="hermes", where="gateway", error_type="E", message="m", frames=[]
+    )
+    issue = error_issues.get(core.db, issue_id)
+    assert issue is not None and issue.source == "hermes"
+    for source in error_issues.SOURCES:
+        said = error_alerts._where(core, issue.model_copy(update={"source": source}))
+        assert "Hermes" not in said
+    text = error_alerts.text_for(issue, "new", error_alerts._where(core, issue))
+    assert "the engine" in text and "Hermes" not in text
+
+
 def test_the_cofounder_marks_an_error_fixed_with_undo(client: TestClient) -> None:
     from agos_core.actions import cofounder_more
 
@@ -414,7 +430,7 @@ def test_hermes_down_or_slow_is_a_typed_503_not_an_internal_error(tmp_path: Path
         client.headers["x-agos-internal"] = settings.internal_token_file.read_text()
         ws = test_api.create_workspace(client, "Hermes down WS")
         for path, code, detail in (
-            ("down", "HERMES_UNAVAILABLE", "Hermes isn't answering right now"),
+            ("down", "HERMES_UNAVAILABLE", "The engine isn't answering right now"),
             ("slow", "HERMES_TIMEOUT", "Hermes didn't answer in time."),
         ):
             answer = client.get(f"/workspaces/{ws}/{path}")

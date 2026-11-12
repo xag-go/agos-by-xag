@@ -136,9 +136,12 @@ def test_the_unit_is_a_low_priority_guest_that_cleans_up(tmp_path: Path) -> None
     ):
         assert line in unit.splitlines(), line
     env = (out / ".env").read_text().splitlines()
-    assert "ACTIONS_RUNNER_HOOK_JOB_STARTED=/home/server-ci-test/actions-runner/hooks/clean.sh" in env
     assert (
-        "ACTIONS_RUNNER_HOOK_JOB_COMPLETED=/home/server-ci-test/actions-runner/hooks/clean.sh" in env
+        "ACTIONS_RUNNER_HOOK_JOB_STARTED=/home/server-ci-test/actions-runner/hooks/clean.sh" in env
+    )
+    assert (
+        "ACTIONS_RUNNER_HOOK_JOB_COMPLETED=/home/server-ci-test/actions-runner/hooks/clean.sh"
+        in env
     )
 
 

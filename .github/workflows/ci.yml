@@ -207,18 +207,6 @@ jobs:
         with:
           python-version: "3.14"
       - run: uv sync --frozen
-      # The server's runner account has the nightly's real Hermes on its PATH, and the
-      # tests that find `hermes` there run it (120 s timeouts under load) instead of
-      # skipping as on GitHub's machines. This job tests the code without Hermes.
-      - name: Hide the server's Hermes from the tests
-        if: runner.environment == 'self-hosted'
-        run: |
-          python3 - <<'PY' >> "$GITHUB_ENV"
-          import os
-          keep = [d for d in os.environ["PATH"].split(os.pathsep)
-                  if not os.access(os.path.join(d, "hermes"), os.X_OK)]
-          print("PATH=" + os.pathsep.join(keep))
-          PY
       # The tests that need neither a real Hermes Agent install (~/.hermes) nor
       # Docker. Files that read Hermes's own source or run the real `hermes` carry
       # the `hermes` marker (tests/conftest.py HERMES_FILES) and run nightly on the
@@ -227,11 +215,18 @@ jobs:
       - name: pytest
         env:
           COVERAGE_CORE: sysmon
-        run: >-
-          uv run pytest -q -p no:cacheprovider -m "not hermes"
-          -n auto --dist loadfile --timeout=120 --durations=15
-          --cov=agos_core --cov-report=xml:coverage.xml --cov-report=term:skip-covered
-          --junitxml=pytest.xml
+        run: |
+          # The server runner's account has the nightly's real Hermes in ~/.local/bin (setup-uv
+          # puts that folder back on PATH for every step, so the filter lives in this step):
+          # the tests that find `hermes` would run it and time out instead of skipping as on
+          # GitHub's machines. This job tests the code without Hermes.
+          PATH="$(python3 -c 'import os; print(os.pathsep.join(d for d in os.environ["PATH"].split(os.pathsep) if not os.access(os.path.join(d, "hermes"), os.X_OK)))')"
+          export PATH
+          if command -v hermes; then echo "::error::hermes is still on PATH"; exit 1; fi
+          uv run pytest -q -p no:cacheprovider -m "not hermes" \
+            -n auto --dist loadfile --timeout=120 --durations=15 \
+            --cov=agos_core --cov-report=xml:coverage.xml --cov-report=term:skip-covered \
+            --junitxml=pytest.xml
       - name: Test counts in the job summary
         if: always()
         run: python3 ../../scripts/ci/junit_summary.py pytest.xml >> "$GITHUB_STEP_SUMMARY"
@@ -356,7 +351,8 @@ jobs:
   browser:
     name: Browser (Playwright clicks + screenshots on the web build)
     runs-on: ${{ vars.CI_RUNNER == 'self' && fromJSON('["self-hosted", "linux", "server-ci"]') || 'ubuntu-24.04' }}
-    timeout-minutes: 30
+    # The first run on the server downloads ~670 MB of browsers over a slow link.
+    timeout-minutes: ${{ vars.CI_RUNNER == 'self' && 90 || 30 }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -396,7 +392,16 @@ jobs:
         working-directory: services/core
       # Playwright's own Chromium (the screenshot baselines are keyed by its build).
       # The server's own runner (no sudo) already has Chromium's system libraries.
-      - run: uv run playwright install ${{ runner.environment == 'github-hosted' && '--with-deps' || '' }} chromium
+      # On the server two Browser jobs may start together: one lock so they do not
+      # download into the same folder (the second then finds the browsers installed).
+      - name: Playwright browsers
+        run: |
+          if [ "$RUNNER_ENVIRONMENT" = "github-hosted" ]; then
+            uv run playwright install --with-deps chromium
+          else
+            mkdir -p "$HOME/.cache"
+            flock "$HOME/.cache/playwright-install.lock" uv run playwright install chromium
+          fi
         working-directory: services/core
       # The owner's main flows clicked on the real web build, ~40 screens compared
       # with tests/browser/screens, axe-core on the main screens and their Lighthouse

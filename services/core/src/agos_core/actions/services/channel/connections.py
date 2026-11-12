@@ -258,7 +258,7 @@ def update_connection(
             hermes_channel.set_reactions(core, workspace_id, reactions)
             changed = True
     except (EngineError, ValueError) as error:
-        raise ActionError("Hermes didn't take the change. Try again.", 503) from error
+        raise ActionError("The engine didn't take the change. Try again.", 503) from error
     if changed:
         hermes_channel.restart_gateway(core, workspace_id)
 
@@ -328,10 +328,10 @@ def _telegram(core: Core, workspace_id: str) -> tuple[str, str, str | None]:
     if not isinstance(state, dict):
         return "connecting", "", None
     if state.get("gateway_state") == "startup_failed":
-        why = str(state.get("exit_reason") or "The workspace's Hermes didn't start.")
+        why = str(state.get("exit_reason") or "The workspace didn't start.")
         return "error", why, None
     if not gateway.get("live") or gateway.get("stale"):
-        return "connecting", "The workspace's Hermes isn't running right now.", None
+        return "connecting", "The workspace isn't running right now.", None
     if state.get("gateway_state") not in ("running", "degraded", None):
         return "connecting", "", None
     tg = (state.get("platforms") or {}).get("telegram") or {}
@@ -343,7 +343,7 @@ def _telegram(core: Core, workspace_id: str) -> tuple[str, str, str | None]:
     if status == "connected":
         return "connected", "", at
     if status in ("error", "fatal", "failed", "disconnected") or tg.get("needs_attention"):
-        return "error", reason or "Hermes can't reach this bot.", at
+        return "error", reason or "The engine can't reach this bot.", at
     return "connecting", reason, at
 
 

@@ -183,7 +183,7 @@ def save_item(
     belongs to ONE workspace (`workspace_id`): the same name can exist in two
     projects as two separate items, and no project sees another's."""
     if kind == "tool":
-        raise ActionError("Tools come from Hermes; turn them on per workspace.")
+        raise ActionError("Tools come with the engine; turn them on per workspace.")
     if kind == "skill":
         if workspace_id is None:
             raise ActionError("A skill is made inside a workspace (its Settings → Skills).")

@@ -80,6 +80,19 @@ RULES = """\
   card blocked "waiting for the owner: …" is one of his Allow once / Deny cards, already
   in front of him: say nothing about it.
 - Check your own work before you report it: run it, read it back, prove it with output.
+- Handing work to a teammate (a card you create or give, or a comment that hands it
+  on): the card body always has three parts, so they never have to guess:
+  **Input** (what they get: files, links, the card it comes from), **Output** (exactly
+  what they hand back, in which format and where) and **Done when** (2 to 5 checks a
+  good result passes). Work you get without them: ask the one who gave it
+  (kanban_block, needs_input) before you start.
+- Before work reaches the owner, the one who asked for it checks it against its
+  **Done when** (the Co-Founder, or the member's lead): send it back with a note when it
+  falls short (at most twice, then say what is still wrong), and bring the owner only
+  results that pass, or a decision only he can make.
+- Stuck: say so on the card at once (kanban_block with the reason) to the one you
+  report to, one level up; never wait silently and never skip straight to the owner
+  unless only he can answer.
 - You cannot change your own access. What you may do without asking follows the
   owner's Autonomy rules (also for making new cards).
 - Say what is done, what is verified, what is left.
@@ -97,6 +110,11 @@ said twice is one card). Optional: goal_mode = true (it runs as a goal until the
 is reached), parents = [card ids] (it starts only once those cards are done); use them
 when the owner asks ("until it's really done", "start it after t_12"). Never pretend a
 task was created before the tool says so.
+
+A job that is itself an agos_action kind (changing automations, the team, skills or
+MCP, board admin, workspace settings, docs or rules) is yours: do it yourself with
+agos_action, never put it on a member's card. A member cannot run those; a card body
+you write must not ask a member for Co-Founder-only work.
 
 A task you add goes on the board and STARTS at once: its assignee (a member's profile,
 a-<name>; yourself: default) does it to the end and reports back, without asking the
@@ -149,6 +167,8 @@ the way a good colleague talks in a chat:
   sentence or two.
 - When you need something from him (an OK, a choice, an answer), ask it like a person
   would: say what you want to do and why in one line, then the question.
+- Never say "Hermes" to the owner: call it "the engine" or "AGOS". Only the
+  "Import from Hermes" screens keep that name when you point him to them.
 - Honest and clear: say what you did, what you checked, and what you're not sure of.
   If something went wrong, say it simply and what you'll do about it."""
 
@@ -371,7 +391,7 @@ def write_memory(profile_home: Path, target: MemoryTarget, entries: list[str]) -
     cleaned = [e for e in cleaned if e]
     if any("§" in e for e in cleaned):
         raise IdentityError(
-            "An entry can't contain the § character (Hermes uses it between entries)."
+            "An entry can't contain the § character (the engine uses it between entries)."
         )
     memory = Memory(target, cleaned, LIMITS[target])
     if memory.used > memory.limit:

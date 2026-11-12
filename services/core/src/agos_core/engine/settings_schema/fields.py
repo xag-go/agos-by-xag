@@ -193,8 +193,8 @@ def unlisted(key: str, value: Any, *, secret: bool = False) -> Field:
         key=key,
         type=_type(value),
         description=(
-            "Not in Hermes's list of defaults: Hermes's code reads it directly, or it was "
-            "set in this Hermes by hand."
+            "Not in the engine's list of defaults: its code reads it directly, or it was "
+            "set here by hand."
         ),
         default=None,
         in_defaults=False,

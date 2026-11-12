@@ -64,7 +64,7 @@ from hermes_cli.config import DEFAULT_CONFIG, _is_secret_config_key
 from hermes_cli.web_server_config import _schema_with_dynamic_provider_options
 fields = _schema_with_dynamic_provider_options()
 # `stt.provider` has no DEFAULT_CONFIG seed (unset = autodetect), so the dashboard's
-# walk skips the select Hermes defines for it: its own override, with its own merge
+# walk skips the select the engine defines for it: its own override, with its own merge
 # of command and plugin providers (web_server_config.py _custom_provider_options).
 try:
     from hermes_cli.config import load_config
@@ -77,7 +77,7 @@ try:
                 kind, list(base["options"]), load_config())}}
 except Exception:
     pass
-# The keys Hermes names credentials (the rule its config printer masks by).
+# The keys the engine names credentials (the rule its config printer masks by).
 def _leaves(d, prefix=""):
     for k, v in d.items():
         path = f"{prefix}.{k}" if prefix else str(k)
@@ -92,7 +92,7 @@ try:
     workflow = DEFAULT_WORKFLOW.to_dict()
 except Exception:
     workflow = None
-# Hermes's .env settings: its registry (OPTIONAL_ENV_VARS, the names its setup flows
+# the engine's .env settings: its registry (OPTIONAL_ENV_VARS, the names its setup flows
 # write: _EXTRA_ENV_KEYS) and the provider catalog's key names (the dashboard's
 # GET /api/env builds its Keys page from the same three).
 env = None
@@ -143,7 +143,7 @@ _lock = threading.Lock()
 def parse(stdout: str) -> tuple[list[Field], Path]:
     lines = [ln for ln in stdout.splitlines() if ln.startswith("AGOS-SCHEMA ")]
     if not lines:
-        raise ValueError("Hermes didn't answer with its settings list")
+        raise ValueError("The engine didn't answer with its settings list")
     found = json.loads(lines[-1][len("AGOS-SCHEMA ") :])
     workflow = found.get("kanban_workflow")
     env = found.get("env")

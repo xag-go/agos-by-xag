@@ -29,7 +29,7 @@ MEMORY = "Memory & learning"
 KANBAN = "Kanban & automations"
 CHATS = "What shows in chats"
 RUNTIME = "Runtime"
-ENV = "Hermes .env"
+ENV = "Engine .env"
 NOT_USED = "Not used by AGOS"
 GROUPS = (SAFETY, COST, MEMORY, KANBAN, CHATS, RUNTIME, ENV, NOT_USED)
 
@@ -187,8 +187,8 @@ GROUP_BY_PREFIX: dict[str, str] = {
 }
 
 NOT_USED_WHY = (
-    "Hermes's own desktop, terminal and dashboard screens and its other chat apps "
-    "(Discord, Slack, Matrix...): AGOS runs Hermes behind its own app and Telegram, "
+    "The engine's own desktop, terminal and dashboard screens and its other chat apps "
+    "(Discord, Slack, Matrix...): AGOS runs the engine behind its own app and Telegram, "
     "so these don't change anything here."
 )
 

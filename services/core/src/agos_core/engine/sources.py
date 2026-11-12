@@ -244,7 +244,7 @@ class Sources:
 
     def _library(self) -> Path:
         if self.library_home is None:
-            raise SourceError("The library has no Hermes home.")
+            raise SourceError("The library has no home folder yet.")
         (self.library_home / "skills").mkdir(parents=True, exist_ok=True)
         return self.library_home
 
@@ -256,9 +256,11 @@ class Sources:
             # Hermes found nothing: say what Hermes said, not a naming problem.
             said = [ln.strip() for ln in text.splitlines() if ln.strip()]
             errors = [ln for ln in said if ln.lower().startswith("error")]
-            raise SourceError((errors or said or ["Hermes couldn't find this skill."])[-1][:300])
+            raise SourceError(
+                (errors or said or ["The skills hub couldn't find this skill."])[-1][:300]
+            )
         if not lib.NAME.fullmatch(found.group(1)):
-            raise SourceError("Hermes didn't name this skill in a way AGOS can use.")
+            raise SourceError("The engine didn't name this skill in a way AGOS can use.")
         return found.group(1)
 
     def install_skill(
@@ -277,7 +279,7 @@ class Sources:
         out = self._hermes([*args, "--force"] if force else args, home=home, timeout=300)
         folder = home / "skills" / self.category / name if self.category else home / "skills" / name
         if not (folder / "SKILL.md").is_file():
-            raise SourceError("Hermes installed nothing (see its scan report).")
+            raise SourceError("Nothing was installed (see the scan report).")
         report = _clean(out)
         keep = [
             ln

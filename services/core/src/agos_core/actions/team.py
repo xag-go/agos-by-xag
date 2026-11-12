@@ -543,7 +543,7 @@ def save(
     except lib.LibraryError as error:
         raise ActionError(str(error)) from error
     if len(title.strip()) > profile_meta.TITLE_MAX:
-        raise ActionError(f"Keep the name to {profile_meta.TITLE_MAX} characters (Hermes's limit).")
+        raise ActionError(f"Keep the name to {profile_meta.TITLE_MAX} characters (the limit).")
     _root_or_raise(core, workspace_id)
     assert core.engine is not None
     current = get(core, workspace_id, name)
@@ -577,10 +577,10 @@ def save(
             reports_before=current.reports_to if current is not None else None,
         )
     except (EngineError, OSError) as error:
-        raise ActionError(f"Not saved: its Hermes profile wasn't written: {error}", 503) from error
+        raise ActionError(f"Not saved: its profile wasn't written: {error}", 503) from error
     agent = get(core, workspace_id, name)
     if agent is None:
-        raise ActionError("Not saved: its Hermes profile isn't there.", 503)
+        raise ActionError("Not saved: its profile isn't there.", 503)
     if current is not None and current.skills != agent.skills:
         from agos_core.actions import automations
 
@@ -617,7 +617,7 @@ def set_on(core: Core, workspace_id: str, name: str, *, on: bool, local: str) ->
             )
         park(core, workspace_id, name, not on)
     except (EngineError, OSError) as error:
-        raise ActionError(f"Not saved: its Hermes profile wasn't written: {error}", 503) from error
+        raise ActionError(f"Not saved: its profile wasn't written: {error}", 503) from error
     agent_revisions.record(core, workspace_id, name)
 
 
@@ -646,7 +646,7 @@ def delete(core: Core, workspace_id: str, name: str) -> None:
             log.exception("automations of %s in %s not handed over", name, workspace_id)
     agent_profiles.remove(core, workspace_id, name)
     if name in _profile_names(core, workspace_id):
-        raise ActionError("Not deleted: Hermes kept its profile.", 503)
+        raise ActionError("Not deleted: the engine kept its profile.", 503)
     library_repo.delete_item(core.db, agent.id)
     from agos_core.actions import goals
 

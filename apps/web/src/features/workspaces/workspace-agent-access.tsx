@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState, useTransition } from "react";
 import type { AccessLists } from "@/data/queries";
 import { Button } from "@/shared/ui/button";
@@ -43,12 +42,8 @@ export function AgentAccess({
         <p className="mt-1 text-sm text-ink-2">
           Risky commands, for everything in this workspace: tasks, task chats,
           automations and chats. The Autonomy table below then says, per member,
-          what kind of work it may do on its own. This is Hermes&apos;s own
-          approvals.mode, with its deny and allow rules below;{" "}
-          <Link href="/settings/hermes?q=approvals" className="underline">
-            Hermes&apos;s other approval settings
-          </Link>{" "}
-          are in Settings → Hermes settings.
+          what kind of work it may do on its own. This is the workspace&apos;s
+          approvals.mode setting, with its deny and allow rules below.
         </p>
       </div>
       <div className="grid gap-2 sm:grid-cols-2" role="radiogroup">
@@ -115,14 +110,14 @@ function CommandRules({
       <div className="grid gap-4 sm:grid-cols-2">
         <RuleList
           title="Never run (deny rules)"
-          hint="Hermes blocks a command matching one of these, even with Full access. Patterns like git push --force* (case-insensitive). Hermes's approvals.deny."
+          hint="A command matching one of these is blocked, even with Full access. Patterns like git push --force* (case-insensitive). The approvals.deny setting."
           placeholder="e.g. git push --force*"
           entries={deny}
           onChange={setDeny}
         />
         <RuleList
           title="Run without asking (allow rules)"
-          hint="Commands (or patterns like npm test*) Hermes runs without asking under Ask me first. Hermes also adds here when you answer “Always allow”. Hermes's command_allowlist."
+          hint="Commands (or patterns like npm test*) that run without asking under Ask me first. Answering “Always allow” adds here too. The command_allowlist setting."
           placeholder="e.g. npm test*"
           entries={allow}
           onChange={setAllow}

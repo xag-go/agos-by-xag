@@ -33,7 +33,7 @@ def run(
 
     argv = REPORTS.get(command)
     if argv is None:
-        raise EngineError(f"no Hermes report named {command}")
+        raise EngineError(f"no report named {command}")
     env = child_env({**engine.hermes_env(workspace_id), "NO_COLOR": "1"})
     off_loop(f"hermes {command}")
     try:
@@ -48,9 +48,9 @@ def run(
             start_new_session=True,
         )
     except (OSError, subprocess.TimeoutExpired) as error:
-        raise EngineError(f"Hermes didn't answer: {error}") from error
+        raise EngineError(f"The engine didn't answer: {error}") from error
     text = re.sub(r"\x1b\[[0-9;?]*[A-Za-z]", "", done.stdout or "").strip()
     if not text:
         tail = (done.stderr or "").strip().splitlines()[-1:] or ["no answer"]
-        raise EngineError(f"Hermes didn't answer: {tail[0][:300]}")
+        raise EngineError(f"The engine didn't answer: {tail[0][:300]}")
     return text, done.returncode

@@ -45,12 +45,12 @@ def _text(config: dict[str, Any], key: str) -> str:
 def _fields(core: Core) -> list[Any]:
     """Hermes's settings list (its schema: the providers and their models)."""
     if core.engine is None:
-        raise ActionError("Hermes isn't available.", status=503)
+        raise ActionError("The engine isn't available.", status=503)
     try:
         return list(core.engine.config_schema())
     except (EngineError, OSError) as error:
         raise ActionError(
-            f"Hermes's list of voice providers couldn't be read: {error}", 502
+            f"The engine's list of voice providers couldn't be read: {error}", 502
         ) from error
 
 
@@ -105,5 +105,5 @@ def write(core: Core, provider: str, model: str) -> dict[str, Any]:
     try:
         hermes_managed.write(core, sets, unsets)
     except (EngineError, OSError) as error:
-        raise ActionError(f"Hermes didn't take it: {error}", status=502) from error
+        raise ActionError(f"The engine didn't take it: {error}", status=502) from error
     return read(core)

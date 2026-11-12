@@ -186,6 +186,36 @@ def test_the_read_ahead_checks_each_root_once_one_after_the_other(env: Any) -> N
     assert asked == []  # the page asked Hermes nothing
 
 
+def test_the_owner_sees_no_engine_name_and_no_folder_path(env: Any) -> None:  # noqa: F811
+    """Spec 2026-11-04 (no engine name): the page's payload carries no engine folder
+    path, and the Co-Founder's report calls the rows "Full check" and "Status",
+    never the engine's name. The same commands run underneath."""
+    client, core, _runner, _home = env
+    a_ws = ws(client, "Alpha")
+    _hermes(core)
+    client.get("/preferences/hermes-health")
+    assert ReadCache.settle(10)
+    [root] = client.get("/preferences/hermes-health").json()["roots"]
+    assert "home" not in root
+    text = hermes_health.as_text(hermes_health.read(core, a_ws))
+    assert "Full check:" in text and "Status:" in text
+    assert "Hermes" not in text
+
+
+def test_the_cofounder_rows_never_name_the_engine_when_checking_or_failing(env: Any) -> None:  # noqa: F811
+    """A report still running, one that failed, and no workspace at all: each line
+    still says what happens without the engine's name."""
+    empty = hermes_health.as_text({"roots": []})
+    assert "Hermes" not in empty and "engine" in empty
+    report = {"text": "", "error": None, "pending": True, "has_problems": None}
+    failed = {**report, "pending": False, "error": "it didn't answer", "problems": 0, "warnings": 0}
+    found = {"roots": [{"name": "Alpha", "status": report, "doctor": failed}]}
+    text = hermes_health.as_text(found)
+    assert "Status: still checking" in text
+    assert "Full check: not read (it didn't answer)" in text
+    assert "Hermes" not in text
+
+
 def test_the_cofounders_check_waits_for_new_reports(env: Any) -> None:  # noqa: F811
     """From a chat, the Co-Founder runs Hermes's checks now (the owner asked for them):
     a new report, which the page then shows too."""

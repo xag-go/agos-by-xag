@@ -17,7 +17,6 @@ import {
   getHermesFallback,
   getHermesHelperModels,
   getHermesVoice,
-  getHermesAllSettings,
   getKeyPools,
   getAppFacts,
   getModelCatalog,
@@ -42,7 +41,6 @@ import {
 import {
   OwnerRules,
   GeneralSettings,
-  HermesSettingsPage,
   HelperModelsPage,
   KeyPoolsCard,
   HermesHealthView,
@@ -228,22 +226,6 @@ async function SectionBody({ slug }: { slug: SettingsSlug }) {
           servers={servers}
           workspaces={workspaces}
         />
-      );
-    }
-    case "hermes": {
-      const [data, catalog, workspaces] = await Promise.all([
-        getHermesAllSettings(),
-        getModelCatalog(),
-        workspaceNames(),
-      ]);
-      return (
-        <Suspense>
-          <HermesSettingsPage
-            data={data}
-            catalog={catalog}
-            workspaces={workspaces}
-          />
-        </Suspense>
       );
     }
     case "health":

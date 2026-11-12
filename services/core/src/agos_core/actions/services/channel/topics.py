@@ -53,9 +53,7 @@ def make_topic(workspace_id: str, chat: str, name: str) -> str:
     doorbell.ring(doorbell.OUTBOX, workspace_id)
     try:
         if not done.wait(TOPIC_WAIT_S):
-            raise ActionError(
-                "Couldn't create it: the workspace's Hermes didn't answer (is it running?)"
-            )
+            raise ActionError("Couldn't create it: the workspace didn't answer (is it running?)")
         t = _topics[tid]
         if t["error"] or not t["thread"]:
             raise ActionError(

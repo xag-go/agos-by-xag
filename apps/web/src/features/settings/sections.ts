@@ -38,25 +38,19 @@ export const settingsSections = [
   {
     slug: "tools",
     label: "Tools",
-    description: "Every tool Hermes has, from Hermes's own list.",
-  },
-  {
-    slug: "hermes",
-    label: "Hermes settings",
-    description:
-      "Every setting of Hermes, the engine every workspace runs on: Hermes's own list, its words and its defaults, with each workspace's value. Change one here and it is written into every workspace's Hermes (its Co-Founder and each member).",
+    description: "Every tool every workspace has, from the engine's own list.",
   },
   {
     slug: "health",
     label: "Health",
     description:
-      "Hermes's own checks of every workspace's engine: its “hermes status” and “hermes doctor”, as Hermes prints them (with the managed scope every workspace shares).",
+      "The engine's own checks of every workspace: its Status and Full check reports, as the engine prints them (with the managed scope every workspace shares).",
   },
   {
     slug: "errors",
     label: "Errors",
     description:
-      "AGOS's own errors and each workspace's Hermes errors, grouped: how often, when first and last, and on which version. Mark one fixed; if it happens again it opens again and you are told.",
+      "AGOS's own errors and each workspace's engine errors, grouped: how often, when first and last, and on which version. Mark one fixed; if it happens again it opens again and you are told.",
   },
   {
     slug: "usage",

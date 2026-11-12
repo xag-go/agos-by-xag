@@ -41,7 +41,7 @@ def hermes_env_lock(env_file: Path, timeout: float = LOCK_TIMEOUT) -> Iterator[N
                 break
             except BlockingIOError:
                 if time.monotonic() >= deadline:
-                    raise TimeoutError(f"Hermes's .env lock is busy ({env_file})") from None
+                    raise TimeoutError(f"The engine's .env lock is busy ({env_file})") from None
                 time.sleep(0.02)
         try:
             handle.truncate(0)  # who holds it, the way Hermes stamps it

@@ -6,6 +6,21 @@ Every notable change to AGOS is written here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- The app no longer names its engine anywhere you read: one **Updates** card in
+  Settings → General checks and installs everything (no separate engine update),
+  the engine settings page left the navigation, Errors lost the engine source
+  filter, Health shows **Full check** and **Status**, and every agent is told to
+  explain things without naming the engine. The only places the name remains are
+  the "Import from Hermes" entries in Connectors, Skills and Capabilities.
+
+- The Co-Founder's actions now all come from one declared registry: each one
+  says who may run it, whether it needs your yes, and that agents may not run
+  it. A team member asked to use a Co-Founder tool gets a clear "hand this card
+  to review" answer instead of retrying, and the Co-Founder does its own jobs
+  rather than putting them on a member's card.
+
 ### Fixed
 
 - AGOS works on a phone: the side menu opens as a drawer, chats show the list

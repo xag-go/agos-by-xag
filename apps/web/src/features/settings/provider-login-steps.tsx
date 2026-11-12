@@ -180,9 +180,8 @@ export function WorkspaceLogins({
   return (
     <div className="flex flex-col gap-3">
       <p className="text-sm text-ink-2">
-        Each workspace signs in with its own Hermes: Hermes keeps one{" "}
-        {provider.name} login per workspace. Use the same account for all of
-        them.
+        Each workspace signs in on its own: one {provider.name} login per
+        workspace. Use the same account for all of them.
       </p>
       <ul className="flex flex-col divide-y divide-line rounded-lg border border-line">
         {rows.map((w) => (

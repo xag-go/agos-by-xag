@@ -63,7 +63,7 @@ TICK_SECONDS = 20
 
 
 MISSING = (
-    "Its job is missing from Hermes's cron, so it doesn't run on its schedule. "
+    "Its job is missing from the scheduler, so it doesn't run on its schedule. "
     "Open it and save it again to schedule it."
 )
 
@@ -213,7 +213,7 @@ def automation_view(
             update["problem"] = "Waits: an account is at your pause level (Settings → Usage)."
         update["next_run_at"] = job.get("next_run_at")
         if not job["enabled"] and reason and reason not in AGOS_REASONS:
-            update["problem"] = f"Paused by Hermes: {reason}"[:300]
+            update["problem"] = f"Paused by the engine: {reason}"[:300]
         if not card_runs and job.get("last_run_at"):
             ok = job.get("last_status") == "ok"
             update["last_run"] = LastRun(

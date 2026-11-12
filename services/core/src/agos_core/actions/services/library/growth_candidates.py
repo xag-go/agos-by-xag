@@ -241,7 +241,7 @@ def _decide(
             workspace_skills.applied(core, workspace_id)
             version = skill_versions.current(core, workspace_id, name)
         except (ActionError, OSError) as error:
-            promote, note = False, f"Hermes didn't write it: {error}"[:900]
+            promote, note = False, f"The engine didn't write it: {error}"[:900]
     with transaction(core.db):
         candidates_repo.decide(
             core.db,

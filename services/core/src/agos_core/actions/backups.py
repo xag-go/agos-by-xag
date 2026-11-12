@@ -270,7 +270,7 @@ def hermes_private(core: Core) -> bk.Private | None:
         except (OSError, hermes_process.SubprocessError, StopIteration, ValueError) as error:
             # Fail closed: a backup that may hold a key is never made.
             raise bk.BackupError(
-                "Hermes couldn't say which files hold keys, so no backup was made."
+                "The engine couldn't say which files hold keys, so no backup was made."
             ) from error
         return [bool(a) for a in answer]
 
@@ -398,7 +398,7 @@ def rehearse(core: Core, name: str | None = None) -> Rehearsal:
             "the database passed SQLite's check."
             if ok
             else f"Problems: tables missing {', '.join(short) or 'none'}; "
-            f"{len(missing)} problem(s) in Hermes's part."
+            f"{len(missing)} problem(s) in the engine's part."
         )
         if bad_db:
             detail += " The restored database failed SQLite's check: " + (

@@ -40,7 +40,7 @@ log = logging.getLogger("agos.skill_growth")  # the old module's logger (one nam
 def script_text() -> str:
     """The monitor script Hermes runs before each tick: it asks AGOS (the workspace's
     own bridge, key from agos-bridge.json in the profile home) for the evidence."""
-    return '''"""AGOS skill review: the week's evidence Hermes's monitor compares (written by AGOS)."""
+    return '''"""AGOS skill review: the week's evidence the engine's monitor compares (written by AGOS)."""
 import json
 import os
 import sys
@@ -132,7 +132,7 @@ def job(core: Core, workspace_id: str) -> dict[str, Any]:
         "lastAt": found.get("last_run_at"),
         "lastStatus": found.get("last_status"),
         "changedAt": found.get("monitor_changed_at"),
-        "problem": f"Paused by Hermes: {reason}"[:300]
+        "problem": f"Paused by the engine: {reason}"[:300]
         if not enabled and reason and reason != OFF_REASON
         else None,
     }

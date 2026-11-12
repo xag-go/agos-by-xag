@@ -20,8 +20,8 @@ export function ModelsSettings({
   if (providers === null) {
     return (
       <Panel as="p" className="px-5 py-4 text-sm text-ink-2">
-        Hermes isn&apos;t answering, so connected providers can&apos;t be shown
-        right now. Check that Hermes is installed on this machine, then reload.
+        The engine isn&apos;t answering, so connected providers can&apos;t be
+        shown right now. Check the install on this machine, then reload.
       </Panel>
     );
   }
@@ -52,12 +52,10 @@ function MoreProviders({ providers }: { providers: ProviderConnection[] }) {
   return (
     <section className="flex flex-col gap-3">
       <div>
-        <h2 className="font-display text-lg font-semibold">
-          More providers from Hermes
-        </h2>
+        <h2 className="font-display text-lg font-semibold">More providers</h2>
         <p className="text-sm text-ink-2">
-          {providers.length} more that Hermes can use. Connect one and its
-          models show up in every model picker.
+          {providers.length} more are supported. Connect one and its models show
+          up in every model picker.
         </p>
       </div>
       <Input
@@ -180,22 +178,20 @@ function ApiKeyBox({ provider }: { provider: ProviderConnection }) {
     <>
       {dialog}
       <p className="text-sm text-ink-2">
-        Saved in Hermes on this server for every workspace. It is never shown
-        again or sent to the browser.
+        Saved on this server for every workspace. It is never shown again or
+        sent to the browser.
       </p>
       {api ? (
         <div className="flex flex-wrap items-center gap-3 text-sm">
           <span className="font-medium tabular-nums">
-            {api.last4 ? `••••${api.last4}` : "Saved in Hermes"}
+            {api.last4 ? `••••${api.last4}` : "Saved"}
           </span>
           {api.status && (
             <span
               className={api.status === "ok" ? "text-ink-3" : "text-danger"}
               title={api.problem || undefined}
             >
-              {api.status === "ok"
-                ? "works in Hermes"
-                : `Hermes: ${api.status}`}
+              {api.status === "ok" ? "works" : api.status}
               {api.statusAt ? ` ${formatWhen(api.statusAt)}` : ""}
             </span>
           )}

@@ -44,7 +44,6 @@ class HermesReport(Record):
 class HermesRootHealth(Record):
     workspace_id: str
     name: str
-    home: str
     status: HermesReport  # `hermes status --full`
     doctor: HermesReport  # `hermes doctor` (no --fix), incl. its managed scope line
     # When the older of the two was taken (ISO, UTC; None until both are in), and

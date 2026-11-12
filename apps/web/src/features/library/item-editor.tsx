@@ -408,8 +408,8 @@ export function ItemEditor({
       {kind === "plugin" && (
         <>
           <Field
-            label="Hermes plugin name"
-            hint="As shown by Hermes. It stays disabled until a workspace turns it on."
+            label="Plugin name"
+            hint="The plugin's own name. It stays disabled until a workspace turns it on."
           >
             <Input
               value={plugin}

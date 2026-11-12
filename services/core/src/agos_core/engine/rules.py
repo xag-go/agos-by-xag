@@ -99,7 +99,7 @@ def _check_host_path(path: Path, *, forbidden: tuple[Path, ...]) -> Path:
     for private in forbidden:
         private_real = private.resolve()
         if real == private_real or private_real in real.parents or real in private_real.parents:
-            raise MountRefusedError("this folder overlaps AGOS's or Hermes's private data")
+            raise MountRefusedError("this folder overlaps AGOS's or the engine's private data")
     return real
 
 

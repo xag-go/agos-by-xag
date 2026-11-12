@@ -299,7 +299,7 @@ export function Composer({
           {commandMatches.length > 0 && (
             <ul
               role="listbox"
-              aria-label="Hermes commands"
+              aria-label="Chat commands"
               className="mx-2.5 mt-2 flex flex-col overflow-hidden rounded-xl border border-line bg-panel py-1 shadow-lg"
             >
               {commandMatches.map((c, i) => (

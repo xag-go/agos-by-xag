@@ -325,7 +325,6 @@ export const getHermesFallback = () =>
 export type HermesVoice = components["schemas"]["HermesVoice"];
 export const getHermesVoice = () =>
   core<HermesVoice>("GET", "/preferences/hermes-voice");
-export type HermesAllSettings = components["schemas"]["HermesAllSettings"];
 export type HermesHealth = components["schemas"]["HermesHealth"];
 export type SecretsCheck = components["schemas"]["SecretsCheck"];
 export type AccessLists = components["schemas"]["AccessLists"];
@@ -361,10 +360,6 @@ export const getAccessLists = async (
     return { deny: [], allow: [] };
   }
 };
-export type HermesSettingRow = components["schemas"]["HermesSettingRow"];
-/** Every Hermes setting, from Hermes's own schema, as the workspaces have it. */
-export const getHermesAllSettings = () =>
-  core<HermesAllSettings>("GET", "/preferences/hermes-settings");
 /** Limits the core keeps (attachments, trash): the web shows these, never its own. */
 export const getAppFacts = cache(
   async (): Promise<components["schemas"]["AppFacts"] | null> => {

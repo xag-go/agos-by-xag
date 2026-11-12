@@ -75,6 +75,24 @@ def test_soul_is_written_on_create_with_the_fixed_rules(env: Any) -> None:
     assert "Kanban" in text and "needs_input" in text and "/workspace" in text
 
 
+def test_every_agent_is_told_not_to_name_the_engine_to_the_owner(env: Any) -> None:
+    """Spec 2026-11-04 (no engine name): the fixed rules every agent gets (the
+    workspace's SOUL.md and each member's) tell it to say "the engine" or "AGOS",
+    never "Hermes", except for the "Import from Hermes" screens."""
+    fragments = (
+        'Never say "Hermes" to the owner',
+        'call it "the engine" or "AGOS"',
+        '"Import from Hermes" screens',
+    )
+    client, _core, home = env
+    ws = create(client, "Argan Store", "Online shop for argan oil.")
+    text = soul(home, ws)
+    member = identity.member_soul("Writer", "Argan Store", "shop", "You write posts.")
+    for fragment in fragments:
+        assert fragment in identity.RULES
+        assert fragment in text and fragment in member
+
+
 def test_rename_and_description_rewrite_soul(env: Any) -> None:
     client, _core, home = env
     ws = create(client, "Argan", "Old text")
@@ -310,3 +328,9 @@ def test_a_chat_follows_the_workspace_model_unless_he_picked_one(env: Any) -> No
     # The pick waits in the queue until Hermes takes it: the chat shows it already.
     got = client.get(f"/workspaces/{ws}/chats/{chat}").json()["model"]
     assert (got["model"], got["effort"]) == ("claude-haiku-5", "max")
+
+
+def test_the_rules_carry_the_handoff_review_and_escalation() -> None:
+    rules = identity.RULES
+    assert "**Input**" in rules and "**Output**" in rules and "**Done when**" in rules
+    assert "Before work reaches the owner" in rules and "one level up" in rules

@@ -27,6 +27,7 @@ from agos_core.actions import (
     chat_store,
     cofounder_move,
     digest,
+    heartbeat,
     hermes_channel,
     hermes_errors,
     hermes_fallback,
@@ -142,6 +143,8 @@ _SKILLS: tuple[Step, ...] = (
     (skill_requests, "ensure_all", "find-skills skill not installed"),
     # The Co-Founder's rhythm jobs at this AGOS's prompts (actions/rhythm.py).
     (rhythm, "refresh_all", "rhythm job prompts not refreshed"),
+    # Every heartbeat job at this AGOS's prompt (actions/heartbeat.py).
+    (heartbeat, "refresh_all", "heartbeat job prompts not refreshed"),
 )
 
 

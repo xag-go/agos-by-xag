@@ -1,10 +1,9 @@
 """The Co-Founder's agos_action kinds: one catalogue (KINDS) merged from the
-per-domain modules, the one-line domain names of its always-on prompt (DOMAINS),
+operation registry (ops/specs), the one-line domain names of its always-on prompt (DOMAINS),
 which fields are structured, and the per-call rules (owner_first, title).
 
-Owns: the merge order and the gate/title rules of a kind. Must not: define a
-kind (that lives in its domain module, or in the operation registry's ops/specs)
-or run one (actions/cofounder_more.py).
+Owns: the gate/title rules of a kind. Must not: define a kind (that lives in the
+operation registry's ops/specs) or run one (actions/cofounder_more.py).
 """
 
 from __future__ import annotations
@@ -13,7 +12,6 @@ import string
 from typing import Any
 
 from agos_core.engine.cofounder_kind import AUTOMATIONS, BOARD, SKILLS, TEAM, WORKSPACE, Kind
-from agos_core.engine.cofounder_parity import board, workspace
 from agos_core.ops import catalog as ops_catalog
 from agos_core.ops.specs import SPECS
 
@@ -38,11 +36,8 @@ DOMAINS: dict[str, str] = {
     "an error fixed / open it again)",
 }
 
-KINDS: dict[str, Kind] = {
-    **board.BOARD_KINDS,
-    **workspace.WORKSPACE_KINDS,
-    **ops_catalog.kinds(SPECS),  # the registry's kinds (ops/specs), as declared
-}
+# Every kind is declared in the operation registry (ops/specs): no hand-written row.
+KINDS: dict[str, Kind] = ops_catalog.kinds(SPECS)
 
 # Fields read as a list or an object, per kind (engine/cofounder_actions.py _clean).
 STRUCTURED: dict[str, frozenset[str]] = {k: frozenset(v.structured) for k, v in KINDS.items()}

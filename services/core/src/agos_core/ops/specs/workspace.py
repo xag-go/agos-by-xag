@@ -51,6 +51,7 @@ CREATE_WORKSPACE: OperationSpec[NewWorkspace] = OperationSpec(
     input_model=NewWorkspace,
     audit_title="Create the workspace {name}",
     gate="once",
+    agent_tool=None,
     web_action="createWorkspace",
     owner_only=WHOLE_WORKSPACE,
     idempotent=True,
@@ -62,6 +63,7 @@ DELETE_WORKSPACE: OperationSpec[DeleteWorkspace] = OperationSpec(
     input_model=DeleteWorkspace,
     audit_title="Delete the workspace {workspace_id}",
     gate="undo",
+    agent_tool=None,
     web_action="deleteWorkspace",
     owner_only=WHOLE_WORKSPACE,
 )

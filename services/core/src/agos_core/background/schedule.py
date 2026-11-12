@@ -8,6 +8,7 @@ and how often it recurs, registered once at the core's start (before the job loo
 | retention.daily  | old machine records (background/retention)   | 1 day    |
 | slo.health       | the core's /health probe (S3, actions/slis)  | 1 min    |
 | slo.probes       | page probe (S1), automation delays (S4)      | 5 min    |
+| sandbox.denials  | team sandboxes the broker refused, as errors | 1 min    |
 
 A failed chore is a dead letter at once (its next round comes anyway); retention is
 tried three times. Either way the error is in Settings → Errors.
@@ -24,10 +25,11 @@ from typing import Any
 from agos_core.actions import automations, idle, slis
 from agos_core.background import retention, trash
 from agos_core.db import workspaces as workspaces_repo
+from agos_core.engine import sandbox_broker, sandboxd_watch
 from agos_core.engine.cron import CronError, read_jobs
 from agos_core.jobs import recurring, runner
 
-__all__ = ["HEALTH", "IDLE", "PROBES", "TRASH", "register"]
+__all__ = ["DENIALS", "HEALTH", "IDLE", "PROBES", "TRASH", "register"]
 
 log = logging.getLogger("agos.jobs")
 
@@ -35,6 +37,7 @@ IDLE = "idle.chores"
 TRASH = "trash.purge"
 HEALTH = "slo.health"
 PROBES = "slo.probes"
+DENIALS = "sandbox.denials"
 
 
 def _idle(core: Any, _payload: dict[str, Any]) -> None:
@@ -80,6 +83,15 @@ def _probes(core: Any, _payload: dict[str, Any]) -> None:
         slis.automation_delays(core, workspace.id, _scheduled_jobs(core, workspace.id))
 
 
+def _denials(core: Any, _payload: dict[str, Any]) -> None:
+    """Refused team sandboxes become errors the owner sees (engine/sandboxd_watch.py)."""
+    engine = core.engine
+    if engine is None or not hasattr(engine, "settings"):
+        return
+    policies, _sockets = sandbox_broker.paths(engine)
+    sandboxd_watch.report_new(policies, engine.settings.profile_prefix)
+
+
 def register() -> None:
     """The job loop runs these kinds (at the core's start, every copy)."""
     for kind, handler, every in (
@@ -88,6 +100,7 @@ def register() -> None:
         (retention.KIND, _retention, recurring.Recurring(timedelta(days=1), attempts=3)),
         (HEALTH, _health, recurring.Recurring(timedelta(minutes=1))),
         (PROBES, _probes, recurring.Recurring(timedelta(minutes=5))),
+        (DENIALS, _denials, recurring.Recurring(timedelta(minutes=1))),
     ):
         runner.HANDLERS[kind] = handler
         recurring.EVERY[kind] = every

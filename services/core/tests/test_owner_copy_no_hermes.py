@@ -181,6 +181,26 @@ MODULES = [
     # hermes_gateway/: the gateway's owner-visible failure texts
     "hermes_gateway/chat_sessions.py",
     "hermes_gateway/errors.py",
+    # ops/specs/: audit titles and field hints shown in activity and the Co-Founder's list
+    "ops/spec.py",
+    "ops/specs/__init__.py",
+    "ops/specs/automation.py",
+    "ops/specs/board.py",
+    "ops/specs/channels.py",
+    "ops/specs/chat_base.py",
+    "ops/specs/connector.py",
+    "ops/specs/folders.py",
+    "ops/specs/founder.py",
+    "ops/specs/hermes_admin.py",
+    "ops/specs/library.py",
+    "ops/specs/portability.py",
+    "ops/specs/preferences.py",
+    "ops/specs/rules_docs.py",
+    "ops/specs/settings.py",
+    "ops/specs/team.py",
+    "ops/specs/vision.py",
+    "ops/specs/work_hours.py",
+    "ops/specs/workspace.py",
 ]
 
 # The spec's only exception: "Import from Hermes" texts keep the name.

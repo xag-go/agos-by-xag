@@ -328,3 +328,9 @@ def test_a_chat_follows_the_workspace_model_unless_he_picked_one(env: Any) -> No
     # The pick waits in the queue until Hermes takes it: the chat shows it already.
     got = client.get(f"/workspaces/{ws}/chats/{chat}").json()["model"]
     assert (got["model"], got["effort"]) == ("claude-haiku-5", "max")
+
+
+def test_the_rules_carry_the_handoff_review_and_escalation() -> None:
+    rules = identity.RULES
+    assert "**Input**" in rules and "**Output**" in rules and "**Done when**" in rules
+    assert "Before work reaches the owner" in rules and "one level up" in rules

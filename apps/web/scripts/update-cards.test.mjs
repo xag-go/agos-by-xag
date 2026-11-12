@@ -21,8 +21,10 @@ const stored = existsSync(STORED)
 const now = {};
 
 const steps = (...names) => names.map((name, i) => ({ name, at: String(i) }));
+// Core's real installer wording, in the field core really sends (agos_note —
+// the flat `note` only carries the one verdict: ready / up to date / failed).
 const NOTE =
-  "This AGOS wasn't installed with the installer, so the app part is updated the way it was installed.";
+  "This AGOS wasn't installed with the installer: update it the way you installed it.";
 
 // Updates card: useState order check, state, busy, away, error, watching.
 const card = (s = {}) => [
@@ -36,10 +38,19 @@ const card = (s = {}) => [
 const STATES = {
   "first draw": card(),
   checking: card({ busy: true }),
-  "up to date": card({ check: { ready: false } }),
-  "up to date, with a note": card({ check: { ready: false, note: NOTE } }),
+  "up to date": card({ check: { ready: false, note: "You're up to date." } }),
+  "up to date, with a note": card({
+    check: { ready: false, note: "You're up to date.", agos_note: NOTE },
+  }),
+  "the check failed": card({
+    check: {
+      ready: false,
+      note: "The check failed.",
+      agos_note: "git fetch failed: no network",
+    },
+  }),
   "an update is ready": card({ check: { ready: true } }),
-  "ready, with a note": card({ check: { ready: true, note: NOTE } }),
+  "ready, with a note": card({ check: { ready: true, agos_note: NOTE } }),
   running: card({
     state: {
       phase: "build",
@@ -62,11 +73,22 @@ const STATES = {
   }),
   "away before any state": card({ away: true, watching: 1 }),
   done: card({ state: { phase: "done" } }),
+  "done, the engine part still pending": card({
+    state: { phase: "done", engine_pending: true },
+  }),
   "failed, rolled back": card({
     state: { phase: "failed", error: "build broke", rolled_back: true },
   }),
   "failed, not rolled back": card({
     state: { phase: "failed", error: "disk full" },
+  }),
+  "failed, half done (AGOS updated, the engine part stopped)": card({
+    state: {
+      phase: "failed",
+      error: "the fit check refused",
+      rolled_back: true,
+      half_done: true,
+    },
   }),
   "rolled back on purpose": card({
     state: {

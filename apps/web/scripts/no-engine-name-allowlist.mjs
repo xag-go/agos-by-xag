@@ -25,6 +25,10 @@ export const SIBLING_LANE_FILES = new Set([]);
 /**
  * Identifier-like matches (no whitespace: API paths, query keys, ids,
  * CSS handles — never shown to the owner as copy) are allowed by the
- * scanner itself, except the bare word "Hermes", which IS owner copy.
+ * scanner itself — but never the WORD "Hermes" (alone or with punctuation,
+ * "Hermes:", "(Hermes)"…): that IS owner copy. CamelCase identifiers
+ * (saveHermesSetting) and lowercase paths (/hermes-update) have no word
+ * boundary around the capitalized word and stay allowed.
  */
-export const IDENTIFIER_LIKE = (text) => !/\s/.test(text) && text !== "Hermes";
+export const IDENTIFIER_LIKE = (text) =>
+  !/\s/.test(text) && !/\bHermes\b/.test(text);

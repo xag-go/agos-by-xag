@@ -82,3 +82,12 @@ test("no owner-visible string says the engine's name", () => {
     `The engine's name leaks into owner-visible copy (reword it; identifiers/API paths are fine):\n${bad.join("\n")}`,
   );
 });
+
+test("the identifier escape hatch never passes the word itself", () => {
+  // No-whitespace strings are identifier-like (API paths, query keys, ids) —
+  // but the WORD "Hermes" with any punctuation around it is owner copy.
+  for (const text of ["Hermes", "Hermes:", "Hermes…", "(Hermes)", "Hermes's"])
+    assert.equal(IDENTIFIER_LIKE(text), false, text);
+  for (const text of ["/hermes-update", "hermes-settings", "saveHermesSetting"])
+    assert.equal(IDENTIFIER_LIKE(text), true, text);
+});

@@ -25529,9 +25529,26 @@
     },
     "/updates/run": {
       "post": {
-        "description": "Update now: AGOS's update first when it has one, else the engine's.",
+        "description": "Update now: AGOS's update first when it has one, else the engine's.\nA keyed retry or double click gets the first start's answer, never a second.",
         "operationId": "run_updates_run_post",
         "parameters": [
+          {
+            "in": "header",
+            "name": "idempotency-key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 200,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          },
           {
             "in": "header",
             "name": "x-agos-internal",

@@ -6,6 +6,6 @@
   "description": "minimatch 11 behind the old callable minimatch(path, pattern) API, for dev tools (eslint 9 and its plugins, redocly) that still ask for minimatch 3 or 5. pnpm-workspace.yaml overrides point those at this package.",
   "main": "index.cjs",
   "dependencies": {
-    "minimatch": "^11.0.3"
+    "minimatch": "^11.0.5"
   }
 }

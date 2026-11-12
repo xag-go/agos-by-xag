@@ -35,7 +35,7 @@ export function Details({
         </p>
         {notice && <p className="text-xs text-warn">{notice}</p>}
         {description && (
-          <p className="text-xs text-ink-2">Hermes: {description}</p>
+          <p className="text-xs text-ink-2">From the engine: {description}</p>
         )}
         {children}
       </div>

@@ -6,6 +6,11 @@ Every notable change to AGOS is written here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- CI: the self-hosted nightly runner's account is now `server-ci` (was
+  `agos-ci`); its service is `server-ci-runner.service`.
+
 ### Added
 
 - Automations: **Done by** shows which steps run side by side; each team step can

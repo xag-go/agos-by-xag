@@ -27,6 +27,10 @@ jobs:
         with:
           persist-credentials: false
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0, version from package.json
+        with:
+          # Per job: the default ~/setup-pnpm is one folder for every job of the account,
+          # so parallel jobs on the server runner wipe each other's pnpm and store.
+          dest: ${{ runner.temp }}/setup-pnpm
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
@@ -61,6 +65,10 @@ jobs:
         with:
           persist-credentials: false
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          # Per job: the default ~/setup-pnpm is one folder for every job of the account,
+          # so parallel jobs on the server runner wipe each other's pnpm and store.
+          dest: ${{ runner.temp }}/setup-pnpm
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
@@ -82,6 +90,10 @@ jobs:
         with:
           persist-credentials: false
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          # Per job: the default ~/setup-pnpm is one folder for every job of the account,
+          # so parallel jobs on the server runner wipe each other's pnpm and store.
+          dest: ${{ runner.temp }}/setup-pnpm
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
@@ -156,6 +168,18 @@ jobs:
         with:
           python-version: "3.14"
       - run: uv sync --frozen
+      # The server's runner account has the nightly's real Hermes on its PATH, and the
+      # tests that find `hermes` there run it (120 s timeouts under load) instead of
+      # skipping as on GitHub's machines. This job tests the code without Hermes.
+      - name: Hide the server's Hermes from the tests
+        if: runner.environment == 'self-hosted'
+        run: |
+          python3 - <<'PY' >> "$GITHUB_ENV"
+          import os
+          keep = [d for d in os.environ["PATH"].split(os.pathsep)
+                  if not os.access(os.path.join(d, "hermes"), os.X_OK)]
+          print("PATH=" + os.pathsep.join(keep))
+          PY
       # The tests that need neither a real Hermes Agent install (~/.hermes) nor
       # Docker. Files that read Hermes's own source or run the real `hermes` carry
       # the `hermes` marker (tests/conftest.py HERMES_FILES) and run nightly on the
@@ -250,7 +274,21 @@ jobs:
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: python3 scripts/ci/changelog_check.py "$BASE_SHA" HEAD
-      # shellcheck ships on the ubuntu-24.04 image.
+      # shellcheck ships on the ubuntu-24.04 image; the server runner has none and no
+      # sudo, so a pinned release is downloaded into $RUNNER_TEMP/bin when it is missing.
+      - name: Install shellcheck (only when missing)
+        env:
+          SHELLCHECK_VERSION: v0.10.0
+          SHELLCHECK_SHA256: 6c881ab0698e4e6ea235245f22832860544f17ba386442fe7e9d629f8cbedf87
+        run: |
+          command -v shellcheck >/dev/null && exit 0
+          curl -fsSL -o shellcheck.tar.xz \
+            "https://github.com/koalaman/shellcheck/releases/download/${SHELLCHECK_VERSION}/shellcheck-${SHELLCHECK_VERSION}.linux.x86_64.tar.xz"
+          echo "${SHELLCHECK_SHA256}  shellcheck.tar.xz" | sha256sum -c -
+          tar -xJf shellcheck.tar.xz --strip-components=1 "shellcheck-${SHELLCHECK_VERSION}/shellcheck"
+          install -D -m 755 shellcheck "$RUNNER_TEMP/bin/shellcheck"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+          rm -f shellcheck shellcheck.tar.xz
       - name: shellcheck (installer, deploy and helper scripts)
         run: shellcheck --version && shellcheck -S warning install.sh deploy/*.sh scripts/*.sh
 
@@ -285,6 +323,10 @@ jobs:
         with:
           persist-credentials: false
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          # Per job: the default ~/setup-pnpm is one folder for every job of the account,
+          # so parallel jobs on the server runner wipe each other's pnpm and store.
+          dest: ${{ runner.temp }}/setup-pnpm
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc

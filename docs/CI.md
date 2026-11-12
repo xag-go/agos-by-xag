@@ -138,7 +138,7 @@ is off until a runner is registered:
    `deploy/register-ci-runner.sh --dry-run` shows every step; then
    `deploy/register-ci-runner.sh --repo OWNER/NAME` (a registration token comes from
    your `gh` login, or `--token-file`; it never goes on a command line). It makes a
-   dedicated low-privilege account (`agos-ci`: no sudo, its own 0700 home, so a job
+   dedicated low-privilege account (`server-ci`: no sudo, its own 0700 home, so a job
    reads neither your keys nor the live AGOS), installs that account's own Hermes
    (pinned to `deploy/hermes.pin`) and uv, the runner (pinned version, sha256 checked,
    labels self-hosted / linux / hermes) and a systemd user service of that account:
@@ -156,6 +156,22 @@ is off until a runner is registered:
 4. Start it once by hand (`gh workflow run nightly-hermes.yml -f stage=hermes-tests`).
 5. `deploy/register-ci-runner.sh --remove` stops and unregisters it (the account stays;
    the script prints the `userdel`).
+
+### Every PR's CI on the same runner (no minutes limit)
+
+GitHub counts minutes only on its own machines for a private repo; a self-hosted
+runner has no limit. Set the repository variable `CI_RUNNER` to `self`
+(`gh variable set CI_RUNNER --body self`) and every job of `ci.yml` and
+`security.yml` runs on the server's runners (label `server-ci`) instead of
+`ubuntu-24.04`. Without the variable (the public repo) nothing changes. The jobs need
+no sudo there: oasdiff and gitleaks go into the job's own `$RUNNER_TEMP/bin`, and
+Playwright installs only its Chromium (the machine already has the system
+libraries). Three runners of the same account (`server-ci`, `server-ci-2`,
+`server-ci-3`) run three jobs at once under one shared limit for the whole account
+(`user-<uid>.slice`: `MemoryMax=10G`, low CPU and IO weight). Only the first runner
+also carries the `hermes` label, so the nightly's rigs never run beside another
+nightly job; the other two have their own temp folder and a clean-up hook that
+touches only that folder.
 
 The workflow keeps pytest's temp dirs and the evals / budgets rigs under
 `~/.hermes/cache/scratch/` (on disk and inside `~/.hermes`): outside it, each throwaway

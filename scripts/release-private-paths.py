@@ -13,7 +13,7 @@ compliance files must describe AGOS, not that machine.
     scripts/release-private-paths.py --rev <rev>     another commit
 
 Exit 1 with file:line for each hit. Paths every AGOS install has (/home/agos, the
-CI runner's agos-ci users, ~/.hermes, ~/agos-data) are fine. Files marked
+CI runner's server-ci users, ~/.hermes, ~/agos-data) are fine. Files marked
 `export-ignore` in .gitattributes are never published, so never checked.
 Standard library only.
 """
@@ -30,7 +30,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 # Homes every install or CI run has; anything else under /home is someone's own.
-_PUBLIC_HOMES = r"(?:agos|agos-ci|agos-ci-test|agent|tester|runner|user|you|me|alice|bob|[a-z])\b"
+_PUBLIC_HOMES = r"(?:agos|server-ci|server-ci-test|agent|tester|runner|user|you|me|alice|bob|[a-z])\b"
 PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     ("a builder worktree (~/agos-wt)", re.compile(r"agos-wt\b")),
     ("the maintainer's notes (~/wiki)", re.compile(r"~/wiki\b|\$HOME/wiki\b")),

@@ -3,7 +3,7 @@
 # needs (real Hermes tests, the e2e rig, agent evals, speed budgets), on this machine.
 #
 # What it sets up (docs/CI.md, "Nightly self-hosted runner"):
-#   - a dedicated low-privilege Linux account (default `agos-ci`): no sudo group, its own
+#   - a dedicated low-privilege Linux account (default `server-ci`): no sudo group, its own
 #     0700 home, so a job can read neither the owner's keys (~/.ssh, gh login, Hermes's
 #     .env) nor the live AGOS (/home/agos). Never the account that runs the live AGOS.
 #     (A systemd *user* unit cannot hide files from its own uid on this kernel: unprivileged
@@ -32,7 +32,7 @@
 #
 # Options:
 #   --repo OWNER/NAME     the GitHub repository (default: from `git remote get-url origin`)
-#   --account NAME        the runner's Linux account (default agos-ci)
+#   --account NAME        the runner's Linux account (default server-ci)
 #   --name NAME           the runner's name on GitHub (default <hostname>-hermes)
 #   --token-file FILE     a registration token (mode 0600). Default: asked from GitHub with
 #                         `gh api` (the caller's gh login; the token never goes on argv)
@@ -51,11 +51,11 @@ REPO_ROOT="$(cd "$HERE/.." && pwd)"
 RUNNER_VERSION="2.338.2"
 RUNNER_SHA256="baebf204307bac6193480852732f0aba2ae97b6c5597c244f4d5558390147c40"
 RUNNER_LABELS="hermes" # added to the runner's own self-hosted, Linux, X64
-UNIT="agos-ci-runner.service"
+UNIT="server-ci-runner.service"
 # Accounts the runner must never be (the live AGOS's, root).
 FORBIDDEN_ACCOUNTS="root agos"
 
-ACCOUNT="agos-ci"
+ACCOUNT="server-ci"
 REPO=""
 NAME="$(hostname -s 2>/dev/null || echo host)-hermes"
 TOKEN_FILE=""

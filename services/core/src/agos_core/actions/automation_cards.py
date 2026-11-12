@@ -34,6 +34,7 @@ from pathlib import Path
 from typing import Any, Literal
 
 from agos_core.context import Core
+from agos_core.engine import step_conditions
 from agos_core.engine.team_steps import Step
 
 PREFIX = "agos-automation:"
@@ -182,11 +183,14 @@ def run_groups(core: Core, workspace_id: str, limit: int = 60) -> list[Any]:
     """The run history: the workspace's automation cards grouped by run (one board
     query per automation, read only), newest first, each run with its status."""
     from agos_core.actions import automations as automation_actions
+    from agos_core.actions.services.automation import run_detail
     from agos_core.db.records import AutomationRunGroup, RunCard
 
     names = {a.id: a.name for a in automation_actions.list_all(core, workspace_id)}
+    pairs = sorted(of_workspace(core, workspace_id), key=lambda p: p[1].id, reverse=True)[:limit]
+    shown = run_detail.details(core, workspace_id, pairs)  # who worked, how long, tokens
     out = []
-    for automation, run in of_workspace(core, workspace_id):
+    for (automation, run), detail in zip(pairs, shown, strict=True):
         out.append(
             AutomationRunGroup(
                 automation_id=int(automation.id),
@@ -206,6 +210,9 @@ def run_groups(core: Core, workspace_id: str, limit: int = 60) -> list[Any]:
                     )
                     for step, c in run.cards.items()
                 ],
+                detail=detail.model_copy(
+                    update={"automation_name": names.get(automation.id) or detail.automation_name}
+                ),
             )
         )
     out.sort(key=lambda g: g.run_id, reverse=True)
@@ -245,6 +252,7 @@ def steps_of(core: Core, automation: Any) -> list[Step]:
                 agent=agent,
                 waits_on=tuple(s.waits_on),
                 reviews=s.reviews,
+                only_if=tuple(c.model_dump(exclude_none=True) for c in s.only_if),
             )
         )
     if getattr(automation, "check_first", False):
@@ -265,6 +273,7 @@ def steps_of(core: Core, automation: Any) -> list[Step]:
                 agent=s.agent,
                 waits_on=s.waits_on or (() if s.kind == "review" else ("owner-ok",)),
                 reviews=s.reviews,
+                only_if=s.only_if,
             )
             for s in steps
         ]
@@ -373,6 +382,8 @@ def plan(core: Core, automation: Any, mode: str) -> dict[str, Any]:
                 "waits_on": list(s.waits_on),
                 # What happened (a webhook) goes on the work and on the owner's OK.
                 "happened": s.kind != "approval" or s.key == "owner-ok",
+                # Its "Only if" lines (checked when the step would start), if any.
+                **({"only_if": [dict(c) for c in s.only_if]} if s.only_if else {}),
             }
             for s in _ordered(steps)
         ],
@@ -389,7 +400,10 @@ def write_scripts(core: Core, automation: Any) -> None:
     home = core.engine.profile_home(automation.workspace_id)
     if not card_runs(automation):
         return
-    write_run_script(home, fire_script_name(int(automation.id)), plan(core, automation, "cron"))
+    fire = plan(core, automation, "cron")
+    # The steps' "Only if" lines, where the step workers read them (never a run file).
+    step_conditions.keep_saved(Path(fire["board"]), int(automation.id), list(fire["steps"]))
+    write_run_script(home, fire_script_name(int(automation.id)), fire)
     hook = home / "scripts" / hook_script_name(int(automation.id))
     if automation.hook:
         write_run_script(home, hook.name, plan(core, automation, "webhook"))

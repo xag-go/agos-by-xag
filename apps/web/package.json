@@ -11,7 +11,7 @@
     "lint": "eslint .",
     "typecheck": "next typegen && pnpm gen:api && tsc -p tsconfig.json",
     "gen:api": "openapi-typescript ../../services/core/openapi.json -o src/data/core-api.d.ts --alphabetize",
-    "test": "node --test --import ./scripts/tsx-loader.mjs scripts/unused-exports.test.mjs scripts/board-optimistic.test.mjs scripts/board-views.test.mjs scripts/no-login.test.mjs scripts/error-report.test.mjs scripts/security-report.test.mjs scripts/design-tokens.test.mjs scripts/panel.test.mjs scripts/update-cards.test.mjs scripts/updates-status.test.mjs scripts/features.test.mjs scripts/idempotency.test.mjs scripts/no-engine-name.test.mjs",
+    "test": "node --test --import ./scripts/tsx-loader.mjs scripts/unused-exports.test.mjs scripts/board-optimistic.test.mjs scripts/board-views.test.mjs scripts/no-login.test.mjs scripts/error-report.test.mjs scripts/security-report.test.mjs scripts/design-tokens.test.mjs scripts/panel.test.mjs scripts/update-cards.test.mjs scripts/updates-status.test.mjs scripts/features.test.mjs scripts/idempotency.test.mjs scripts/no-engine-name.test.mjs scripts/step-levels.test.mjs scripts/run-usage.test.mjs",
     "test:coverage": "node --test --experimental-test-coverage --test-coverage-include=src/** --import ./scripts/tsx-loader.mjs scripts/features.test.mjs scripts/update-cards.test.mjs scripts/board-optimistic.test.mjs scripts/board-views.test.mjs"
   },
   "dependencies": {

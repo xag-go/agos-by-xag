@@ -8,7 +8,7 @@ Owns: the binding. Must not: hold a kind's steps (its page action does).
 
 from __future__ import annotations
 
-from agos_core.actions.services.cofounder import automation_actions
+from agos_core.actions.services.cofounder import automation_actions, automation_cost
 from agos_core.actions.services.cofounder.op_binding import bind_page
 from agos_core.ops.specs import automation as specs
 
@@ -36,3 +36,5 @@ bind_page(
     automation_actions.undo_hooks_address,
 )
 bind_page(specs.WATCH_TREE, automation_actions.do_watch_tree, automation_actions.undo_watch_tree)
+bind_page(specs.AUTOMATION_COST, automation_cost.do_automation_cost)  # a read: no Undo
+bind_page(specs.CHECK_AUTOMATION, automation_actions.do_check_automation)

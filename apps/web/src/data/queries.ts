@@ -17,6 +17,7 @@ import type {
   Team,
   ActivityItem,
   Automation,
+  AutomationCost,
   AutomationEvent,
   AutomationRevision,
   AutomationRun,
@@ -188,6 +189,9 @@ export const getAutomationRevisions = (id: string, automationId: number) =>
 /** The run history: each run's cards, grouped by run id, with its status. */
 export const getAutomationRunHistory = (id: string) =>
   core<AutomationRunGroup[]>("GET", `${ws(id)}/automation-runs`);
+/** What each automation's runs used this month and last month (UTC). */
+export const getAutomationCosts = (id: string) =>
+  core<AutomationCost[]>("GET", `${ws(id)}/automation-costs`);
 /** The ticket on-ramp presets (Linear / Jira / Asana / GitHub). */
 export const getTicketPresets = () =>
   core<TicketPreset[]>("GET", "/ticket-presets");

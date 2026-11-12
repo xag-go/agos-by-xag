@@ -37,10 +37,12 @@ Where each value comes from (see `_view`):
 
 The code lives by responsibility in this package: instructions.py (the readable
 file), cron.py (reading Hermes cron, the view), jobs.py (writing jobs), run_history.py,
+run_detail.py + run_usage.py (each run's steps, tokens and cost; the monthly cost),
 owner.py (the owner's actions), sync_loop.py (the background loop). This module
 only re-exports what other modules use.
 """
 
+from agos_core.actions.services.automation.check import review_form as review_form
 from agos_core.actions.services.automation.cron import COFOUNDER as COFOUNDER
 from agos_core.actions.services.automation.cron import MISSING as MISSING
 from agos_core.actions.services.automation.cron import TICK_SECONDS as TICK_SECONDS
@@ -73,6 +75,8 @@ from agos_core.actions.services.automation.owner import restore as restore
 from agos_core.actions.services.automation.owner import run_now as run_now
 from agos_core.actions.services.automation.owner import save as save
 from agos_core.actions.services.automation.owner import toggle as toggle
+from agos_core.actions.services.automation.run_detail import month_costs as month_costs
+from agos_core.actions.services.automation.run_history import detail_of as detail_of
 from agos_core.actions.services.automation.run_history import proposed_cards as proposed_cards
 from agos_core.actions.services.automation.run_history import runs as runs
 from agos_core.actions.services.automation.sync_loop import RETRY_FIRST_S as RETRY_FIRST_S

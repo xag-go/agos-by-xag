@@ -19,6 +19,8 @@ from agos_core.engine.cofounder_kind import AUTOMATIONS
 from agos_core.ops.spec import CofounderFields, OperationSpec
 
 __all__ = [
+    "AUTOMATION_COST",
+    "CHECK_AUTOMATION",
     "DELETE_PIPELINE_RULE",
     "REMOVE_SCHEDULED_JOB",
     "RESTORE_AUTOMATION_REVISION",
@@ -28,6 +30,8 @@ __all__ = [
     "SET_HOOKS_ADDRESS",
     "SPECS",
     "WATCH_TREE",
+    "AutomationCost",
+    "CheckAutomation",
     "DeletePipelineRule",
     "RemoveScheduledJob",
     "RestoreAutomationRevision",
@@ -193,6 +197,60 @@ WATCH_TREE: OperationSpec[WatchTree] = OperationSpec(
     cofounder_fields="card, on (true/false)",
 )
 
+
+class AutomationCost(CofounderFields):
+    automation: Any = None
+    run: Any = None
+
+
+AUTOMATION_COST: OperationSpec[AutomationCost] = OperationSpec(
+    name="automation_cost",
+    input_model=AutomationCost,
+    audit_title="What “{automation}” cost",
+    gate="once",
+    effect="read",
+    agent_tool=None,
+    cofounder_domain=AUTOMATIONS,
+    cofounder_fields=(
+        "automation (its name or number; leave out = every automation), run (a run id "
+        "from its Runs: that run step by step: who worked, who was skipped and why, how "
+        "long, tokens and cost). Read only: what its runs cost this month and last month "
+        "(UTC), as counted by the engine; an unpriced cost is said as unknown"
+    ),
+)
+
+
+class CheckAutomation(CofounderFields):
+    automation: Any = None
+    name: Any = None
+    instructions: Any = None
+    schedule: Any = None
+    agent: Any = None
+    steps: Any = None
+    webhook: Any = None
+    check_first: Any = None
+    variables: Any = None
+
+
+CHECK_AUTOMATION: OperationSpec[CheckAutomation] = OperationSpec(
+    name="check_automation",
+    input_model=CheckAutomation,
+    audit_title="Check automation “{name}{automation}” (nothing saved)",
+    gate="once",
+    effect="read",
+    agent_tool=None,
+    web_action="checkAutomation",
+    cofounder_domain=AUTOMATIONS,
+    cofounder_fields=(
+        "the same fields as create_automation (a new one), or automation (its name) plus the "
+        "fields to change as in update_automation: a dry run, nothing is saved. Its report "
+        "lists ALL the problems (the save would be refused) or says how it will run, plus "
+        "warnings. create / update_automation run the same check: a broken one is refused "
+        "with all its problems (fix and send again); a saved one answers with its report: "
+        "tell the owner how it will run in your own words"
+    ),
+)
+
 SPECS: tuple[OperationSpec[Any], ...] = (
     SAVE_PIPELINE_RULE,
     DELETE_PIPELINE_RULE,
@@ -202,4 +260,6 @@ SPECS: tuple[OperationSpec[Any], ...] = (
     REMOVE_SCHEDULED_JOB,
     SET_HOOKS_ADDRESS,
     WATCH_TREE,
+    AUTOMATION_COST,
+    CHECK_AUTOMATION,
 )

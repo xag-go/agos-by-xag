@@ -6,6 +6,15 @@ Every notable change to AGOS is written here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Automations: **Done by** shows which steps run side by side; each team step can
+  have an **Only if** line, so a step with nothing to do is skipped without
+  starting an agent; **Runs** shows each step (who worked, who was skipped and
+  why, time, tokens) and every automation shows what it cost this month; saving
+  checks the automation first and shows in plain words how it will run. The
+  Co-Founder can do the same (check an automation, read its cost).
+
 ### Changed
 
 - The app no longer names its engine anywhere you read: one **Updates** card in

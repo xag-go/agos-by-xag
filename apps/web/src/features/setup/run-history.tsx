@@ -2,6 +2,8 @@ import Link from "next/link";
 import type { AutomationRunGroup } from "@/data/types";
 import { cn } from "@/shared/ui/cn";
 import { formatWhen } from "@/shared/format";
+import { RunSteps } from "./run-steps";
+import { cardStatusText } from "./run-usage";
 
 const STATUS: Record<
   AutomationRunGroup["status"],
@@ -77,11 +79,14 @@ export function RunHistory({
                         title={card.title}
                       >
                         <span className="font-mono">{card.step}</span>
-                        <span className="text-ink-3">{card.status}</span>
+                        <span className="text-ink-3">
+                          {cardStatusText(card, run.detail)}
+                        </span>
                       </Link>
                     </li>
                   ))}
                 </ul>
+                <RunSteps workspaceId={workspaceId} detail={run.detail} />
               </li>
             );
           })}

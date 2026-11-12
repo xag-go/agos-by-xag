@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type {
   Automation,
+  AutomationCost,
   CatalogProvider,
   LibraryItem,
   ListFolder,
@@ -13,19 +14,21 @@ import { Switch } from "@/shared/ui/switch";
 import { formatWhen } from "@/shared/format";
 import { toggleAutomation } from "./actions";
 import { RunNowButton } from "./automation-runs";
+import { MonthCost } from "./run-steps";
 import { describeCron } from "./schedule";
+import { DoneByLevels } from "./done-by-levels";
 
-/** Steps in order, one badge per run of the same member (parallel steps of
- * one agent — e.g. one per style — read once, with how many). */
-function flow(steps: { agent?: string | null }[]) {
-  const out: { agent: string | null; count: number }[] = [];
-  for (const s of steps) {
-    const agent = s.agent ?? null;
-    const last = out.at(-1);
-    if (last && last.agent === agent) last.count += 1;
-    else out.push({ agent, count: 1 });
-  }
-  return out;
+/** What the list's search matches: the name, the schedule and who does it. */
+function searchText(
+  a: Automation,
+  titleOf: (name: string | null | undefined) => string,
+) {
+  return [
+    a.name,
+    a.schedule ? describeCron(a.schedule, a.scheduleDisplay) : "",
+    titleOf(a.agent),
+    ...(a.steps ?? []).map((s) => titleOf(s.agent)),
+  ].join(" ");
 }
 
 export function AutomationsList({
@@ -35,6 +38,7 @@ export function AutomationsList({
   baseHref,
   agents,
   folders,
+  costs = [],
 }: {
   workspaceId: string;
   automations: Automation[];
@@ -43,6 +47,8 @@ export function AutomationsList({
   agents: LibraryItem[];
   /** The owner's folders of this list (AGOS's own grouping). */
   folders: ListFolder[];
+  /** What each automation's runs used this month (a small figure per row). */
+  costs?: AutomationCost[];
 }) {
   const titleOf = (name: string | null | undefined) =>
     name
@@ -63,12 +69,7 @@ export function AutomationsList({
       }
       entries={automations.map((a) => ({
         id: a.id,
-        text: [
-          a.name,
-          a.schedule ? describeCron(a.schedule, a.scheduleDisplay) : "",
-          titleOf(a.agent),
-          ...(a.steps ?? []).map((s) => titleOf(s.agent)),
-        ].join(" "),
+        text: searchText(a, titleOf),
         node: (
           <>
             <div className="min-w-64 flex-1">
@@ -117,17 +118,7 @@ export function AutomationsList({
               <p className="mt-1.5 flex flex-wrap items-center gap-1 text-xs text-ink-2">
                 <span className="text-ink-3">Done by</span>
                 {(a.steps ?? []).length > 0 ? (
-                  flow(a.steps ?? []).map(({ agent, count }, i) => (
-                    <span key={i} className="flex items-center gap-1">
-                      {i > 0 && <span className="text-ink-3">→</span>}
-                      <span className="rounded-full bg-sunken px-2 py-0.5">
-                        {titleOf(agent)}
-                        {count > 1 && (
-                          <span className="text-ink-3"> ×{count}</span>
-                        )}
-                      </span>
-                    </span>
-                  ))
+                  <DoneByLevels steps={a.steps ?? []} titleOf={titleOf} />
                 ) : (
                   <span className="rounded-full bg-sunken px-2 py-0.5">
                     {titleOf(a.agent)}
@@ -166,6 +157,7 @@ export function AutomationsList({
               ) : (
                 <p className="text-ink-3">Never run</p>
               )}
+              <MonthCost of={a.id} costs={costs} />
               {a.problem ? (
                 <p role="alert" className="mt-1 text-xs text-danger">
                   {a.problem}

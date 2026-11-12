@@ -5,6 +5,13 @@ import type { Automation, LibraryItem } from "@/data/types";
 import { Button } from "@/shared/ui/button";
 import { Input, Textarea } from "@/shared/ui/field";
 import { cn } from "@/shared/ui/cn";
+import { StepAfter } from "./step-after";
+import {
+  StepOnlyIf,
+  fromStepLines,
+  toStepLines,
+  type StepLine,
+} from "./step-only-if";
 
 type Step = {
   key: string;
@@ -14,6 +21,7 @@ type Step = {
   agent: string | null;
   waitsOn: string[];
   reviews: string | null;
+  onlyIf: StepLine[];
 };
 
 const stepsOf = (a: Automation | null): Step[] =>
@@ -25,6 +33,7 @@ const stepsOf = (a: Automation | null): Step[] =>
     agent: s.agent ?? null,
     waitsOn: s.waitsOn ?? [],
     reviews: s.reviews ?? null,
+    onlyIf: toStepLines(s.onlyIf),
   }));
 type Mode = "one" | "team";
 
@@ -36,6 +45,7 @@ const blank = (n: number): Step => ({
   agent: null,
   waitsOn: [],
   reviews: null,
+  onlyIf: [],
 });
 
 const selectClass =
@@ -87,6 +97,7 @@ export function WhoField({
           ...s,
           title: s.title.trim() || s.key,
           agent: s.agent || null,
+          onlyIf: fromStepLines(s.onlyIf),
         }))
       : [];
 
@@ -201,49 +212,21 @@ export function WhoField({
                     onChange={(e) => patch(i, { description: e.target.value })}
                   />
                   {earlier.length > 0 && (
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-2">
-                      <span className="text-ink-3">Starts after:</span>
-                      {earlier.map((e) => (
-                        <label key={e.key} className="flex items-center gap-1">
-                          <input
-                            type="checkbox"
-                            checked={
-                              s.waitsOn.includes(e.key) || s.reviews === e.key
-                            }
-                            disabled={s.reviews === e.key}
-                            onChange={(ev) =>
-                              patch(i, {
-                                waitsOn: ev.target.checked
-                                  ? [...s.waitsOn, e.key]
-                                  : s.waitsOn.filter((w) => w !== e.key),
-                              })
-                            }
-                          />
-                          {nameOf(e.key)}
-                        </label>
-                      ))}
-                      <label className="ml-auto flex items-center gap-1">
-                        <span className="text-ink-3">Checks</span>
-                        <select
-                          aria-label={`Step ${String(i + 1)} checks`}
-                          className="h-7 rounded border border-line-strong bg-panel px-1 text-xs"
-                          value={s.reviews ?? ""}
-                          onChange={(e) =>
-                            patch(i, {
-                              reviews: e.target.value || null,
-                              kind: e.target.value ? "review" : "work",
-                            })
-                          }
-                        >
-                          <option value="">nothing</option>
-                          {earlier.map((e) => (
-                            <option key={e.key} value={e.key}>
-                              {nameOf(e.key)}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                    </div>
+                    <StepAfter
+                      step={i + 1}
+                      earlier={earlier.map((e) => e.key)}
+                      waitsOn={s.waitsOn}
+                      reviews={s.reviews}
+                      nameOf={nameOf}
+                      onChange={(change) => patch(i, change)}
+                    />
+                  )}
+                  {s.kind !== "approval" && (
+                    <StepOnlyIf
+                      step={i + 1}
+                      lines={s.onlyIf}
+                      onChange={(onlyIf) => patch(i, { onlyIf })}
+                    />
                   )}
                 </li>
               );

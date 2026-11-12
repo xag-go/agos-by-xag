@@ -1143,6 +1143,63 @@
         "title": "AutomationBody",
         "type": "object"
       },
+      "AutomationCheck": {
+        "description": "What saving would say: every problem (they block the save), the warnings (they\ndon't), and in plain words how it will run (empty while there are problems).",
+        "properties": {
+          "preview": {
+            "title": "Preview",
+            "type": "string"
+          },
+          "problems": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Problems",
+            "type": "array"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Warnings",
+            "type": "array"
+          }
+        },
+        "required": [
+          "problems",
+          "warnings",
+          "preview"
+        ],
+        "title": "AutomationCheck",
+        "type": "object"
+      },
+      "AutomationCost": {
+        "description": "What an automation's runs used this calendar month and last month (UTC).",
+        "properties": {
+          "automationId": {
+            "title": "Automationid",
+            "type": "integer"
+          },
+          "lastMonth": {
+            "$ref": "#/components/schemas/MonthUsage"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "thisMonth": {
+            "$ref": "#/components/schemas/MonthUsage"
+          }
+        },
+        "required": [
+          "automationId",
+          "name",
+          "thisMonth",
+          "lastMonth"
+        ],
+        "title": "AutomationCost",
+        "type": "object"
+      },
       "AutomationEvent": {
         "description": "One webhook delivery and what AGOS did with it.",
         "properties": {
@@ -1361,6 +1418,16 @@
             ],
             "title": "Caughtup"
           },
+          "detail": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RunDetail"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "error": {
             "anyOf": [
               {
@@ -1446,6 +1513,16 @@
             "title": "Cards",
             "type": "array"
           },
+          "detail": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RunDetail"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "finishedAt": {
             "anyOf": [
               {
@@ -1525,6 +1602,14 @@
             ],
             "title": "Kind",
             "type": "string"
+          },
+          "onlyIf": {
+            "items": {
+              "$ref": "#/components/schemas/StepCondition"
+            },
+            "maxItems": 20,
+            "title": "Onlyif",
+            "type": "array"
           },
           "reviews": {
             "anyOf": [
@@ -10408,6 +10493,28 @@
         "title": "ModelSelection",
         "type": "object"
       },
+      "MonthUsage": {
+        "properties": {
+          "month": {
+            "title": "Month",
+            "type": "string"
+          },
+          "runs": {
+            "default": 0,
+            "title": "Runs",
+            "type": "integer"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/Usage"
+          }
+        },
+        "required": [
+          "month",
+          "usage"
+        ],
+        "title": "MonthUsage",
+        "type": "object"
+      },
       "NeedsOwner": {
         "properties": {
           "kind": {
@@ -14274,6 +14381,75 @@
         "title": "RunCard",
         "type": "object"
       },
+      "RunDetail": {
+        "description": "A run in detail: its steps in run order and their totals.",
+        "properties": {
+          "automationId": {
+            "title": "Automationid",
+            "type": "integer"
+          },
+          "automationName": {
+            "title": "Automationname",
+            "type": "string"
+          },
+          "durationS": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Durations"
+          },
+          "finishedAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finishedat"
+          },
+          "runId": {
+            "title": "Runid",
+            "type": "string"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          },
+          "startedAt": {
+            "title": "Startedat",
+            "type": "string"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/RunStep"
+            },
+            "title": "Steps",
+            "type": "array"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/Usage"
+          }
+        },
+        "required": [
+          "automationId",
+          "automationName",
+          "runId",
+          "source",
+          "startedAt",
+          "finishedAt",
+          "steps",
+          "totals"
+        ],
+        "title": "RunDetail",
+        "type": "object"
+      },
       "RunNowBody": {
         "additionalProperties": false,
         "description": "Run now with variables: the values for this run (name \u2192 value as text).",
@@ -14287,6 +14463,102 @@
           }
         },
         "title": "RunNowBody",
+        "type": "object"
+      },
+      "RunStep": {
+        "description": "One step of a run: its card, who worked it, its state and what it used.",
+        "properties": {
+          "agent": {
+            "title": "Agent",
+            "type": "string"
+          },
+          "attempts": {
+            "default": 0,
+            "title": "Attempts",
+            "type": "integer"
+          },
+          "cardId": {
+            "title": "Cardid",
+            "type": "string"
+          },
+          "durationS": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Durations"
+          },
+          "finishedAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finishedat"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "startedAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Startedat"
+          },
+          "status": {
+            "enum": [
+              "done",
+              "running",
+              "waiting",
+              "skipped",
+              "failed",
+              "needs_you",
+              "stopped"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/Usage"
+          }
+        },
+        "required": [
+          "key",
+          "title",
+          "cardId",
+          "agent",
+          "status",
+          "usage"
+        ],
+        "title": "RunStep",
         "type": "object"
       },
       "ScheduleBody": {
@@ -15880,6 +16152,63 @@
         "title": "StayBody",
         "type": "object"
       },
+      "StepCondition": {
+        "additionalProperties": false,
+        "description": "One \"Only if\" line of a team step (engine/step_conditions.py): a match line\n(field, op, values: the webhook's tests on the run's values) or a check line\n(check: a /workspace script whose last line says YES/AH or NO/LA).",
+        "properties": {
+          "check": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Check"
+          },
+          "field": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field"
+          },
+          "op": {
+            "anyOf": [
+              {
+                "enum": [
+                  "is",
+                  "is_not",
+                  "contains",
+                  "not_contains"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Op"
+          },
+          "values": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 100,
+            "title": "Values",
+            "type": "array"
+          }
+        },
+        "title": "StepCondition",
+        "type": "object"
+      },
       "Strategies": {
         "additionalProperties": false,
         "properties": {
@@ -16916,6 +17245,60 @@
           "hasUpdate"
         ],
         "title": "Update",
+        "type": "object"
+      },
+      "Usage": {
+        "description": "Tokens and cost as Hermes counted them (its sessions table). cost_usd is\nNone when Hermes priced none of it (\"unknown\"); priced is False when part of\nthe tokens has no price (then cost_usd is the priced part only).",
+        "properties": {
+          "cacheReadTokens": {
+            "default": 0,
+            "title": "Cachereadtokens",
+            "type": "integer"
+          },
+          "cacheWriteTokens": {
+            "default": 0,
+            "title": "Cachewritetokens",
+            "type": "integer"
+          },
+          "costUsd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": 0.0,
+            "title": "Costusd"
+          },
+          "inputTokens": {
+            "default": 0,
+            "title": "Inputtokens",
+            "type": "integer"
+          },
+          "outputTokens": {
+            "default": 0,
+            "title": "Outputtokens",
+            "type": "integer"
+          },
+          "priced": {
+            "default": true,
+            "title": "Priced",
+            "type": "boolean"
+          },
+          "sessions": {
+            "default": 0,
+            "title": "Sessions",
+            "type": "integer"
+          },
+          "tokens": {
+            "default": 0,
+            "title": "Tokens",
+            "type": "integer"
+          }
+        },
+        "title": "Usage",
         "type": "object"
       },
       "UsageDay": {
@@ -27422,6 +27805,69 @@
         ]
       }
     },
+    "/workspaces/{workspace_id}/automation-costs": {
+      "get": {
+        "description": "What each automation's runs used this calendar month and last month (UTC).",
+        "operationId": "automation_costs_workspaces__workspace_id__automation_costs_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-agos-internal",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Agos-Internal"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AutomationCost"
+                  },
+                  "title": "Response Automation Costs Workspaces  Workspace Id  Automation Costs Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Automation Costs",
+        "tags": [
+          "automations"
+        ]
+      }
+    },
     "/workspaces/{workspace_id}/automation-runs": {
       "get": {
         "description": "The run history: the cards of each run grouped by run id, newest first, the\nrun's status derived from its cards (no table of runs).",
@@ -27629,6 +28075,91 @@
           }
         },
         "summary": "Create",
+        "tags": [
+          "automations"
+        ]
+      }
+    },
+    "/workspaces/{workspace_id}/automations/check": {
+      "post": {
+        "description": "The owner's Save button: a dry run of the save, nothing is written.",
+        "operationId": "check_workspaces__workspace_id__automations_check_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "automation_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Automation Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-agos-internal",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Agos-Internal"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AutomationBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AutomationCheck"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Check",
         "tags": [
           "automations"
         ]
@@ -28376,6 +28907,83 @@
           }
         },
         "summary": "List Runs",
+        "tags": [
+          "automations"
+        ]
+      }
+    },
+    "/workspaces/{workspace_id}/automations/{automation_id}/runs/{run_id}/detail": {
+      "get": {
+        "description": "One run step by step: who worked each step (or why it was skipped), when, how\nlong, its tokens and cost as Hermes counted them, and the run's totals.",
+        "operationId": "run_detail_workspaces__workspace_id__automations__automation_id__runs__run_id__detail_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "automation_id",
+            "required": true,
+            "schema": {
+              "title": "Automation Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "title": "Run Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-agos-internal",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Agos-Internal"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Run Detail",
         "tags": [
           "automations"
         ]

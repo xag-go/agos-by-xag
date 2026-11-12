@@ -142,6 +142,23 @@ class AutomationRun(Record):
     # A catch-up run (actions/catch_up.py): the occurrence it makes up for, missed
     # while the server was off. None = an ordinary run.
     caught_up: str | None = None
+    # Who worked each step, how long, its tokens and cost (Hermes's counts).
+    detail: "RunDetail | None" = None
+
+
+class StepCondition(Record):
+    """One "Only if" line of a team step (engine/step_conditions.py): a match line
+    (field, op, values: the webhook's tests on the run's values) or a check line
+    (check: a /workspace script whose last line says YES/AH or NO/LA)."""
+
+    model_config = ConfigDict(
+        alias_generator=to_camel, populate_by_name=True, frozen=True, extra="forbid"
+    )
+
+    field: str | None = Field(default=None, max_length=200)
+    op: Literal["is", "is_not", "contains", "not_contains"] | None = None
+    values: list[str] = Field(default_factory=list, max_length=100)
+    check: str | None = Field(default=None, max_length=300)
 
 
 class AutomationStep(Record):
@@ -154,6 +171,8 @@ class AutomationStep(Record):
     agent: str | None = None  # None = the Co-Founder (approval: the owner)
     waits_on: list[str] = Field(default_factory=list)
     reviews: str | None = None
+    # Its "Only if" lines: none = it always runs.
+    only_if: list[StepCondition] = Field(default_factory=list, max_length=20)
 
 
 class HookCondition(Record):
@@ -289,6 +308,7 @@ class AutomationRunGroup(Record):
     finished_at: str | None
     status: RunStatus
     cards: list[RunCard] = Field(default_factory=list)
+    detail: "RunDetail | None" = None  # its steps in run order, with tokens and cost
 
 
 class Automation(Record):
@@ -397,3 +417,70 @@ class OngoingJob(Record):
 
 class Ongoing(Record):
     jobs: list[OngoingJob]
+
+
+class Usage(Record):
+    """Tokens and cost as Hermes counted them (its sessions table). cost_usd is
+    None when Hermes priced none of it ("unknown"); priced is False when part of
+    the tokens has no price (then cost_usd is the priced part only)."""
+
+    input_tokens: int = 0
+    output_tokens: int = 0
+    cache_read_tokens: int = 0
+    cache_write_tokens: int = 0
+    tokens: int = 0
+    cost_usd: float | None = 0.0
+    priced: bool = True
+    sessions: int = 0
+
+
+StepStatus = Literal["done", "running", "waiting", "skipped", "failed", "needs_you", "stopped"]
+
+
+class RunStep(Record):
+    """One step of a run: its card, who worked it, its state and what it used."""
+
+    key: str
+    title: str
+    card_id: str
+    agent: str  # who worked it as the owner reads it ("You" for his own OK)
+    status: StepStatus
+    reason: str | None = None  # why it was skipped, failed or waits on him
+    started_at: str | None = None
+    finished_at: str | None = None
+    duration_s: int | None = None
+    attempts: int = 0
+    usage: Usage
+
+
+class RunDetail(Record):
+    """A run in detail: its steps in run order and their totals."""
+
+    automation_id: int
+    automation_name: str
+    run_id: str
+    source: str
+    started_at: str
+    finished_at: str | None
+    duration_s: int | None = None
+    steps: list[RunStep]
+    totals: Usage
+
+
+class MonthUsage(Record):
+    month: str  # YYYY-MM (UTC)
+    runs: int = 0
+    usage: Usage
+
+
+class AutomationCost(Record):
+    """What an automation's runs used this calendar month and last month (UTC)."""
+
+    automation_id: int
+    name: str
+    this_month: MonthUsage
+    last_month: MonthUsage
+
+
+AutomationRun.model_rebuild()
+AutomationRunGroup.model_rebuild()

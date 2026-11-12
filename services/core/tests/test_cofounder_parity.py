@@ -133,7 +133,7 @@ def test_risky_kinds_wait_for_the_owner() -> None:
     for name in (
         "import_bundle",
         "install_template",
-        "run_hermes_update",
+        "run_updates",
         "approve_person",
         "remove_person",
         "delete_library_item",

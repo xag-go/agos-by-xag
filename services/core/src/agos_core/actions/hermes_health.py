@@ -44,6 +44,9 @@ from agos_core.engine.hermes import EngineError
 log = logging.getLogger("agos.hermes_health")
 
 REPORTS = ("status", "doctor")
+# What the owner's rows are called (spec 2026-11-04 no-engine-name): the commands
+# underneath are unchanged (`hermes status --full`, `hermes doctor`).
+LABELS = {"status": "Status", "doctor": "Full check"}
 # Hermes's own marks in its reports (hermes_cli/doctor.py check_ok/warn/fail).
 _FAIL, _WARN = "✗", "⚠"
 # A kept report older than this is checked again behind the page.
@@ -134,10 +137,10 @@ def read(
     new reports (the Co-Founder's check)."""
     engine = core.engine
     if engine is None:
-        raise ActionError("Hermes isn't available.", status=503)
+        raise ActionError("The engine isn't available.", status=503)
     roots = _roots(core, engine, workspace_id)
     if workspace_id is not None and not roots:
-        raise ActionError("This workspace's Hermes isn't set up yet.", status=404)
+        raise ActionError("This workspace's engine isn't set up yet.", status=404)
     now = time.time()
     slots: dict[tuple[str, str], _Slot] = {}
     now_jobs: list[tuple[tuple[str, str], _Slot, threading.Event]] = []
@@ -160,10 +163,10 @@ def read(
             list(pool.map(lambda job: _check(engine, *job), now_jobs))
     for done in waits:
         done.wait(_WAIT_S)
-    return {"roots": [_root_view(engine, w, slots) for w in roots]}
+    return {"roots": [_root_view(w, slots) for w in roots]}
 
 
-def _root_view(engine: Any, w: Any, slots: dict[tuple[str, str], _Slot]) -> dict[str, Any]:
+def _root_view(w: Any, slots: dict[tuple[str, str], _Slot]) -> dict[str, Any]:
     with _lock:
         mine = {r: slots[(w.id, r)] for r in REPORTS}
         reports = {
@@ -191,7 +194,6 @@ def _root_view(engine: Any, w: Any, slots: dict[tuple[str, str], _Slot]) -> dict
     return {
         "workspace_id": w.id,
         "name": w.name,
-        "home": str(engine.profile_home(w.id)),
         **reports,
         "checked_at": checked_at,
         "checking": checking,
@@ -223,16 +225,17 @@ def as_text(found: dict[str, Any], limit: int = 6000) -> str:
         lines = [f"## {root['name']}"]
         for report in REPORTS:
             got = root[report]
+            label = LABELS[report]
             if got.get("pending"):
-                lines.append(f"hermes {report}: Hermes is still checking (ask again in a moment)")
+                lines.append(f"{label}: still checking (ask again in a moment)")
                 continue
             if got["error"]:
-                lines.append(f"hermes {report}: not read ({got['error']})")
+                lines.append(f"{label}: not read ({got['error']})")
                 continue
             verdict = got.get("has_problems")
             said = "" if verdict is None else f"problems: {'yes' if verdict else 'no'}; "
             lines.append(
-                f"hermes {report}: {said}{got['problems']} problem mark(s), "
+                f"{label}: {said}{got['problems']} problem mark(s), "
                 f"{got['warnings']} warning mark(s)"
             )
             if report == "doctor":
@@ -242,5 +245,5 @@ def as_text(found: dict[str, Any], limit: int = 6000) -> str:
                     if ln.strip().startswith((_FAIL, _WARN, "✓ Managed scope"))
                 ]
         parts.append("\n".join(lines))
-    text = "\n\n".join(parts) or "No workspace's Hermes is set up yet."
+    text = "\n\n".join(parts) or "No workspace's engine is set up yet."
     return text[:limit]

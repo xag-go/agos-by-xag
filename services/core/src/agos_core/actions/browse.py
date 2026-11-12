@@ -93,7 +93,7 @@ def list_folders(core: Core, path: str | None) -> FolderListing:
     if not real.is_dir():
         raise ActionError("This is a file, not a folder.")
     if any(_inside(real, b) for b in blocked):
-        raise ActionError("This folder is private (keys, Docker, Hermes or AGOS data).", 403)
+        raise ActionError("This folder is private (keys, Docker, engine or AGOS data).", 403)
     folders: list[FolderEntry] = []
     truncated = False
     try:

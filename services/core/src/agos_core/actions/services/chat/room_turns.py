@@ -211,7 +211,7 @@ def done(
                 core.db,
                 workspace_id,
                 kind="room.refused",
-                text=f"The group's Hermes room refused {row['kind']}: {error[:300]}",
+                text=f"The group's room refused {row['kind']}: {error[:300]}",
             )
             if row["kind"] in ("room-send", "room-sync"):
                 _close_turn(core, chat_id, "failed", f"The group's room refused it: {error[:300]}")

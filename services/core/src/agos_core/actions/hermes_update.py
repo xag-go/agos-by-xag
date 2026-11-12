@@ -39,7 +39,7 @@ log = logging.getLogger("agos.hermes_update")
 
 def require_engine(core: Core) -> HermesEngine:
     if core.engine is None:
-        raise ActionError("Hermes isn't set up on this machine.")
+        raise ActionError("The engine isn't set up on this machine.")
     return core.engine
 
 

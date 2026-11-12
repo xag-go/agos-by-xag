@@ -82,7 +82,7 @@ def webhook_routes(
         )
         hermes_contract.ran(done)
     except (OSError, subprocess.TimeoutExpired) as error:
-        raise EngineError("Hermes did not take the webhook change") from error
+        raise EngineError("The engine did not take the webhook change") from error
     if done.returncode != 0 or "AGOS-WEBHOOKS ok" not in done.stdout:
         log.info("webhook routes not written (%s): %s", done.returncode, done.stderr[-500:])
-        raise EngineError("Hermes did not take the webhook change")
+        raise EngineError("The engine did not take the webhook change")

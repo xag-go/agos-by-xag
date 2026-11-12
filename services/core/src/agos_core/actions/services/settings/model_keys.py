@@ -95,7 +95,7 @@ def save_key(core: Core, provider: str, given: str) -> dict[str, Any]:
         except KeyProblem as error:
             raise ActionError(str(error), 422) from error
         except CALL_FAILED as error:
-            raise ActionError("Hermes did not save the key.", 503) from error
+            raise ActionError("The engine did not save the key.", 503) from error
         to_every_root(core, extra)
         data = model_catalog.load(core, True)
         works = any(p["id"] == provider for p in data["catalog"])
@@ -103,7 +103,7 @@ def save_key(core: Core, provider: str, given: str) -> dict[str, Any]:
             "ok": True,
             "message": "Key saved. Every workspace can use it."
             if works
-            else "Key saved in Hermes, but Hermes found no models with it yet. Check the key.",
+            else "Key saved, but the engine found no models with it yet. Check the key.",
         }
     name = _env_of(core, provider)
     try:
@@ -112,7 +112,7 @@ def save_key(core: Core, provider: str, given: str) -> dict[str, Any]:
     except KeyProblem as error:
         raise ActionError(str(error), 422) from error
     except CALL_FAILED as error:
-        raise ActionError("Hermes did not test the key.", 503) from error
+        raise ActionError("The engine did not test the key.", 503) from error
     if not result.ok:
         raise ActionError(result.message, 422)
     try:
@@ -120,7 +120,7 @@ def save_key(core: Core, provider: str, given: str) -> dict[str, Any]:
     except _SAVE_FAILED as error:
         # The error's type only: its text could echo the key.
         log.warning("saving the %s key failed: %s", provider, type(error).__name__)
-        raise ActionError("Hermes did not save the key.", 503) from error
+        raise ActionError("The engine did not save the key.", 503) from error
     to_every_root(core, name)
     model_catalog.load(core, True)
     return {"ok": True, "message": "Key saved. Every workspace can use it."}
@@ -159,7 +159,7 @@ def test_key(core: Core, provider: str) -> dict[str, Any]:
         works = any(p["id"] == provider for p in data["catalog"])
         return {
             "ok": works,
-            "message": "Key works." if works else "Hermes found no models with this key.",
+            "message": "Key works." if works else "The engine found no models with this key.",
         }
     try:
         name = _env_of(core, provider)
@@ -170,7 +170,7 @@ def test_key(core: Core, provider: str) -> dict[str, Any]:
     except KeyProblem as error:
         raise ActionError(str(error), 422) from error
     except CALL_FAILED as error:
-        raise ActionError("Hermes did not answer.", 503) from error
+        raise ActionError("The engine did not answer.", 503) from error
     return {"ok": result.ok, "message": result.message}
 
 
@@ -185,6 +185,6 @@ def remove_key(core: Core, provider: str) -> None:
     except KeyProblem as error:
         raise ActionError(str(error), 422) from error
     except CALL_FAILED as error:
-        raise ActionError("Hermes did not remove the key.", 503) from error
+        raise ActionError("The engine did not remove the key.", 503) from error
     to_every_root(core)
     model_catalog.load(core, True)

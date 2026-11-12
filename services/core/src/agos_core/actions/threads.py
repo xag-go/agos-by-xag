@@ -269,7 +269,7 @@ def mention(
     note = (
         f"(AGOS) {by} mentioned you in a comment on card {card_id} “{title}”:\n\n"
         + "\n".join(f"> {line}" for line in text.strip().splitlines())
-        + "\n\nYou follow this card now: Hermes tells you when it ends, blocks or asks "
+        + "\n\nYou follow this card now: you are told when it ends, blocks or asks "
         "for review. It is not assigned to you: read it with kanban_show, answer on the "
         "card with kanban_comment if you have something to add, and do only what is "
         "asked of you."

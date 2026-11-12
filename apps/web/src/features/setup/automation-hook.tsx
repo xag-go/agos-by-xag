@@ -274,9 +274,9 @@ export function AutomationHookDialog({
                   <p className="text-sm font-medium">Only if</p>
                   <p className="text-xs text-ink-3">
                     A delivery starts the work only when every line holds; any
-                    other delivery is dropped by Hermes before anything runs (no
-                    run, no tokens, no message). Field = where the value is in
-                    what the app sends, e.g. data.to.name.
+                    other delivery is dropped before anything runs (no run, no
+                    tokens, no message). Field = where the value is in what the
+                    app sends, e.g. data.to.name.
                   </p>
                 </div>
                 {lines.length === 0 && (
@@ -362,8 +362,8 @@ export function AutomationHookDialog({
                   </Button>
                   {(hook.otherFilters ?? 0) > 0 && (
                     <span className="text-xs text-ink-3">
-                      + {hook.otherFilters} more set in Hermes directly (kept as
-                      they are)
+                      + {hook.otherFilters} more set in the engine directly
+                      (kept as they are)
                     </span>
                   )}
                 </div>

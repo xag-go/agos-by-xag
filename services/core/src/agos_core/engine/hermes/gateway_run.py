@@ -170,7 +170,7 @@ def _start_root(self: "HermesEngine", workspace_id: str, wait_s: float) -> None:
     service, or (supervisor "spawn", tests only) a process AGOS starts. Never
     `gateway.standalone`: a root's default gateway is its host."""
     if self.migrating(workspace_id):
-        raise EngineError("this workspace is moving to its own Hermes root")
+        raise EngineError("this workspace is moving to its own root")
     mcp_guard.switch_off_private(self, workspace_id)  # Hermes connects from this machine
     if quiet_drain_set(self.root(workspace_id)):
         self._quiet_drain(self.root(workspace_id), on=False)

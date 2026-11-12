@@ -172,7 +172,7 @@ def _shown(which: str, job: dict[str, Any] | None) -> dict[str, Any]:
         "problem": (
             "Paused off-hours (work hours): runs at check-in."
             if off_hours
-            else f"Paused by Hermes: {reason}"[:300]
+            else f"Paused by the engine: {reason}"[:300]
             if not enabled and reason != OFF_REASON
             else None
         ),

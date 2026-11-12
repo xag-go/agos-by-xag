@@ -1,6 +1,6 @@
 """Workspace → Settings → Keys: keys for the workspace's own tools and scripts.
 
-The owner types an app's name and pastes its key; Hermes keeps it (engine/tool_keys.py
+The owner types an app's name and pastes its key; The engine keeps it (engine/tool_keys.py
 says where and how). AGOS keeps only what Hermes has no place for: the app's name as
 he typed it and when the key was saved and last tested (`tool_keys.<ws>`), never the
 key or any part of it. The list itself is Hermes's: the names in the root's
@@ -56,13 +56,13 @@ def _root(core: Core, workspace_id: str) -> Any:
 
     engine = core.engine
     if engine is None:
-        raise ActionError("Hermes isn't available.", status=503)
+        raise ActionError("The engine isn't available.", status=503)
     if engine.split(workspace_id)[1]:
         raise NotFoundError("This workspace")
     require_workspace(core, workspace_id)
     home = engine.profile_home(workspace_id)
     if not (home / "config.yaml").is_file():
-        raise ActionError("This workspace's Hermes isn't set up yet. Try again in a minute.")
+        raise ActionError("This workspace isn't set up yet. Try again in a minute.")
     return home
 
 
@@ -121,7 +121,7 @@ def _managed_elsewhere(name: str) -> str | None:
     from agos_core.actions import hermes_all_settings as hall
 
     if name.startswith(tk.RESERVED_PREFIXES):
-        return "This name is kept for Hermes and AGOS themselves."
+        return "This name is kept for the engine and AGOS themselves."
     card = hall.card_keys().get(name)
     if card is not None:
         return f"This key is changed on {hall.CARD_LABELS[card]}, not here."
@@ -138,7 +138,7 @@ def _facts(core: Core, home: Any, app: str, extra: list[str] | None = None) -> d
             {"do": "facts", "slug": tk.slug(app), "names": tk.candidates(app) + (extra or [])},
         )
     except EngineError as error:
-        raise ActionError("Hermes didn't answer. Try again in a minute.", status=503) from error
+        raise ActionError("The engine didn't answer. Try again in a minute.", status=503) from error
 
 
 def _choose(
@@ -156,7 +156,7 @@ def _choose(
             facts = _facts(core, home, app, [wanted])
             if (facts.get("own") or {}).get(wanted, True):
                 raise tk.NameProblem(
-                    f"{wanted} is a key Hermes keeps for itself: it can't be added here."
+                    f"{wanted} is a key the engine keeps for itself: it can't be added here."
                 )
             picked = tk.Picked(wanted, "", False)
         else:
@@ -169,7 +169,7 @@ def _choose(
     ours = tk.passthrough(config_file.read(home))
     if picked.name not in ours and picked.name in config_file.read_env(home):
         raise ActionError(
-            f"This workspace's Hermes already uses a key named {picked.name} for something "
+            f"This workspace already uses a key named {picked.name} for something "
             "else, so it isn't replaced from here."
         )
     return picked.name, picked.url
@@ -215,13 +215,13 @@ def _hermes_save(core: Core, home: Any, name: str, key: str) -> None:
     try:
         done = core.engine.tool_keys(home, {"do": "save", "name": name}, secret=key)
     except EngineError as error:
-        raise ActionError("Hermes didn't save the key. Try again.", status=503) from error
+        raise ActionError("The engine didn't save the key. Try again.", status=503) from error
     if done.get("refused") == "own":
-        raise ActionError(f"{name} is a key Hermes keeps for itself: it can't be added here.")
+        raise ActionError(f"{name} is a key the engine keeps for itself: it can't be added here.")
     if done.get("refused") == "managed":
-        raise ActionError(f"{name} is set for every workspace by Hermes's managed settings.")
+        raise ActionError(f"{name} is set for every workspace by the managed settings.")
     if not done.get("saved"):
-        raise ActionError("Hermes didn't save the key. Try again.", status=503)
+        raise ActionError("The engine didn't save the key. Try again.", status=503)
 
 
 def save(
@@ -287,9 +287,9 @@ def remove(core: Core, workspace_id: str, name: str) -> dict[str, Any]:
         try:
             done = core.engine.tool_keys(home, {"do": "remove", "name": name})
         except EngineError as error:
-            raise ActionError("Hermes didn't remove the key. Try again.", status=503) from error
+            raise ActionError("The engine didn't remove the key. Try again.", status=503) from error
         if done.get("refused"):
-            raise ActionError(f"Hermes keeps {name} for itself: it isn't removed from here.")
+            raise ActionError(f"The engine keeps {name} for itself: it isn't removed from here.")
         _write_list(
             core, workspace_id, [n for n in tk.passthrough(config_file.read(home)) if n != name]
         )
@@ -313,14 +313,14 @@ def test(core: Core, workspace_id: str, name: str) -> dict[str, Any]:
     try:
         found = core.engine.tool_keys(home, {"do": "test", "name": name, "probe": probe})
     except EngineError as error:
-        raise ActionError("Hermes didn't answer. Try again in a minute.", status=503) from error
+        raise ActionError("The engine didn't answer. Try again in a minute.", status=503) from error
     ok = False
     if not found.get("present"):
-        message = "This key isn't saved in Hermes any more. Add it again."
+        message = "This key isn't saved any more. Add it again."
     elif found.get("own"):
-        message = "Hermes keeps this name for itself and doesn't give it to tools."
+        message = "The engine keeps this name for itself and doesn't give it to tools."
     elif not found.get("passed"):
-        message = "Saved, but Hermes doesn't hand it to the tools. Save it again."
+        message = "Saved, but the engine doesn't hand it to the tools. Save it again."
     elif missing := _members_missing(core, name, workspace_id):
         agents = (
             "agent of this workspace doesn't" if missing == 1 else "agents of this workspace don't"

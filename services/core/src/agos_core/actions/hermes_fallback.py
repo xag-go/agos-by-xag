@@ -91,7 +91,7 @@ def check(chain: list[dict[str, str]]) -> list[dict[str, str]]:
         model = str(entry.get("model") or "").strip()
         base_url = str(entry.get("base_url") or "").strip().rstrip("/")
         if not _PROVIDER.fullmatch(provider):
-            raise ActionError(f"Fallback {n}: pick a provider Hermes knows (e.g. openrouter).")
+            raise ActionError(f"Fallback {n}: pick a provider the engine knows (e.g. openrouter).")
         if not _MODEL.fullmatch(model):
             raise ActionError(f"Fallback {n}: pick a model (e.g. anthropic/claude-sonnet-4).")
         if base_url and not _URL.fullmatch(base_url):
@@ -119,13 +119,13 @@ def write(core: Core, chain: list[dict[str, str]]) -> dict[str, Any]:
     the chain again at each turn (a running chat applies it from its next message)."""
     wanted = check(chain)
     if core.engine is None:
-        raise ActionError("Hermes isn't available.", status=503)
+        raise ActionError("The engine isn't available.", status=503)
     # A route the chain already has keeps Hermes's extras on it (key_env, api_mode).
     value = fb.value_for(wanted, fb.chain_in(_managed(core)))
     try:
         _set(core, [{k: v for k, v in e.items() if k != "api_key"} for e in value])
     except (EngineError, OSError) as error:
-        raise ActionError(f"Hermes didn't take it: {error}", status=502) from error
+        raise ActionError(f"The engine didn't take it: {error}", status=502) from error
     return read(core)
 
 

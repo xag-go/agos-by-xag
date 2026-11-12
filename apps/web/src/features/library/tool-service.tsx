@@ -71,8 +71,8 @@ export function ToolService({ item }: { item: LibraryItem }) {
                   r.problems?.length
                     ? `Saved. Not every workspace took it: ${r.problems.join("; ")}`
                     : r.installing
-                      ? "Saved in every workspace's Hermes. Hermes is installing what it needs (a few minutes)."
-                      : "Saved in every workspace's Hermes.",
+                      ? "Saved for every workspace. It is installing what it needs (a few minutes)."
+                      : "Saved for every workspace.",
                 );
               }
             });
@@ -131,8 +131,8 @@ export function ToolService({ item }: { item: LibraryItem }) {
           ) : null}
           {chosen && chosen.env.length === 0 && !chosen.login && (
             <p className="text-xs text-ink-3">
-              No key needed (it uses a login Hermes already has, or runs on this
-              machine).
+              No key needed (it uses a login this server already has, or runs on
+              this machine).
             </p>
           )}
           <Button

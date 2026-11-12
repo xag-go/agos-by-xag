@@ -97,8 +97,8 @@ elif op == "pause":
     result = view(J.get_job(request["id"]))
 elif op == "slots":
     # A missed run (actions/catch_up.py): each job's latest occurrence after `after`
-    # and at or before `now`, by Hermes's own schedule math (compute_next_run: its
-    # timezone, its cron and interval forms), and Hermes's own grace for it.
+    # and at or before `now`, by the engine's own schedule math (compute_next_run: its
+    # timezone, its cron and interval forms), and the engine's own grace for it.
     from datetime import datetime, timedelta
     now = datetime.fromisoformat(request["now"])
     result = {}
@@ -262,7 +262,7 @@ class CronBridge:
         refused = [ln.strip() for ln in said.splitlines() if ln.strip().startswith("Failed to")]
         if done.returncode != 0 or refused:
             tail = refused or [ln for ln in (done.stderr or said).strip().splitlines()[-1:]]
-            raise CronError((tail or ["Hermes's cron didn't answer"])[0][:300])
+            raise CronError((tail or ["The scheduler didn't answer"])[0][:300])
         return said
 
     def create(self, home: Path, spec: JobSpec) -> dict[str, Any]:
@@ -282,7 +282,7 @@ class CronBridge:
         )
         found = re.search(r"Created job: (\S+)", said)
         if found is None:
-            raise CronError("Hermes's cron made no job")
+            raise CronError("The scheduler made no job")
         return {"id": found.group(1)}
 
     def update(self, home: Path, job_id: str, spec: JobSpec) -> dict[str, Any] | None:
@@ -304,7 +304,7 @@ class CronBridge:
         self._cli(home, "edit", job_id, *args)
         now = next((j for j in read_jobs(home) if j["id"] == job_id), None)
         if now is None:
-            raise CronError(f"Hermes's cron has no job {job_id}")
+            raise CronError(f"The scheduler has no job {job_id}")
         if spec.enabled:
             if not now["enabled"] and now.get("paused_reason") != WORK_HOURS_REASON:
                 self.resume(home, job_id)  # off-hours keep it held until check-in
@@ -359,7 +359,7 @@ class CronBridge:
                 reply.read()
         except urllib.error.HTTPError as error:
             said = error.read()[:300].decode(errors="replace")
-            raise CronError(f"Hermes refused the run ({error.code}): {said}") from error
+            raise CronError(f"The engine refused the run ({error.code}): {said}") from error
         except OSError as error:
             raise CronError(f"the workspace's gateway didn't answer: {error}") from error
 
@@ -463,7 +463,7 @@ class CronBridge:
 def schedule_problem(found: Any) -> str | None:
     """Hermes's answer to a schedule check, as AGOS tells it (None: fine)."""
     if not isinstance(found, dict):
-        return "Hermes didn't answer"
+        return "The engine didn't answer"
     if found.get("error"):
         return str(found["error"]).rstrip(".")
     if found.get("kind") == "once":
@@ -563,7 +563,7 @@ def read_jobs(home: Path) -> list[dict[str, Any]]:
         except ValueError:
             data = json.loads(raw, strict=False)
     except (OSError, ValueError) as error:
-        raise CronError(f"Hermes's cron jobs can't be read: {error}") from error
+        raise CronError(f"The scheduler's jobs can't be read: {error}") from error
     jobs = data.get("jobs") if isinstance(data, dict) else data
     if isinstance(jobs, dict):
         jobs = [{**v, "id": v.get("id") or k} for k, v in jobs.items() if isinstance(v, dict)]

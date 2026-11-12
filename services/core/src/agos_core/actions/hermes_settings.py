@@ -86,7 +86,7 @@ def write(core: Core, workspace_id: str, values: dict[str, str]) -> dict[str, st
     Hermes's default is never frozen into the profile."""
     require_workspace(core, workspace_id)
     if core.engine is None:
-        raise ActionError("This workspace's Hermes isn't available.", status=503)
+        raise ActionError("This workspace isn't available.", status=503)
     wanted: dict[str, str] = {}
     for key, raw in values.items():
         setting = SETTINGS.get(key)
@@ -110,7 +110,7 @@ def write(core: Core, workspace_id: str, values: dict[str, str]) -> dict[str, st
             else:
                 hermes_cli.cli(core.engine, workspace_id, "config", "unset", key)
         except (EngineError, OSError) as error:
-            raise ActionError(f"Hermes didn't take it: {error}", status=502) from error
+            raise ActionError(f"The engine didn't take it: {error}", status=502) from error
         wrote = True
     if wrote:
         from agos_core.actions import hermes_all_settings

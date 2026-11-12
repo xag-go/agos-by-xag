@@ -358,7 +358,7 @@ def toggle(core: Core, workspace_id: str, automation_id: int, on: bool) -> None:
     if source == "missing":
         raise ActionError(MISSING, 409)
     if source == "unknown":
-        raise ActionError("Hermes's cron can't be read right now; try again in a moment.", 503)
+        raise ActionError("The scheduler can't be read right now; try again in a moment.", 503)
     # Straight to Hermes's job (pause/resume); AGOS keeps it only if Hermes refuses.
     sync_job(core, workspace_id, automation_id, want=(current.schedule, on))
     if current.hook is not None:
@@ -383,7 +383,7 @@ def run_now(
         return
     if changed:
         raise ActionError(
-            "This automation runs as one agent's Hermes job, which Run now starts with "
+            "This automation runs as one agent's scheduled job, which Run now starts with "
             "its default values. Change the defaults in Variables to run it otherwise.",
             409,
         )

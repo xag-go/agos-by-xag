@@ -49,7 +49,9 @@ def text_for(issue: error_issues.ErrorIssue, kind: str, where: str) -> str:
 
 
 def _where(core: Any, issue: error_issues.ErrorIssue) -> str:
-    source = {"core": "AGOS core", "web": "AGOS web app", "hermes": "Hermes"}[issue.source]
+    # The owner's words only (spec 2026-11-04 no-engine-name): the engine is never
+    # named; `issue.source` itself stays "hermes" for diagnostics.
+    source = {"core": "AGOS core", "web": "AGOS web app", "hermes": "the engine"}[issue.source]
     if issue.workspace_id:
         from agos_core.db.workspaces import name_of
 

@@ -140,7 +140,7 @@ def _profile_meta(self: "HermesEngine", home: Path, script: str, value: str, wha
     try:
         python = hermes_python(self.settings)
     except (OSError, RuntimeError) as error:
-        raise EngineError("Hermes isn't installed where the settings say") from error
+        raise EngineError("The engine isn't installed where the settings say") from error
     off_loop("hermes profile meta")
     try:
         done = subprocess.run(  # noqa: S603 - Hermes's own runtime, fixed argv
@@ -154,10 +154,10 @@ def _profile_meta(self: "HermesEngine", home: Path, script: str, value: str, wha
         )
         hermes_contract.ran(done)
     except (OSError, subprocess.TimeoutExpired) as error:
-        raise EngineError(f"Hermes did not write the profile's {what}") from error
+        raise EngineError(f"The engine did not write the profile's {what}") from error
     if done.returncode != 0 or "AGOS-META ok" not in done.stdout:
         log.info("profile %s not written (%s): %s", what, done.returncode, done.stderr[-300:])
-        raise EngineError(f"Hermes did not write the profile's {what}")
+        raise EngineError(f"The engine did not write the profile's {what}")
 
 
 # ---- profile ---------------------------------------------------------
@@ -169,7 +169,7 @@ def ensure_profile(self: "HermesEngine", workspace_id: str) -> bool:
         # Still in the shared home (or being copied by migrate_root, before its
         # root is marked): AGOS neither makes nor writes a root over it.
         raise EngineError(
-            "this workspace is still in the shared Hermes home: move it onto its own "
+            "this workspace is still in the shared home: move it onto its own "
             "root first (python -m agos_core.migrate_root)"
         )
     home = self.profile_home(workspace_id)

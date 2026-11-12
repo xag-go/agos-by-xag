@@ -33,9 +33,6 @@ OWNER_ONLY: dict[str, str] = {
     "activateRemoteAccess": _ACCESS + " (opening AGOS to his other devices over Tailscale)",
     "turnOffRemoteAccess": _ACCESS + " (opening AGOS to his other devices over Tailscale)",
     "saveAlsoAllow": _ACCESS + " (which other Tailscale logins may open AGOS)",
-    # AGOS itself
-    "checkAgosUpdate": "updating AGOS itself (Settings → General → Update AGOS) is his call",
-    "runAgosUpdate": "updating AGOS stops every workspace for minutes: only he starts it",
     # push
     "subscribePush": "his own phone's and browser's notifications",
     "unsubscribePush": "his own phone's and browser's notifications",

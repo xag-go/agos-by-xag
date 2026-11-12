@@ -211,7 +211,7 @@ export function Office3D({
           {demo
             ? "Demo Mode · sample activity"
             : connected
-              ? "Live · Hermes"
+              ? "Live"
               : "Disconnected · last known state"}
         </span>
         <div className="ml-auto flex flex-wrap items-center gap-3 text-xs text-hud-sand-dim">

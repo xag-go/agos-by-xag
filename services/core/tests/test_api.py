@@ -70,7 +70,7 @@ def test_folders(client: TestClient, tmp_path: Path) -> None:
     # The added folders live in the workspace's Hermes (its docker_volumes): with
     # no engine there is nowhere to keep one (test_engine_sync covers the rest).
     off = client.post(f"/workspaces/{ws}/folders", json={"path": str(reports)})
-    assert off.status_code == 409 and "Hermes" in off.json()["detail"]
+    assert off.status_code == 409 and "engine is off" in off.json()["detail"]
     refused = client.post(
         f"/workspaces/{ws}/folders", json={"path": str(tmp_path / "data" / "system")}
     )

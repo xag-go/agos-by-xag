@@ -28,7 +28,7 @@ the keys re-entered by hand). Taken out of everything above:
   each `.env` and each sealed value, never a value. The restore rehearsal shows them
   as "Re-enter these keys in Settings → Keys: …". Backups made before this have no
   such list and restore as they are.
-Hermes's backup has no encryption, no schedule and none of AGOS's data: that much
+The engine's backup has no encryption, no schedule and none of AGOS's data: that much
 (this wrapper, agos.db, actions/backups.py's schedule and rehearsal) stays AGOS's.
 
 The database is copied with SQLite's online backup API (consistent while running).
@@ -235,7 +235,7 @@ def _ask_private(private: Private | None, parts: list[tuple[str, ...]]) -> list[
         return [False] * len(parts)
     answer = private(parts)
     if len(answer) != len(parts):
-        raise BackupError("Hermes didn't say which files hold keys.")
+        raise BackupError("The engine didn't say which files hold keys.")
     return [bool(a) for a in answer]
 
 
@@ -299,10 +299,10 @@ def _collect_hermes(
     """Hermes's own backups (the shared home, then each root) into `staging`, keys
     taken out, each hashed into `files`."""
     hermes = (
-        [(HERMES_ZIP, hermes_backup, "Hermes's backup", "shared home")] if hermes_backup else []
+        [(HERMES_ZIP, hermes_backup, "The engine's backup", "shared home")] if hermes_backup else []
     )
     hermes += [
-        (f"{ROOTS_PREFIX}{name}.zip", write, f"Hermes's backup of {name}", name)
+        (f"{ROOTS_PREFIX}{name}.zip", write, f"The engine's backup of {name}", name)
         for name, write in sorted(roots.items())
     ]
     for zip_name, write, label, where in hermes:
@@ -563,7 +563,7 @@ def _in_home(parts: tuple[str, ...]) -> tuple[str, tuple[str, ...]]:
 
 
 def _without_keys(path: Path, where: str, out: _KeysOut, private: Private | None) -> None:
-    """Hermes's backup keeps every key of the home (its .env, logins, token stores);
+    """The engine's backup keeps every key of the home (its .env, logins, token stores);
     none may be in AGOS's backup. The zip is rewritten without them (AGOS's names
     and Hermes's own credential stores), nothing else changes."""
     import zipfile
@@ -604,7 +604,7 @@ def root_zip_problems(path: Path, name: str) -> list[str]:
 
 
 def hermes_zip_problems(path: Path, profiles: list[str]) -> list[str]:
-    """Hermes's backup zip opens, every file in it is intact, and each workspace's
+    """The engine's backup zip opens, every file in it is intact, and each workspace's
     profile is in it (its config and sessions)."""
     import zipfile
 

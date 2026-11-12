@@ -94,7 +94,7 @@ export function SubtreeControls({
             type="button"
             disabled={busy}
             aria-pressed={watched}
-            title="A Hermes cron job (the Co-Founder, every 30 min) checks this tree: when it stopped with open cards left, it wakes once per stop to continue or reopen them, and asks you after three stops with no progress."
+            title="A scheduled job (the Co-Founder, every 30 min) checks this tree: when it stopped with open cards left, it wakes once per stop to continue or reopen them, and asks you after three stops with no progress."
             onClick={() => {
               run(async () => {
                 const r = await watchTree(workspaceId, card.id, !watched);
@@ -112,7 +112,7 @@ export function SubtreeControls({
         {confirming && (
           <>
             <span className="self-center text-sm text-ink-2">
-              Archive this card and every open card under it? Hermes has no undo
+              Archive this card and every open card under it? There is no undo
               for that.
             </span>
             <Button

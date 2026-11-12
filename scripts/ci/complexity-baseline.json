@@ -225,7 +225,7 @@
     "services/core/src/agos_core/actions/services/settings/hermes_rows.py::_env_rows": {
       "C901": 15,
       "PLR0912": 13,
-      "length": 139
+      "length": 135
     },
     "services/core/src/agos_core/actions/services/settings/hermes_writes.py::give_new_profile": {
       "C901": 13,
@@ -270,9 +270,6 @@
     },
     "services/core/src/agos_core/actions/work_hours.py::apply": {
       "C901": 11
-    },
-    "services/core/src/agos_core/api/app.py::create_app": {
-      "length": 107
     },
     "services/core/src/agos_core/db/agent_revisions.py::_shown": {
       "C901": 11
@@ -454,8 +451,8 @@
       "complexity": 17
     },
     "apps/web/src/app/(app)/settings/[section]/page.tsx::(anonymous)": {
-      "complexity": 18,
-      "lines": 180
+      "complexity": 17,
+      "lines": 164
     },
     "apps/web/src/app/(app)/w/[id]/automations/page.tsx::(anonymous)": {
       "complexity": 22,
@@ -885,27 +882,23 @@
     "apps/web/src/features/search/search-view.tsx::SearchView": {
       "lines": 119
     },
-    "apps/web/src/features/settings/agos-update-card.tsx::AgosUpdateCard": {
-      "complexity": 25,
-      "lines": 84
-    },
     "apps/web/src/features/settings/errors-view.tsx::ErrorsView": {
-      "lines": 132
+      "lines": 117
     },
     "apps/web/src/features/settings/errors-view.tsx::Issue": {
       "complexity": 12
     },
     "apps/web/src/features/settings/fallback-card.tsx::FallbackCard": {
-      "lines": 248
+      "lines": 247
     },
     "apps/web/src/features/settings/general-settings.tsx::GeneralSettings": {
-      "lines": 211
+      "lines": 204
     },
     "apps/web/src/features/settings/helper-fields.tsx::(anonymous)": {
       "complexity": 11
     },
     "apps/web/src/features/settings/helper-fields.tsx::RawFields": {
-      "lines": 121
+      "lines": 119
     },
     "apps/web/src/features/settings/helper-models-shared.ts::differences": {
       "complexity": 21
@@ -915,37 +908,13 @@
       "lines": 191
     },
     "apps/web/src/features/settings/helper-pictures.tsx::PicturesCard": {
-      "lines": 109
-    },
-    "apps/web/src/features/settings/hermes-edit-model-pair.tsx::EditModelPair": {
-      "complexity": 16,
-      "lines": 174
-    },
-    "apps/web/src/features/settings/hermes-edit-setting.tsx::EditSetting": {
-      "complexity": 24,
-      "lines": 242
-    },
-    "apps/web/src/features/settings/hermes-health.tsx::HermesHealthView": {
-      "lines": 87
+      "lines": 106
     },
     "apps/web/src/features/settings/hermes-limits-card.tsx::HermesLimitsCard": {
-      "lines": 211
-    },
-    "apps/web/src/features/settings/hermes-setting-row.tsx::SettingRow": {
-      "complexity": 21,
-      "lines": 123
-    },
-    "apps/web/src/features/settings/hermes-settings-shared.ts::cardHref": {
-      "complexity": 23
+      "lines": 208
     },
     "apps/web/src/features/settings/hermes-settings-shared.ts::shownValue": {
       "complexity": 13
-    },
-    "apps/web/src/features/settings/hermes-settings.tsx::HermesSettingsPage": {
-      "lines": 137
-    },
-    "apps/web/src/features/settings/hermes-update-card.tsx::HermesUpdateCard": {
-      "complexity": 12
     },
     "apps/web/src/features/settings/key-pools-card.tsx::(anonymous)": {
       "lines": 93
@@ -959,14 +928,14 @@
     },
     "apps/web/src/features/settings/models-settings.tsx::ApiKeyBox": {
       "complexity": 12,
-      "lines": 113
+      "lines": 111
     },
     "apps/web/src/features/settings/other-settings.tsx::ServerSettings": {
       "complexity": 15,
       "lines": 192
     },
     "apps/web/src/features/settings/other-settings.tsx::UsageLimits": {
-      "lines": 146
+      "lines": 145
     },
     "apps/web/src/features/settings/owner-rules.tsx::OwnerRules": {
       "lines": 147
@@ -996,11 +965,11 @@
       "complexity": 13
     },
     "apps/web/src/features/settings/time-limits-card.tsx::TimeLimitsCard": {
-      "lines": 168
+      "lines": 166
     },
     "apps/web/src/features/settings/voice-card.tsx::VoiceCard": {
       "complexity": 14,
-      "lines": 121
+      "lines": 119
     },
     "apps/web/src/features/setup/actions.ts::parseVariables": {
       "complexity": 12

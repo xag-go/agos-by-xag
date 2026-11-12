@@ -1,5 +1,5 @@
 """The Co-Founder's kinds for the owner's preferences (timezone, notifications, Errors, Labs
-flags, trusted apps), backups, the Hermes update and Learned (actions/workspace_admin_ops.py
+flags, trusted apps), backups and Learned (actions/workspace_admin_ops.py
 binds them to the page actions).
 """
 
@@ -165,39 +165,6 @@ REHEARSE_RESTORE: OperationSpec[RehearseRestore] = OperationSpec(
 )
 
 
-class CheckHermesUpdate(CofounderFields):
-    pass
-
-
-CHECK_HERMES_UPDATE: OperationSpec[CheckHermesUpdate] = OperationSpec(
-    name="check_hermes_update",
-    input_model=CheckHermesUpdate,
-    audit_title="Check for a Hermes update",
-    gate="once",
-    agent_tool=None,
-    effect="read",
-    web_action="checkHermesUpdate",
-    cofounder_domain=WORKSPACE,
-    cofounder_fields="(no fields)",
-)
-
-
-class RunHermesUpdate(CofounderFields):
-    pass
-
-
-RUN_HERMES_UPDATE: OperationSpec[RunHermesUpdate] = OperationSpec(
-    name="run_hermes_update",
-    input_model=RunHermesUpdate,
-    audit_title="Update Hermes now",
-    gate="owner",
-    agent_tool=None,
-    web_action="runHermesUpdate",
-    cofounder_domain=WORKSPACE,
-    cofounder_fields="(no fields)",
-)
-
-
 class UndoLearned(CofounderFields):
     entry: Any
 
@@ -224,7 +191,5 @@ SPECS: tuple[OperationSpec[Any], ...] = (
     SET_BACKUP_SCHEDULE,
     RUN_BACKUP,
     REHEARSE_RESTORE,
-    CHECK_HERMES_UPDATE,
-    RUN_HERMES_UPDATE,
     UNDO_LEARNED,
 )

@@ -109,7 +109,7 @@ def _cli(args: list[str]) -> str:
     )
     if done.returncode != 0:
         said = (done.stderr or done.stdout or "").strip().splitlines() or ["no answer"]
-        raise RuntimeError(f"Hermes's Kanban refused: {said[-1][:300]}")
+        raise RuntimeError(f"The board refused: {said[-1][:300]}")
     return done.stdout
 
 
@@ -159,7 +159,7 @@ def _card_id(text: str) -> str:
     card = (raw.get("task") or raw) if isinstance(raw, dict) else {}
     found = str(card.get("id") or "") if isinstance(card, dict) else ""
     if not found:
-        raise RuntimeError("Hermes's Kanban didn't make the card.")
+        raise RuntimeError("The board didn't make the card.")
     return found
 
 

@@ -126,7 +126,7 @@ def test_log_reads_what_hermes_did(env) -> None:  # type: ignore[no-untyped-def]
     assert failed["level"] == "error" and failed["where"] == "Scheduled job “Check the inbox”"
     assert "abcdef123456" not in failed["cause"]
     assert any(e["id"] == "cron:e2" and e["level"] == "ok" for e in entries)
-    hermes = [e for e in entries if e["where"] == "Hermes · tools.browser"]
+    hermes = [e for e in entries if e["where"] == "Engine · tools.browser"]
     assert len(hermes) == 1 and hermes[0]["level"] == "error"
     assert hermes[0]["at"].startswith("2026-10-09T12:00:01")
     other = client.post(

@@ -58,7 +58,7 @@ def test_mcp(core: Core, item_id: int, workspace_id: str | None = None) -> McpTe
     here = hc.here(core, workspace_id) if workspace_id else hc.Here()
     entry = here.mcp.get(str(row["name"]))
     if entry is None:
-        return McpTest(ok=False, error="This server isn't in the workspace's Hermes any more.")
+        return McpTest(ok=False, error="This server isn't in the workspace any more.")
     if (why := mcp_address.entry_refusal(str(row["name"]), entry)) is not None:
         return McpTest(ok=False, error=f"Not tested: this server {why}.")
     definition = hc.definition_of(entry)

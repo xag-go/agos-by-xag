@@ -84,7 +84,7 @@ def load_catalog(python: str, repo: Path, *, timeout: float = 60) -> list[Catalo
     )
     hermes_contract.ran(done)
     if done.returncode != 0:
-        raise AppError("Hermes's app catalog couldn't be read.")
+        raise AppError("The engine's app catalog couldn't be read.")
     return parse_catalog(json.loads(done.stdout.strip().splitlines()[-1]))
 
 

@@ -40,14 +40,14 @@ def _shims(tmp: Path) -> tuple[Path, Path]:
 
 
 def _as_the_runner(tmp: Path) -> None:
-    """Make the script see the nightly's own caller: the runner account `agos-ci`
+    """Make the script see the nightly's own caller: the runner account `server-ci`
     (the default --account), which runs this suite on the self-hosted runner."""
     bin_dir = tmp / "bin"
     if not bin_dir.exists():
         _shims(tmp)
     shim = bin_dir / "id"
     shim.write_text(
-        '#!/bin/sh\n[ "$1" = "-un" ] && { echo agos-ci; exit 0; }\nexec /usr/bin/id "$@"\n'
+        '#!/bin/sh\n[ "$1" = "-un" ] && { echo server-ci; exit 0; }\nexec /usr/bin/id "$@"\n'
     )
     shim.chmod(0o755)
 
@@ -66,19 +66,19 @@ def _run(args: list[str], tmp: Path, **env: str) -> subprocess.CompletedProcess[
 
 def test_a_dry_run_says_every_step_and_runs_none(tmp_path: Path) -> None:
     _, calls = _shims(tmp_path)
-    done = _run(["--dry-run", "--repo", "owner/agos", "--account", "agos-ci-test"], tmp_path)
+    done = _run(["--dry-run", "--repo", "owner/agos", "--account", "server-ci-test"], tmp_path)
     assert done.returncode == 0, done.stderr
     assert not calls.exists(), calls.read_text()  # nothing that changes the machine ran
     out = done.stdout
     for step in (
         "sudo useradd --create-home",
-        "sudo loginctl enable-linger agos-ci-test",
+        "sudo loginctl enable-linger server-ci-test",
         "deploy/hermes.pin",
         "sha256sum -c",
         "--labels hermes",
         "https://github.com/owner/agos",
         "ACTIONS_RUNNER_INPUT_TOKEN, never on argv",
-        "systemctl --user daemon-reload && systemctl --user enable --now agos-ci-runner.service",
+        "systemctl --user daemon-reload && systemctl --user enable --now server-ci-runner.service",
     ):
         assert step in out, step
 
@@ -93,7 +93,7 @@ def test_the_registration_token_never_shows(tmp_path: Path) -> None:
             "--repo",
             "owner/agos",
             "--account",
-            "agos-ci-test",
+            "server-ci-test",
             "--token-file",
             str(token),
         ],
@@ -119,26 +119,29 @@ def test_never_the_callers_own_account(tmp_path: Path) -> None:
 
 def test_the_unit_is_a_low_priority_guest_that_cleans_up(tmp_path: Path) -> None:
     out = tmp_path / "rendered"
-    done = _run(["--render", str(out), "--account", "agos-ci-test"], tmp_path)
+    done = _run(["--render", str(out), "--account", "server-ci-test"], tmp_path)
     assert done.returncode == 0, done.stderr
-    unit = (out / "agos-ci-runner.service").read_text()
+    unit = (out / "server-ci-runner.service").read_text()
     for line in (
-        "ExecStart=/home/agos-ci-test/actions-runner/run.sh",
-        "ExecStartPre=/usr/bin/bash /home/agos-ci-test/actions-runner/hooks/clean.sh",
-        "ExecStopPost=/usr/bin/bash /home/agos-ci-test/actions-runner/hooks/clean.sh",
+        "ExecStart=/home/server-ci-test/actions-runner/run.sh",
+        "ExecStartPre=/usr/bin/bash /home/server-ci-test/actions-runner/hooks/clean.sh",
+        "ExecStopPost=/usr/bin/bash /home/server-ci-test/actions-runner/hooks/clean.sh",
         "Nice=19",
         "IOSchedulingClass=idle",
         "OOMScoreAdjust=800",
         "MemoryMax=9G",
         "NoNewPrivileges=yes",
-        "Environment=TMPDIR=/home/agos-ci-test/.hermes/cache/scratch/agos-nightly-tmp",
+        "Environment=TMPDIR=/home/server-ci-test/.hermes/cache/scratch/agos-nightly-tmp",
         "WantedBy=default.target",
     ):
         assert line in unit.splitlines(), line
     env = (out / ".env").read_text().splitlines()
-    assert "ACTIONS_RUNNER_HOOK_JOB_STARTED=/home/agos-ci-test/actions-runner/hooks/clean.sh" in env
     assert (
-        "ACTIONS_RUNNER_HOOK_JOB_COMPLETED=/home/agos-ci-test/actions-runner/hooks/clean.sh" in env
+        "ACTIONS_RUNNER_HOOK_JOB_STARTED=/home/server-ci-test/actions-runner/hooks/clean.sh" in env
+    )
+    assert (
+        "ACTIONS_RUNNER_HOOK_JOB_COMPLETED=/home/server-ci-test/actions-runner/hooks/clean.sh"
+        in env
     )
 
 
@@ -147,8 +150,8 @@ def test_the_clean_hook_ends_the_rigs_and_removes_only_them(tmp_path: Path, call
     if caller == "runner":
         _as_the_runner(tmp_path)
     out = tmp_path / "rendered"
-    # A test account: the default (agos-ci) is the caller itself on the runner.
-    assert _run(["--render", str(out), "--account", "agos-ci-test"], tmp_path).returncode == 0
+    # A test account: the default (server-ci) is the caller itself on the runner.
+    assert _run(["--render", str(out), "--account", "server-ci-test"], tmp_path).returncode == 0
     home = tmp_path / "ci-home"
     rig = home / "agos-nightly-e2e"
     (rig / "roots" / "agos-x").mkdir(parents=True)
@@ -194,8 +197,8 @@ def test_the_clean_hook_refuses_an_odd_home(tmp_path: Path, caller: str) -> None
     if caller == "runner":
         _as_the_runner(tmp_path)
     out = tmp_path / "rendered"
-    # A test account: the default (agos-ci) is the caller itself on the runner.
-    assert _run(["--render", str(out), "--account", "agos-ci-test"], tmp_path).returncode == 0
+    # A test account: the default (server-ci) is the caller itself on the runner.
+    assert _run(["--render", str(out), "--account", "server-ci-test"], tmp_path).returncode == 0
     done = subprocess.run(  # noqa: S603
         [BASH, str(out / "hooks" / "clean.sh")],
         capture_output=True,
@@ -227,12 +230,20 @@ def test_the_nightly_never_runs_on_a_pull_request() -> None:
         assert "HERMES_RUNNER" in str(job.get("if", ""))
 
 
+# The only way a PR workflow reaches the server: the repo variable CI_RUNNER=self picks the
+# `server-ci` label, anything else (public repos, no variable) stays on GitHub's machines.
+LABELS = '["self-hosted", "linux", "server-ci"]'
+SELF_OR_HOSTED = "${{ vars.CI_RUNNER == 'self' && fromJSON('" + LABELS + "') || 'ubuntu-24.04' }}"
+
+
 def test_no_other_workflow_reaches_a_self_hosted_runner() -> None:
     for path in sorted(WORKFLOWS.glob("*.yml")):
         if path.name == "nightly-hermes.yml":
             continue
         for name, job in _workflow(path.name)["jobs"].items():
-            assert "self-hosted" not in str(job.get("runs-on")), f"{path.name}: {name}"
+            runs_on = str(job.get("runs-on"))
+            if "self-hosted" in runs_on:
+                assert runs_on == SELF_OR_HOSTED, f"{path.name}: {name}"
 
 
 def _tools_step(job: dict[str, Any]) -> str:

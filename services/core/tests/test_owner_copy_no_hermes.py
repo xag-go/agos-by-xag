@@ -141,7 +141,6 @@ MODULES = [
     "engine/automation_run.py",
     "engine/backup.py",
     "engine/cofounder_actions.py",
-    "engine/cofounder_parity/workspace.py",
     "engine/cron.py",
     "engine/envfile.py",
     "engine/github_token.py",

@@ -47,9 +47,10 @@ def effects(specs: Specs) -> dict[str, Effect]:
 
 def web_do(specs: Specs) -> dict[str, str]:
     return {
-        s.web_action: f"do:{s.name}"
+        web: f"do:{s.name}"
         for s in specs
-        if s.web_action is not None and s.cofounder_domain is not None
+        if s.cofounder_domain is not None
+        for web in ((s.web_action,) if s.web_action is not None else ()) + s.extra_web_actions
     }
 
 

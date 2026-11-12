@@ -102,7 +102,8 @@ def test_every_new_kind_runs_its_page_code_and_its_gate_matches_its_undo() -> No
         cofounder_more.DOES
     )
     for name, kind in parity.KINDS.items():
-        assert kind.domain in parity.DOMAINS, name
+        # the base kinds (domain chat) are taught by the always-on prompt, not the skill
+        assert kind.domain in (*parity.DOMAINS, "chat"), name
         if kind.gate == "undo":
             assert name in cofounder_more.UNDOES, f"{name} says Undo but has none"
         if kind.gate == "once":
@@ -121,8 +122,9 @@ def test_the_prompt_names_each_domain_and_the_skill_holds_every_kind() -> None:
         assert f"- {domain}: " in prompt
     text = parity.skill_text()
     assert text.startswith("---\nname: cofounder-actions\n")
-    for name in parity.KINDS:
-        assert f"- {name} (" in text, name
+    for name, kind in parity.KINDS.items():
+        if kind.domain != "chat":
+            assert f"- {name} (" in text, name
     # The per-kind fields stay out of the always-on prompt.
     assert "save_skill_test_settings" not in prompt
 

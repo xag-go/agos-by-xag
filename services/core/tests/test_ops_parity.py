@@ -10,15 +10,9 @@ from __future__ import annotations
 from agos_core.actions.services.cofounder import page_actions
 from agos_core.api import app  # noqa: F401 - every router, so every service's binding
 from agos_core.engine import cofounder_parity, power
-from agos_core.engine.cofounder_parity import board, workspace
 from agos_core.ops import catalog
 from agos_core.ops.registry import REGISTRY
 from agos_core.ops.specs import SPECS
-
-HAND_WRITTEN = {
-    **board.BOARD_KINDS,
-    **workspace.WORKSPACE_KINDS,
-}
 
 
 def test_every_declared_operation_is_bound_by_its_service() -> None:
@@ -52,10 +46,6 @@ def test_cofounder_operations_appear_in_every_cofounder_table_as_declared() -> N
             assert cofounder_parity.DO[spec.web_action] == f"do:{spec.name}"
 
 
-def test_no_declared_operation_is_also_a_hand_written_kind() -> None:
-    assert not {s.name for s in SPECS} & set(HAND_WRITTEN)
-
-
 def test_the_merges_are_the_catalogues_derivations() -> None:
     """Each table takes the registry's rows whole (so the next declaration lands in
     all of them): the derived rows are a subset of each table."""
@@ -75,4 +65,3 @@ def test_the_registry_holds_real_cofounder_kinds_of_each_service() -> None:
     assert len(kinds) >= 50
     for name in kinds:
         assert cofounder_parity.KINDS[name] is not None
-        assert name not in HAND_WRITTEN

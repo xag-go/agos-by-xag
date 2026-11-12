@@ -15,6 +15,10 @@ Every notable change to AGOS is written here. The format follows
 
 ### Added
 
+- Team: the Co-Founder now looks for gaps against the goals in its weekly review
+  and heartbeat (a goal, key result or project no member covers) and proposes one
+  hire for the owner to approve, after checking a role change or a reports_to move
+  first; existing heartbeats take the new prompt when AGOS starts.
 - Automations: **Done by** shows which steps run side by side; each team step can
   have an **Only if** line, so a step with nothing to do is skipped without
   starting an agent; **Runs** shows each step (who worked, who was skipped and

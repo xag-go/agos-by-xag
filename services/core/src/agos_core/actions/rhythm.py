@@ -114,13 +114,19 @@ PROMPTS: dict[str, str] = {
             " result: propose the change with agos_goals (kind goal, kr or project) with"
             " its why. The Vision and the strategy are the owner's: suggest a change"
             " (kind vision) only when the week showed they no longer fit.",
-            "4. Read the team scorecards at the end of agos_goals status (cards done,"
+            "4. Gaps: for each goal, key result and project, name the member whose role"
+            " covers its work (your view of the team). Work no member covers is a gap:"
+            " follow your team-design skill (a role change or a reports_to move first);"
+            " only when neither covers it, propose ONE hire with agos_propose kind hire,"
+            " its why naming the gap, the goal or project (#id) and why no member covers"
+            " it. Never a second hire while one you proposed still waits for the owner.",
+            "5. Read the team scorecards at the end of agos_goals status (cards done,"
             " median time, blocks and their wait, returns from review, the owner's"
             " 👍 / 👎, last heartbeat). For a member that struggles, propose the fix it"
             " needs, with its why: a skill (agos_skill_request), a model or access"
             " change, or a hire (agos_propose kind hire). A member with no card done this"
             " week: say why (no work given, blocked, or failing) and fix that cause.",
-            "5. Post the review with agos_goals: action post, kind weekly, words: each"
+            "6. Post the review with agos_goals: action post, kind weekly, words: each"
             " goal on track or not and why; Team: one line per member (what it delivered,"
             " what blocked it, or that it did nothing); what you proposed; what you need"
             " from the owner.",

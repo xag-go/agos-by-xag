@@ -138,7 +138,7 @@ is off until a runner is registered:
    `deploy/register-ci-runner.sh --dry-run` shows every step; then
    `deploy/register-ci-runner.sh --repo OWNER/NAME` (a registration token comes from
    your `gh` login, or `--token-file`; it never goes on a command line). It makes a
-   dedicated low-privilege account (`agos-ci`: no sudo, its own 0700 home, so a job
+   dedicated low-privilege account (`server-ci`: no sudo, its own 0700 home, so a job
    reads neither your keys nor the live AGOS), installs that account's own Hermes
    (pinned to `deploy/hermes.pin`) and uv, the runner (pinned version, sha256 checked,
    labels self-hosted / linux / hermes) and a systemd user service of that account:

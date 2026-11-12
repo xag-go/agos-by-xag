@@ -51,7 +51,7 @@ def test_each_kind_of_private_path_is_found(line: str) -> None:
     "line",
     [
         "the backups are in /home/agos/agos-backups",
-        "the CI user /home/agos-ci/.hermes",
+        "the CI user /home/server-ci/.hermes",
         "the sandbox's /home/agent/.cache",
         "HOME=/home/x in the example",
         "Hermes reads ~/.hermes/config.yaml and AGOS ~/agos-data",

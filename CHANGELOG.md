@@ -10,6 +10,8 @@ Every notable change to AGOS is written here. The format follows
 
 - CI: the self-hosted nightly runner's account is now `server-ci` (was
   `agos-ci`); its service is `server-ci-runner.service`.
+- CI: with the repository variable `CI_RUNNER=self`, every CI and Security job
+  runs on that runner (no minutes limit); without it, GitHub's machines as before.
 
 ### Added
 

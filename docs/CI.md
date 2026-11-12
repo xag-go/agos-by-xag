@@ -157,6 +157,18 @@ is off until a runner is registered:
 5. `deploy/register-ci-runner.sh --remove` stops and unregisters it (the account stays;
    the script prints the `userdel`).
 
+### Every PR's CI on the same runner (no minutes limit)
+
+GitHub counts minutes only on its own machines for a private repo; a self-hosted
+runner has no limit. Set the repository variable `CI_RUNNER` to `self`
+(`gh variable set CI_RUNNER --body self`) and every job of `ci.yml` and
+`security.yml` runs on the runner above (labels self-hosted / linux / hermes)
+instead of `ubuntu-24.04`. Without the variable (the public repo) nothing changes.
+The jobs need no sudo there: oasdiff and gitleaks go into the job's own
+`$RUNNER_TEMP/bin`, and Playwright installs only its Chromium (the machine already
+has the system libraries). One runner runs one job at a time, so a PR's jobs run
+one after the other.
+
 The workflow keeps pytest's temp dirs and the evals / budgets rigs under
 `~/.hermes/cache/scratch/` (on disk and inside `~/.hermes`): outside it, each throwaway
 Hermes home syncs its own Python environment for minutes. It never runs on

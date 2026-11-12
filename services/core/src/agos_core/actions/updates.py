@@ -26,6 +26,7 @@ __all__ = ["run_check", "start_update", "status"]
 # Owner-facing words (one rule: never the engine's name).
 READY = "An update is ready."
 UP_TO_DATE = "You're up to date."
+CHECK_FAILED = "The check failed."
 NO_ENGINE = "The engine isn't set up on this machine."
 BUSY = "An update is already running."
 CHECK_FIRST = "Check for an update first."
@@ -36,32 +37,37 @@ def status(core: Core) -> dict[str, Any]:
     return {"agos": agos_update.status(core), "engine": hermes_update.status(core)}
 
 
-def _part_check(core: Core, check: Any) -> tuple[dict[str, Any] | None, str | None]:
-    """One part's check record, or why it has none. A running update refuses the
-    whole check (both parts' checks already refuse it with this wording)."""
+def _part_check(core: Core, check: Any) -> tuple[dict[str, Any] | None, str | None, bool]:
+    """One part's check record, or why it has none and whether its check BROKE
+    (a 5xx: git/network down — not a by-design refusal like the installer note).
+    A running update refuses the whole check (both parts' checks already refuse
+    it with this wording)."""
     try:
-        return check(core), None
+        return check(core), None, False
     except ActionError as error:
         if "update is" in str(error) and "running" in str(error):
             raise ActionError(BUSY) from error
-        return None, str(error)
+        return None, str(error), error.status >= 500
 
 
 def run_check(core: Core) -> dict[str, Any]:
-    """The Check update button: both parts' read-only checks, one verdict."""
-    agos_rec, agos_note = _part_check(core, agos_update.run_check)
+    """The Check update button: both parts' read-only checks, one verdict.
+    A broken part check is said plainly (never 'up to date')."""
+    agos_rec, agos_note, agos_broke = _part_check(core, agos_update.run_check)
     engine_rec: dict[str, Any] | None
     engine_note: str | None
+    engine_broke = False
     if core.engine is None:
         engine_rec, engine_note = None, NO_ENGINE
     else:
-        engine_rec, engine_note = _part_check(core, hermes_update.run_check)
+        engine_rec, engine_note, engine_broke = _part_check(core, hermes_update.run_check)
     if agos_rec is None and engine_rec is None:
         raise ActionError(f"The check didn't run: {agos_note} {engine_note}".strip())
     ready = bool((agos_rec or {}).get("target") or (engine_rec or {}).get("target"))
+    broke = agos_broke or engine_broke
     return {
         "ready": ready,
-        "note": READY if ready else UP_TO_DATE,
+        "note": READY if ready else (CHECK_FAILED if broke else UP_TO_DATE),
         "agos": agos_rec,
         "agos_note": agos_note,
         "engine": engine_rec,

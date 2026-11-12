@@ -10,8 +10,13 @@
 
 export type UpdatesCheck = {
   ready: boolean;
-  /** Something the owner should know (an install not made by the installer). */
+  /** The one verdict ("You're up to date." / "The check failed."). */
   note?: string;
+  /** Why the AGOS part has no record (an install not made by the installer,
+   * or its check broke) — shown to the owner as-is. */
+  agos_note?: string | null;
+  /** Why the engine part has no record (not set up, or its check broke). */
+  engine_note?: string | null;
 };
 
 export type UpdatesState = {
@@ -23,10 +28,18 @@ export type UpdatesState = {
   rolled_back?: boolean;
   /** AGOS's own part went through, the engine's part stopped: say so honestly. */
   half_done?: boolean;
+  /** AGOS's part is done but the engine part still has a pending update: the
+   * combined run starts only one part, so "done" alone would be a false
+   * "everything is back". */
+  engine_pending?: boolean;
 };
 
-/** One part's records, as its status() gives them (check rides along unused). */
-type PartStatus = { check?: unknown; state?: UpdatesState | null } | null;
+/** One part's records, as its status() gives them (the check's target says an
+ * update is still pending for that part). */
+type PartStatus = {
+  check?: { target?: unknown } | null;
+  state?: UpdatesState | null;
+} | null;
 
 /** Core GET /updates: both parts' progress, as the two old endpoints gave it. */
 export type CoreUpdatesStatus = { agos?: PartStatus; engine?: PartStatus };
@@ -79,9 +92,16 @@ function settledState(
   return shown;
 }
 
+/** The engine part still has a pending update (its check found a target and
+ * its own update hasn't finished): the combined run starts only one part. */
+const enginePending = (status: CoreUpdatesStatus) =>
+  Boolean(status.engine?.check?.target) &&
+  status.engine?.state?.phase !== "done";
+
 /** The one state the Updates card shows, from the core's real GET /updates:
  * a running part first (AGOS's update runs before the engine's), else the
- * settled word. */
+ * settled word — "done" with the engine part still pending is marked, so the
+ * card never says "everything is back" when it isn't. */
 export function deriveUpdatesState(
   status: CoreUpdatesStatus,
 ): UpdatesState | null {
@@ -89,7 +109,10 @@ export function deriveUpdatesState(
   const engine = stateOf(status.engine);
   if (isRunning(agos)) return agos;
   if (isRunning(engine)) return engine;
-  return settledState(agos, engine);
+  const shown = settledState(agos, engine);
+  if (shown?.phase === "done" && shown === agos && enginePending(status))
+    return { ...shown, engine_pending: true };
+  return shown;
 }
 
 /** The state to keep from Update now's answer. */

@@ -120,6 +120,24 @@ def test_check_without_the_engine_keeps_a_neutral_note(
     assert "hermes" not in body["note"].lower()
 
 
+def test_check_says_failed_when_a_parts_check_broke(
+    client: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A broken check (git/network down, a 5xx) is never 'You're up to date.'"""
+    c, core = client
+    _with_engine(core)
+
+    def broke(core: Any) -> dict[str, Any]:
+        raise ActionError("git fetch failed: no network", 502)
+
+    monkeypatch.setattr(agos_update, "run_check", broke)
+    monkeypatch.setattr(hermes_update, "run_check", lambda core: ENGINE_CURRENT)
+    body = c.post("/updates/check").json()
+    assert body["ready"] is False
+    assert body["note"] == "The check failed."
+    assert "git fetch failed" in body["agos_note"]
+
+
 def test_check_refuses_while_an_update_runs(client: Any, monkeypatch: pytest.MonkeyPatch) -> None:
     c, _core = client
 

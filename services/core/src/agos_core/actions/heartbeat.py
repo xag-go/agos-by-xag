@@ -82,6 +82,11 @@ def prompt_for(agent: str | None, cofounder_lines: bool) -> str:
             " next card (its body starts with the project's '## Goal' line) for the member"
             " that owns it. A team stalled under a paused or stuck lead: say so to the"
             " owner once (agos_ask_owner). Today's plan and the recap are their own runs.",
+            "7. A goal, key result or project whose work no member's role covers (a gap):"
+            " follow your team-design skill (a role change or a reports_to move first);"
+            " only when neither covers it, propose ONE hire with agos_propose kind hire,"
+            " its why naming the gap, the goal or project (#id) and why no member covers"
+            " it. A hire you proposed still waiting for the owner: propose nothing more.",
         ]
     lines += [
         "",
@@ -312,3 +317,47 @@ def follow_parked(core: Core, workspace_id: str, agent: str, parked: bool) -> No
             bridge.resume(home, str(job["id"]))
     except (CronError, EngineError, OSError, ValueError, ActionError, NotFoundError) as error:
         log.warning("heartbeat of %s in %s not followed: %s", agent, workspace_id, error)
+
+
+def refresh_prompts(core: Core, workspace_id: str) -> int:
+    """Each heartbeat job (the Co-Founder's and every member's) whose prompt is an
+    older AGOS's text gets this AGOS's prompt (Hermes's `cron edit`), its interval
+    and on/off kept. A job AGOS holds for a while (archived, account pause, off-hours)
+    or on a schedule AGOS didn't set is left for later. Never raises; the number of
+    jobs changed."""
+    from agos_core.engine.cron import HELD_REASONS
+
+    if core.engine is None:
+        return 0
+    bridge = automation_actions.cron_bridge(core)
+    if bridge is None:
+        return 0
+    changed = 0
+    for agent, home in automation_actions.homes(core, workspace_id).items():
+        try:
+            home, jobs = _home_and_jobs(core, workspace_id, agent)
+        except (CronError, OSError, ValueError, ActionError):
+            continue
+        job = _job_of(jobs)
+        if job is None:
+            continue
+        if str(job.get("prompt") or "") == prompt_for(agent or None, cofounder_lines=not agent):
+            continue
+        enabled = bool(job.get("enabled"))
+        interval = interval_of(job.get("schedule") or "")
+        if interval is None or (not enabled and job.get("paused_reason") in HELD_REASONS):
+            continue
+        try:
+            # Paused with the member (or by the engine): edit keeps that reason.
+            bridge.update(home, str(job["id"]), _spec(core, workspace_id, agent, interval, enabled))
+            changed += 1
+        except (CronError, EngineError, OSError, ValueError, ActionError):
+            log.exception("could not refresh the heartbeat of %r in %s", agent, workspace_id)
+    return changed
+
+
+def refresh_all(core: Core) -> int:
+    """At start: every workspace's heartbeat jobs at this AGOS's prompt."""
+    from agos_core.db import workspaces as workspaces_repo
+
+    return sum(refresh_prompts(core, w.id) for w in workspaces_repo.list_workspaces(core.db))

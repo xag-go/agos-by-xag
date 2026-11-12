@@ -162,12 +162,16 @@ is off until a runner is registered:
 GitHub counts minutes only on its own machines for a private repo; a self-hosted
 runner has no limit. Set the repository variable `CI_RUNNER` to `self`
 (`gh variable set CI_RUNNER --body self`) and every job of `ci.yml` and
-`security.yml` runs on the runner above (labels self-hosted / linux / hermes)
-instead of `ubuntu-24.04`. Without the variable (the public repo) nothing changes.
-The jobs need no sudo there: oasdiff and gitleaks go into the job's own
-`$RUNNER_TEMP/bin`, and Playwright installs only its Chromium (the machine already
-has the system libraries). One runner runs one job at a time, so a PR's jobs run
-one after the other.
+`security.yml` runs on the server's runners (label `server-ci`) instead of
+`ubuntu-24.04`. Without the variable (the public repo) nothing changes. The jobs need
+no sudo there: oasdiff and gitleaks go into the job's own `$RUNNER_TEMP/bin`, and
+Playwright installs only its Chromium (the machine already has the system
+libraries). Three runners of the same account (`server-ci`, `server-ci-2`,
+`server-ci-3`) run three jobs at once under one shared limit for the whole account
+(`user-<uid>.slice`: `MemoryMax=10G`, low CPU and IO weight). Only the first runner
+also carries the `hermes` label, so the nightly's rigs never run beside another
+nightly job; the other two have their own temp folder and a clean-up hook that
+touches only that folder.
 
 The workflow keeps pytest's temp dirs and the evals / budgets rigs under
 `~/.hermes/cache/scratch/` (on disk and inside `~/.hermes`): outside it, each throwaway

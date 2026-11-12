@@ -120,6 +120,24 @@ def test_check_without_the_engine_keeps_a_neutral_note(
     assert "hermes" not in body["note"].lower()
 
 
+def test_check_says_failed_when_a_parts_check_broke(
+    client: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A broken check (git/network down, a 5xx) is never 'You're up to date.'"""
+    c, core = client
+    _with_engine(core)
+
+    def broke(core: Any) -> dict[str, Any]:
+        raise ActionError("git fetch failed: no network", 502)
+
+    monkeypatch.setattr(agos_update, "run_check", broke)
+    monkeypatch.setattr(hermes_update, "run_check", lambda core: ENGINE_CURRENT)
+    body = c.post("/updates/check").json()
+    assert body["ready"] is False
+    assert body["note"] == "The check failed."
+    assert "git fetch failed" in body["agos_note"]
+
+
 def test_check_refuses_while_an_update_runs(client: Any, monkeypatch: pytest.MonkeyPatch) -> None:
     c, _core = client
 
@@ -184,6 +202,32 @@ def test_run_without_a_check_refuses(client: Any) -> None:
     refused = c.post("/updates/run")
     assert refused.status_code == 400
     assert refused.json()["detail"] == "Check for an update first."
+
+
+def test_run_with_an_idempotency_key_runs_once(
+    client: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A double click (the web's coreOnce retry too) never starts two updates."""
+    c, core = client
+    set_setting(core.db, agos_update.KEY_CHECK, AGOS_READY)
+    started: list[str] = []
+
+    def _start(core: Any) -> dict[str, str]:
+        started.append("agos")
+        return {"phase": "queued"}
+
+    monkeypatch.setattr(agos_update, "start_update", _start)
+    first = c.post("/updates/run", headers={"Idempotency-Key": "double-click"})
+    again = c.post("/updates/run", headers={"Idempotency-Key": "double-click"})
+    assert first.status_code == 200, first.text
+    assert again.status_code == 200, again.text
+    assert started == ["agos"]
+    assert again.json() == first.json()
+
+
+def test_run_updates_spec_takes_an_idempotency_key() -> None:
+    specs = {s.name: s for s in REGISTRY.specs()}
+    assert specs["run_updates"].idempotent is True
 
 
 def test_status_merges_both_parts(client: Any, monkeypatch: pytest.MonkeyPatch) -> None:

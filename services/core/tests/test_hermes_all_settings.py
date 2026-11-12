@@ -460,7 +460,7 @@ def test_hermes_env_settings_show_with_what_hermes_really_uses(env: Any) -> None
     timeout = rows["TERMINAL_TIMEOUT"]
     assert timeout["rule"] is None and timeout["editable"]  # Hermes maps YAML onto it
     # terminal.timeout itself is in Hermes's managed scope (the Time limits card).
-    assert "beats this .env line: Hermes uses 300" in timeout["notes"][0]["reason"]
+    assert "beats this .env line: the engine uses 300" in timeout["notes"][0]["reason"]
     assert timeout["notes"][0]["value"] == "300"
     # The managed scope's .env beats the profile's stale line: the value Hermes uses.
     pinned = rows["TERMINAL_MAX_FOREGROUND_TIMEOUT"]["notes"][0]

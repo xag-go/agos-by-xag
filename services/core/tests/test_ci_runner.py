@@ -230,12 +230,20 @@ def test_the_nightly_never_runs_on_a_pull_request() -> None:
         assert "HERMES_RUNNER" in str(job.get("if", ""))
 
 
+# The only way a PR workflow reaches the server: the repo variable CI_RUNNER=self picks the
+# `server-ci` label, anything else (public repos, no variable) stays on GitHub's machines.
+LABELS = '["self-hosted", "linux", "server-ci"]'
+SELF_OR_HOSTED = "${{ vars.CI_RUNNER == 'self' && fromJSON('" + LABELS + "') || 'ubuntu-24.04' }}"
+
+
 def test_no_other_workflow_reaches_a_self_hosted_runner() -> None:
     for path in sorted(WORKFLOWS.glob("*.yml")):
         if path.name == "nightly-hermes.yml":
             continue
         for name, job in _workflow(path.name)["jobs"].items():
-            assert "self-hosted" not in str(job.get("runs-on")), f"{path.name}: {name}"
+            runs_on = str(job.get("runs-on"))
+            if "self-hosted" in runs_on:
+                assert runs_on == SELF_OR_HOSTED, f"{path.name}: {name}"
 
 
 def _tools_step(job: dict[str, Any]) -> str:

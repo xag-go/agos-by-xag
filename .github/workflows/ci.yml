@@ -20,7 +20,7 @@ concurrency:
 jobs:
   web:
     name: Web (format, lint, typecheck, tests, API types drift)
-    runs-on: ${{ vars.CI_RUNNER == 'self' && fromJSON('["self-hosted", "linux", "hermes"]') || 'ubuntu-24.04' }}
+    runs-on: ${{ vars.CI_RUNNER == 'self' && fromJSON('["self-hosted", "linux", "server-ci"]') || 'ubuntu-24.04' }}
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -54,7 +54,7 @@ jobs:
 
   web-build:
     name: Web production build (next build)
-    runs-on: ${{ vars.CI_RUNNER == 'self' && fromJSON('["self-hosted", "linux", "hermes"]') || 'ubuntu-24.04' }}
+    runs-on: ${{ vars.CI_RUNNER == 'self' && fromJSON('["self-hosted", "linux", "server-ci"]') || 'ubuntu-24.04' }}
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -75,7 +75,7 @@ jobs:
 
   web-budgets:
     name: Web page bundle sizes (budget ratchet)
-    runs-on: ${{ vars.CI_RUNNER == 'self' && fromJSON('["self-hosted", "linux", "hermes"]') || 'ubuntu-24.04' }}
+    runs-on: ${{ vars.CI_RUNNER == 'self' && fromJSON('["self-hosted", "linux", "server-ci"]') || 'ubuntu-24.04' }}
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -107,7 +107,7 @@ jobs:
 
   core-static:
     name: Core static (ruff, mypy, layer rules, function complexity)
-    runs-on: ${{ vars.CI_RUNNER == 'self' && fromJSON('["self-hosted", "linux", "hermes"]') || 'ubuntu-24.04' }}
+    runs-on: ${{ vars.CI_RUNNER == 'self' && fromJSON('["self-hosted", "linux", "server-ci"]') || 'ubuntu-24.04' }}
     timeout-minutes: 15
     defaults:
       run:
@@ -142,7 +142,7 @@ jobs:
 
   core-tests:
     name: Core tests (pytest -m "not hermes", parallel, diff coverage)
-    runs-on: ${{ vars.CI_RUNNER == 'self' && fromJSON('["self-hosted", "linux", "hermes"]') || 'ubuntu-24.04' }}
+    runs-on: ${{ vars.CI_RUNNER == 'self' && fromJSON('["self-hosted", "linux", "server-ci"]') || 'ubuntu-24.04' }}
     timeout-minutes: 25
     defaults:
       run:
@@ -186,7 +186,7 @@ jobs:
 
   contract:
     name: API contract (openapi.json fresh, no breaking change)
-    runs-on: ${{ vars.CI_RUNNER == 'self' && fromJSON('["self-hosted", "linux", "hermes"]') || 'ubuntu-24.04' }}
+    runs-on: ${{ vars.CI_RUNNER == 'self' && fromJSON('["self-hosted", "linux", "server-ci"]') || 'ubuntu-24.04' }}
     timeout-minutes: 10
     defaults:
       run:
@@ -234,7 +234,7 @@ jobs:
 
   hygiene:
     name: Repo hygiene (file size, docs, changelog, shellcheck)
-    runs-on: ${{ vars.CI_RUNNER == 'self' && fromJSON('["self-hosted", "linux", "hermes"]') || 'ubuntu-24.04' }}
+    runs-on: ${{ vars.CI_RUNNER == 'self' && fromJSON('["self-hosted", "linux", "server-ci"]') || 'ubuntu-24.04' }}
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -256,7 +256,7 @@ jobs:
 
   workflows:
     name: Workflow lint (actionlint, zizmor)
-    runs-on: ${{ vars.CI_RUNNER == 'self' && fromJSON('["self-hosted", "linux", "hermes"]') || 'ubuntu-24.04' }}
+    runs-on: ${{ vars.CI_RUNNER == 'self' && fromJSON('["self-hosted", "linux", "server-ci"]') || 'ubuntu-24.04' }}
     timeout-minutes: 10
     env:
       ACTIONLINT_VERSION: 1.7.12
@@ -278,7 +278,7 @@ jobs:
 
   browser:
     name: Browser (Playwright clicks + screenshots on the web build)
-    runs-on: ${{ vars.CI_RUNNER == 'self' && fromJSON('["self-hosted", "linux", "hermes"]') || 'ubuntu-24.04' }}
+    runs-on: ${{ vars.CI_RUNNER == 'self' && fromJSON('["self-hosted", "linux", "server-ci"]') || 'ubuntu-24.04' }}
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

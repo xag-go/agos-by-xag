@@ -22,13 +22,11 @@ from agos_core.context import Core
 
 __all__ = [
     "do_backup_schedule",
-    "do_check_update",
     "do_fallback",
     "do_helpers",
     "do_limits",
     "do_rehearse",
     "do_run_backup",
-    "do_run_update",
     "do_time_limits",
     "do_voice",
     "do_ws_settings",

@@ -10,6 +10,7 @@ import json
 from typing import Any
 
 from agos_core.actions.cofounder_detail import detail as _detail
+from agos_core.actions.services.cofounder import base_ops
 from agos_core.context import Core
 from agos_core.db import cofounder_actions as cards_repo
 from agos_core.db.records import CofounderActionView
@@ -61,7 +62,11 @@ def _view(r: Any) -> CofounderActionView:
     if r["status"] == "done" and r["action"] in shown_said:
         result = load_json(r["result"]) or {}
         detail = str(result.get("report") or result.get("said") or result.get("now") or "")
-    elif r["status"] == "done" and r["action"] in parity.KINDS:
+    elif (
+        r["status"] == "done" and r["action"] in parity.KINDS and r["action"] not in base_ops.NAMES
+    ):
+        # A base kind (create_automation...) keeps its own detail ("Who does what"):
+        # its report answers the Co-Founder, the owner's card stays as it was.
         detail = str((load_json(r["result"]) or {}).get("report") or detail)
     if r["status"] == "done" and r["action"] in rules.HIRES:
         result = load_json(r["result"]) or {}

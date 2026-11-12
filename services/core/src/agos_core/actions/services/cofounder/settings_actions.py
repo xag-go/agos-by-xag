@@ -266,18 +266,6 @@ def do_rehearse(core: Core, ws: str, p: Fields) -> Result:
     return {"report": json.dumps(found.model_dump(by_alias=True), default=str)[:3000]}
 
 
-def do_check_update(core: Core, ws: str, p: Fields) -> Result:
-    from agos_core.actions import hermes_update
-
-    return {"report": json.dumps(hermes_update.run_check(core), default=str)[:3000]}
-
-
-def do_run_update(core: Core, ws: str, p: Fields) -> Result:
-    from agos_core.actions import hermes_update
-
-    return {"report": json.dumps(hermes_update.start_update(core), default=str)[:2000]}
-
-
 def do_check_updates(core: Core, ws: str, p: Fields) -> Result:
     from agos_core.actions import updates
 

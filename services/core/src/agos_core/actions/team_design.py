@@ -113,6 +113,10 @@ it needs), source_card. Change nothing of the member yourself: the owner's Appro
 writes it, and its Readiness runs as a new hire's.
 
 ## Leads
+- Keep the chain short: the owner, you, then members. Add a lead level only when it
+  saves you real review work; never a level whose only job is to pass work on.
+- You (or the member's lead) review every member's result against its card's
+  **Done when** before it reaches the owner; the owner sees results that passed.
 - A lead is worth it when it reviews and routes the work of 3 or more members on
   the same sub-goal; under that, members report to you directly.
 - A paused or stuck lead stalls its whole team (the owner sees it in his Inbox):

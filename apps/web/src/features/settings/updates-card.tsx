@@ -144,7 +144,8 @@ function ReadyCard({
   );
 }
 
-/** The idle row: Check update, and "up to date" when the check found nothing. */
+/** The idle row: Check update, and the core's verdict when nothing is ready
+ * ("You're up to date." / "The check failed."). */
 function CheckRow({
   busy,
   check,
@@ -159,14 +160,15 @@ function CheckRow({
       <Button onClick={onCheck} disabled={busy}>
         {busy ? "Checking…" : "Check update"}
       </Button>
-      {check && !check.ready && !busy && (
-        <span className="text-sm text-ink-2">You&apos;re up to date.</span>
+      {check?.note && !check.ready && !busy && (
+        <span className="text-sm text-ink-2">{check.note}</span>
       )}
     </div>
   );
 }
 
-/** Everything shown while nothing runs: the note, the ready card, the result. */
+/** Everything shown while nothing runs: each part's note (the installer note,
+ * a check that broke, no engine set up), the ready card, the result. */
 function Settled({
   check,
   state,
@@ -180,7 +182,12 @@ function Settled({
 }) {
   return (
     <>
-      {check?.note ? <p className="text-sm text-ink-2">{check.note}</p> : null}
+      {check?.agos_note ? (
+        <p className="text-sm text-ink-2">{check.agos_note}</p>
+      ) : null}
+      {check?.engine_note ? (
+        <p className="text-sm text-ink-2">{check.engine_note}</p>
+      ) : null}
       {check?.ready && <ReadyCard onRun={onRun} onDismiss={onDismiss} />}
       {state && <Result state={state} />}
     </>
@@ -246,7 +253,9 @@ function Result({ state }: { state: UpdatesState }) {
   if (state.phase === "done") {
     return (
       <p className="text-sm text-ink-2">
-        ✓ Updated. Backups were made first; everything is back.
+        {state.engine_pending
+          ? "✓ Updated. Backups were made first. The engine part still has an update: press Check update and run it to finish."
+          : "✓ Updated. Backups were made first; everything is back."}
       </p>
     );
   }

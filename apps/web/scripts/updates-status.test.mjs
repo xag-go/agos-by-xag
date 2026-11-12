@@ -7,11 +7,26 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { withState } from "./test-stubs/react-scripted.mjs";
 import {
   deriveUpdatesState,
   RUNNING,
   startedState,
 } from "../src/features/settings/updates-status.ts";
+
+const { UpdatesCard } =
+  await import("../src/features/settings/updates-card.tsx");
+
+// Updates card: useState order check, state, busy, away, error, watching.
+const draw = (check, state) =>
+  withState([check, state, false, false, "", 0], () =>
+    renderToStaticMarkup(createElement(UpdatesCard)),
+  );
+
+const INSTALLER_NOTE =
+  "This AGOS wasn't installed with the installer: update it the way you installed it.";
 
 const core = (agosState, engineState) => ({
   agos: {
@@ -111,6 +126,83 @@ test("Update now answers {part, state}: the card keeps the state, not the envelo
     state: { phase: "queued", started_at: "2026-11-11T10:00:00+00:00" },
   });
   assert.equal(state?.phase, "queued");
+});
+
+test("AGOS done while the engine part still has an update: marked, never 'everything is back'", () => {
+  // The combined run starts only AGOS's part (the engine's waits for a current
+  // AGOS): after the restart the engine's pending check must stay visible.
+  const payload = {
+    agos: {
+      installed: true,
+      current: { version: "0.2.0", sha: "bbbb", date: "" },
+      check: { target: null },
+      state: { phase: "done", started_at: "2026-11-11T10:00:00+00:00" },
+    },
+    engine: {
+      check: { target: { version: "0.22.3", sha: "feedc0ff" } },
+      state: null,
+    },
+  };
+  const state = deriveUpdatesState(payload);
+  assert.equal(state?.phase, "done");
+  assert.equal(state.engine_pending, true);
+  const html = draw(null, state);
+  assert.match(html, /still has an update/);
+  assert.doesNotMatch(html, /everything is back/);
+});
+
+test("the engine part's own done is complete: nothing pending", () => {
+  const payload = {
+    agos: { installed: true, check: { target: null }, state: null },
+    engine: {
+      check: { target: { version: "0.22.3", sha: "feedc0ff" } },
+      state: { phase: "done", started_at: "2026-11-11T10:00:00+00:00" },
+    },
+  };
+  const state = deriveUpdatesState(payload);
+  assert.equal(state?.phase, "done");
+  assert.ok(!state.engine_pending);
+});
+
+test("a failed check is said plainly, never 'You're up to date.'", () => {
+  const html = draw(
+    {
+      ready: false,
+      note: "The check failed.",
+      agos_note: "git fetch failed: no network",
+      engine_note: null,
+    },
+    null,
+  );
+  assert.match(html, /The check failed\./);
+  assert.match(html, /git fetch failed: no network/);
+  assert.doesNotMatch(html, /up to date/);
+});
+
+test("the installer note (agos_note) reaches the owner", () => {
+  const html = draw(
+    {
+      ready: false,
+      note: "You're up to date.",
+      agos_note: INSTALLER_NOTE,
+      engine_note: null,
+    },
+    null,
+  );
+  assert.match(html, /wasn&#x27;t installed with the installer/);
+});
+
+test("the engine_note reaches the owner too", () => {
+  const html = draw(
+    {
+      ready: true,
+      note: "An update is ready.",
+      agos_note: null,
+      engine_note: "The engine isn't set up on this machine.",
+    },
+    null,
+  );
+  assert.match(html, /isn&#x27;t set up on this machine/);
 });
 
 test("the card and its poll route read the core's real payload", () => {

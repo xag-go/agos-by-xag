@@ -127,7 +127,7 @@ Exact marker: the card's result and summary are `agos-skipped: <plain reason>`,
 e.g. `agos-skipped: Only if sheet is one of Ideas-Inspiration, Scripts-Inspiration
 (this run: Editing-Inspiration)` or `agos-skipped: /workspace/tools/x.py said LA`.
 
-## Save rules (owner and Co-Founder alike: `engine/team_steps.parse_plan`)
+## Save rules (owner and Co-Founder alike: `engine/team_steps.py` `parse_plan`)
 
 - `only_if` = a list (max 20 lines); each line is a match line (`field`, `op`,
   `values`; optional nothing else) or a check line (`check` only). Any other key,

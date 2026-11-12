@@ -25,7 +25,7 @@ import json
 import logging
 from typing import Any
 
-from . import board_waits, owner_approval, policy, runtime, tool_checks
+from . import board_waits, cofounder_tools, owner_approval, policy, runtime, tool_checks
 from .board_waits import ALLOWED_FILE as ALLOWED_FILE
 from .board_waits import AUTOMATION_READS as AUTOMATION_READS
 from .board_waits import OWNER_OK as OWNER_OK
@@ -129,8 +129,7 @@ def _verdict(
     if policy._policy().get("member") and tool_name in COFOUNDER_TOOLS:
         return {
             "action": "block",
-            "message": "That is the Co-Founder's tool. Say what is needed: the Co-Founder "
-            "takes it.",
+            "message": cofounder_tools.refusal(session, acting=acting),
         }, False
     if tool_name.startswith("agos_"):
         # AGOS's own tools: Hermes asks the owner first when AGOS says so.

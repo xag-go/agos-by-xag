@@ -138,7 +138,9 @@ def import_from_machine(
         if kind == "mcp":
             match = next((f for f in src.machine_mcp() if f.origin == origin), None)
             if match is None or not match.importable:
-                raise ActionError((match.locked if match else None) or "Not in Hermes's catalog.")
+                raise ActionError(
+                    (match.locked if match else None) or "Not in the engine's catalog."
+                )
             url = origin.split("|", 1)[1]
             return save_item(
                 core,

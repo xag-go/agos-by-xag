@@ -146,10 +146,10 @@ def report(core: Any, health: dict[str, bool] | None = None) -> str:
         f"- made: {now}",
         f"- AGOS: {error_issues.agos_version()} (commit {current.get('sha', '?')[:12]}, "
         f"{current.get('date', '?')})",
-        f"- Hermes: tested {HERMES_TESTED_VERSION}, pin {_pin()[:12]}",
+        f"- Engine: tested {HERMES_TESTED_VERSION}, pin {_pin()[:12]}",
         f"- Python: {sys.version.split()[0]} on {platform.system()} {platform.release()} "
         f"({platform.machine()})",
-        f"- engine: {'Hermes' if core.engine is not None else 'none'}",
+        f"- engine: {'on' if core.engine is not None else 'none'}",
         f"- staging copy: {'yes' if ops_watch.staging() else 'no'}",
         "",
         "### Health",
@@ -184,7 +184,7 @@ def report(core: Any, health: dict[str, bool] | None = None) -> str:
         f"{state.get('from', '')[:12]} -> {state.get('to', '')[:12]}".rstrip(" ->")
     )
     hermes_state = hermes_update.status(core).get("state") or {}
-    lines += [f"- Hermes update: {hermes_state.get('phase', 'none')}", "", "### Labs", ""]
+    lines += [f"- Engine update: {hermes_state.get('phase', 'none')}", "", "### Labs", ""]
     lines += [
         f"- {f.name}: {'on' if f.on else 'off'}{' (forced)' if f.forced else ''}"
         for f in flags.listed(core)

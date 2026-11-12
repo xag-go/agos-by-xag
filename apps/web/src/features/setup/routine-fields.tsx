@@ -167,7 +167,7 @@ const POLICIES = [
   {
     id: "skip_if_active",
     title: "Skip while the last run is still open",
-    text: "The default. A trigger while the last run's cards are still on the Kanban does nothing (Hermes already skips an overlapping run).",
+    text: "The default. A trigger while the last run's cards are still on the Kanban does nothing (an overlapping run is already skipped).",
   },
   {
     id: "coalesce_if_active",
@@ -349,7 +349,7 @@ export function TicketPresetField({
           <p>
             {preset.signed
               ? `${preset.label} signs every delivery: paste the webhook's signing secret in Webhook → Signing secret.`
-              : `${preset.label} can't sign for Hermes: the long webhook address is the check. A relay that can add a header may send the secret as X-Gitlab-Token.`}
+              : `${preset.label} can't sign its deliveries: the long webhook address is the check. A relay that can add a header may send the secret as X-Gitlab-Token.`}
           </p>
           <p className="mt-1">
             Filters:{" "}

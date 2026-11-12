@@ -44,7 +44,8 @@ class OperationSpec(Generic[In]):
     nothing to take back. owner_only: why only the owner runs it (exclusive with
     cofounder_domain, the Co-Founder domain it is a kind of). agent_tool: its
     description when agents get it as a tool. idempotent: create / run operations,
-    which take an idempotency key. cofounder_structured: the fields the Co-Founder
+    which take an idempotency key. extra_web_actions: more web actions that are this same operation.
+    cofounder_structured: the fields the Co-Founder
     gives as a list or an object. undo_after_yes: an "owner" gate whose run, once he
     said yes, still has Undo on its card."""
 
@@ -54,6 +55,7 @@ class OperationSpec(Generic[In]):
     gate: Gate
     effect: Effect = "power"
     web_action: str | None = None
+    extra_web_actions: tuple[str, ...] = ()
     owner_only: str | None = None
     cofounder_domain: str | None = None
     cofounder_fields: str = ""

@@ -48,7 +48,7 @@ def _agos_profile(core: Core, workspace_id: str, hermes_name: str) -> str:
     """The AGOS profile of the Hermes profile the worker runs as ("default" is the
     Co-Founder's, "a-<name>" a member's); refused when it is not this workspace's."""
     if core.engine is None:
-        raise ActionError("Hermes isn't set up yet.")
+        raise ActionError("The engine isn't set up yet.")
     own = core.engine.profile(workspace_id)
     name = own if hermes_name in ("", "default") else f"{own}--{hermes_name}"
     if name not in core.engine.own_profiles(workspace_id):

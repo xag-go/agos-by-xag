@@ -369,7 +369,7 @@ def grade(core: Core, workspace_id: str, run_id: int) -> dict[str, Any]:
     if row is None:
         raise NotFoundError("This run")
     if core.engine is None:
-        raise ActionError("Hermes isn't set up yet.")
+        raise ActionError("The engine isn't set up yet.")
     item = items.get_item(core.db, int(row["item_id"]))
     job = {
         "skill": str(item["name"]) if item is not None else "",
@@ -393,9 +393,9 @@ def grade(core: Core, workspace_id: str, run_id: int) -> dict[str, Any]:
             notes = str(found.get("notes") or "")
             score = _score(found.get("score"), verdict)
         else:
-            notes = f"Hermes couldn't grade it: {found.get('reason') or 'no answer'}"
+            notes = f"The engine couldn't grade it: {found.get('reason') or 'no answer'}"
     except EngineError as error:
-        notes = f"Hermes didn't grade it: {error}"
+        notes = f"The engine didn't grade it: {error}"
     with transaction(core.db):
         repo.grade(core.db, run_id, verdict, notes[:MAX_TEXT], score)
     return {"grade": verdict, "notes": notes}

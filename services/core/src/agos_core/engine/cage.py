@@ -245,21 +245,22 @@ def policy(
     *,
     labels: list[str],
     images: list[str],
-    network: str,
+    networks: list[str],
     root: Path,
     temp_dir: Path,
     configs: list[dict[str, Any]],
     host_home: Path,
     workspace_mount: str,
 ) -> dict[str, Any]:
-    """This workspace's sandboxd policy (engine/sandboxd.py Policy): exactly what
-    its gateway may ask Docker for. The bind lists mirror the wall's `allow_list`
-    minus the system folders (binding /run into a container would hand it the real
-    Docker socket): the root (the sandbox /root and /workspace state live under
-    root/sandboxes), its temp folder (Hermes's symlink-safe skills copies), the
-    workspace's files folder and the owner's grants as the profiles' own
-    `terminal.docker_volumes` say, the connector symlink targets, and the shared
-    skill folders read-only. Another root's folder is never bindable."""
+    """This workspace's sandboxd policy (engine/sandboxd.py Policy): exactly what its
+    gateway may ask Docker for. `networks`: the internal network of the root and of
+    each member (every profile runs its sandbox on its own one). The bind lists
+    mirror the wall's `allow_list` minus the system folders (binding /run into a
+    container would hand it the real Docker socket): the root (the sandbox /root and
+    /workspace state live under root/sandboxes), its temp folder (Hermes's
+    symlink-safe skills copies), the workspace's files folder and the owner's grants
+    as the profiles' own `terminal.docker_volumes` say, the connector symlink targets, and
+    the shared skill folders read-only. Another root's folder is never bindable."""
     rw: list[str] = [str(root), str(temp_dir)]
     ro: list[str] = []
     for config in configs:
@@ -290,7 +291,7 @@ def policy(
     return {
         "labels": sorted(set(labels)),
         "images": sorted(set(images)),
-        "networks": sorted({network, "none"}),
+        "networks": sorted({*networks, "none"}),
         "binds_rw": sorted(set(rw)),
         "binds_ro": sorted(set(ro)),
     }

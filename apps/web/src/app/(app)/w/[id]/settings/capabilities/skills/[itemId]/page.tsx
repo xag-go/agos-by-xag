@@ -44,8 +44,7 @@ export default async function SkillStudioPage({
           <span className="font-mono text-sm text-ink-3">{item.name}</span>
         </h2>
         <p className="max-w-2xl text-sm text-ink-2">
-          Its versions from Hermes&apos;s skill ledger, and its test runs on the
-          board.
+          Its versions from the skill ledger, and its test runs on the board.
         </p>
       </div>
       <SkillStudio

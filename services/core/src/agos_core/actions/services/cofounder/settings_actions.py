@@ -22,13 +22,11 @@ from agos_core.context import Core
 
 __all__ = [
     "do_backup_schedule",
-    "do_check_update",
     "do_fallback",
     "do_helpers",
     "do_limits",
     "do_rehearse",
     "do_run_backup",
-    "do_run_update",
     "do_time_limits",
     "do_voice",
     "do_ws_settings",
@@ -186,7 +184,7 @@ def undo_time_limits(core: Core, ws: str, r: Result) -> None:
     from agos_core.actions import hermes_time_limits
 
     if not r.get("before"):
-        raise ActionError("Hermes's earlier values weren't readable: set them again by hand.")
+        raise ActionError("The engine's earlier values weren't readable: set them again by hand.")
     hermes_time_limits.write(core, {str(k): int(v) for k, v in dict(r["before"]).items()})
 
 
@@ -266,16 +264,16 @@ def do_rehearse(core: Core, ws: str, p: Fields) -> Result:
     return {"report": json.dumps(found.model_dump(by_alias=True), default=str)[:3000]}
 
 
-def do_check_update(core: Core, ws: str, p: Fields) -> Result:
-    from agos_core.actions import hermes_update
+def do_check_updates(core: Core, ws: str, p: Fields) -> Result:
+    from agos_core.actions import updates
 
-    return {"report": json.dumps(hermes_update.run_check(core), default=str)[:3000]}
+    return {"report": json.dumps(updates.run_check(core), default=str)[:3000]}
 
 
-def do_run_update(core: Core, ws: str, p: Fields) -> Result:
-    from agos_core.actions import hermes_update
+def do_run_updates(core: Core, ws: str, p: Fields) -> Result:
+    from agos_core.actions import updates
 
-    return {"report": json.dumps(hermes_update.start_update(core), default=str)[:2000]}
+    return {"report": json.dumps(updates.start_update(core), default=str)[:2000]}
 
 
 def undo_learned(core: Core, ws: str, p: Fields) -> Result:

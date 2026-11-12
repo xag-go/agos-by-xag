@@ -354,9 +354,9 @@ def archive_skill(profile_home: Path, name: str, *, archive: Callable[[str], Non
     try:
         archive(skill)
     except Exception as error:
-        raise LibraryError(f"Hermes kept this skill: {error}"[:300]) from error
+        raise LibraryError(f"The engine kept this skill: {error}"[:300]) from error
     if folder.exists():
-        raise LibraryError("Hermes kept this skill (curator archive).")
+        raise LibraryError("The engine kept this skill (curator archive).")
 
 
 def write_mcp_env(profile_home: Path, secrets_by_name: dict[str, str]) -> None:

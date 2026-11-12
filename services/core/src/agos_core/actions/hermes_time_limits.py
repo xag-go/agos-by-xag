@@ -135,12 +135,12 @@ def check(values: dict[str, int]) -> None:
     for key, value in values.items():
         limit = BY_KEY.get(key)
         if limit is None:
-            raise ActionError(f"{key} isn't one of Hermes's time limits here.")
+            raise ActionError(f"{key} isn't one of the engine's time limits here.")
         if isinstance(value, bool) or not isinstance(value, int):
             raise ActionError(f"{limit.label}: use a whole number of seconds.")
         if value == 0 and not limit.zero_is_no_limit:
             raise ActionError(
-                f"{limit.label}: Hermes doesn't read 0 as no limit here; turn on No limit."
+                f"{limit.label}: the engine doesn't read 0 as no limit here; turn on No limit."
             )
         if not 0 <= value <= HERMES_MAX_SECONDS:
             raise ActionError(f"{limit.label}: use between 1 second and a year.")
@@ -163,10 +163,10 @@ def write(core: Core, values: dict[str, int]) -> dict[str, Any]:
 
     check(values)
     if core.engine is None:
-        raise ActionError("Hermes isn't available.", status=503)
+        raise ActionError("The engine isn't available.", status=503)
     managed = Files.of(core.engine.settings.managed_home)
     try:
         hermes_managed.write(core, dict(_changes_in(managed, values)))
     except (EngineError, OSError) as error:
-        raise ActionError(f"Hermes didn't take it: {error}", status=502) from error
+        raise ActionError(f"The engine didn't take it: {error}", status=502) from error
     return read(core)

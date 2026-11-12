@@ -22,3 +22,5 @@ bind_page(specs.SET_TIME_LIMITS, settings_actions.do_time_limits, settings_actio
 bind_page(specs.SET_HELPER_MODELS, settings_actions.do_helpers)
 bind_page(specs.SET_VOICE, settings_actions.do_voice, settings_actions.undo_voice)
 bind_page(specs.SET_FALLBACK, settings_actions.do_fallback, settings_actions.undo_fallback)
+bind_page(specs.CHECK_UPDATES, settings_actions.do_check_updates)
+bind_page(specs.RUN_UPDATES, settings_actions.do_run_updates)

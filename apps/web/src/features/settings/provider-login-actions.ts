@@ -77,7 +77,7 @@ async function keyCall(
     return { error: null, message: r?.message };
   } catch (error) {
     if (error instanceof CoreError)
-      return { error: error.detail || "Hermes didn't answer. Try again." };
+      return { error: error.detail || "The engine didn't answer. Try again." };
     return { error: "AGOS didn't answer. Try again." };
   }
 }

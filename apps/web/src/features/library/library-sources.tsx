@@ -201,7 +201,7 @@ function Machine({
         className="max-w-xs"
       />
       {busy && items === null && (
-        <p className="text-sm text-ink-3">Reading Hermes…</p>
+        <p className="text-sm text-ink-3">Reading the catalog…</p>
       )}
       <FormStatus error={error} />
       {items !== null && shown.length === 0 && (
@@ -392,9 +392,9 @@ function Install({
         </pre>
       )}
       <p className="text-xs text-ink-3">
-        Installing runs Hermes&apos;s security scan; a blocked verdict stops it.
-        It lands in this workspace only, on at once: its Co-Founder and agents
-        can use it from their next session.
+        Installing runs the security scan; a blocked verdict stops it. It lands
+        in this workspace only, on at once: its Co-Founder and agents can use it
+        from their next session.
       </p>
       <div className="flex flex-wrap items-center gap-2">
         <Button variant="ghost" onClick={onBack}>
@@ -427,7 +427,7 @@ function Install({
                 if (
                   !(await confirm({
                     title: `Install ${item.name} anyway?`,
-                    body: "Hermes's security scan flagged it (the finding is shown above). Install only if you read it and trust it. It lands in this workspace only.",
+                    body: "The security scan flagged it (the finding is shown above). Install only if you read it and trust it. It lands in this workspace only.",
                     confirmLabel: "Install anyway",
                     danger: true,
                   }))

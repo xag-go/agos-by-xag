@@ -59,13 +59,13 @@ export function SkillGrowthSettings({
   return (
     <div className="flex max-w-3xl flex-col gap-6">
       <p className="text-sm text-pretty text-ink-2">
-        When an agent lacks a skill, it searches this workspace, then
-        Hermes&apos;s skills hub, and asks for one. Hermes installs it with its
-        security scan, switched off; the agent&apos;s own tests run in Skill
-        Studio; a skill with scripts or a scan warning waits for you in the
-        Inbox. Once a week the Co-Founder reads what went wrong and tests better
-        versions of the skills involved; only a version that passes every test
-        and scores at least as well replaces the current one.
+        When an agent lacks a skill, it searches this workspace, then the skills
+        hub, and asks for one. It is installed with the security scan, switched
+        off; the agent&apos;s own tests run in Skill Studio; a skill with
+        scripts or a scan warning waits for you in the Inbox. Once a week the
+        Co-Founder reads what went wrong and tests better versions of the skills
+        involved; only a version that passes every test and scores at least as
+        well replaces the current one.
       </p>
       <LimitSection workspaceId={workspaceId} growth={growth} />
       <ReviewSection workspaceId={workspaceId} growth={growth} />
@@ -217,7 +217,7 @@ function ReviewSection({
         <FormStatus error={status.error} saved={status.saved} />
       </div>
       <p className="text-xs text-ink-3">
-        A Hermes cron job on the Co-Founder, after the weekly review. With no
+        A scheduled job on the Co-Founder, after the weekly review. With no
         evidence it stops before any model runs.
         {job.lastAt && ` Last run ${job.lastAt.slice(0, 16).replace("T", " ")}`}
         {job.lastStatus && ` (${job.lastStatus})`}

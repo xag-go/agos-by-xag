@@ -242,7 +242,7 @@ def test_saving_a_key_in_general_settings_writes_every_root(
     row = {
         "id": "openrouter",
         "name": "OpenRouter",
-        "cli": {"tool": "Hermes", "installed": False, "account": None, "loginCommand": "x"},
+        "cli": {"tool": "AGOS", "installed": False, "account": None, "loginCommand": "x"},
         "api": {"last4": "", "status": "", "statusAt": "", "problem": ""},
         "apiKey": True,
         "keyEnvs": ["OPENROUTER_API_KEY"],  # Hermes's own name (read with the catalog)

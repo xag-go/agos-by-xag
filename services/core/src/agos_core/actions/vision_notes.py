@@ -267,7 +267,7 @@ def _ask_cofounder(core: Core, workspace_id: str, text: str) -> str:
     """The Co-Founder's answer: Hermes's one-shot query in the workspace's root (its
     default profile: its own model, SOUL.md, plugins), walled like every AGOS run."""
     if core.engine is None:
-        raise ActionError("Hermes isn't set up yet.", 409)
+        raise ActionError("The engine isn't set up yet.", 409)
     return hermes_cli.walled_cli(
         core.engine,
         workspace_id,

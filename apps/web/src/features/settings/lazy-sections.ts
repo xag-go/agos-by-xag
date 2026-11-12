@@ -9,11 +9,6 @@ export const OwnerRules = dynamic(() =>
 export const GeneralSettings = dynamic(() =>
   import("@/features/settings/general-settings").then((m) => m.GeneralSettings),
 );
-export const HermesSettingsPage = dynamic(() =>
-  import("@/features/settings/hermes-settings").then(
-    (m) => m.HermesSettingsPage,
-  ),
-);
 export const HelperModelsPage = dynamic(() =>
   import("@/features/settings/helper-models").then((m) => m.HelperModelsPage),
 );

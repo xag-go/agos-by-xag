@@ -27,10 +27,10 @@ function resetTime(reset: number | null | undefined): string | null {
 function usage(state: GithubTokenState): string {
   const who =
     state.method === "pat"
-      ? "Hermes reads GitHub with your token"
+      ? "Skill installs read GitHub with your token"
       : state.method === "anonymous"
-        ? "Hermes reads GitHub without a token"
-        : `Hermes reads GitHub with this server's ${state.method === "gh-cli" ? "GitHub CLI login" : "GitHub App"}`;
+        ? "Skill installs read GitHub without a token"
+        : `Skill installs read GitHub with this server's ${state.method === "gh-cli" ? "GitHub CLI login" : "GitHub App"}`;
   if (typeof state.limit !== "number" || typeof state.remaining !== "number")
     return state.error ? `${who}. GitHub didn't answer just now.` : `${who}.`;
   const back = resetTime(state.reset);
@@ -68,9 +68,9 @@ export function GithubTokenCard() {
       <div className="flex flex-col gap-1">
         <h2 className="font-medium">GitHub token (for installing skills)</h2>
         <p className="text-sm text-ink-2">
-          Hermes downloads skills from GitHub. Without a token GitHub allows
-          this server 60 requests an hour, and a few installs use them up. A
-          token raises it to 5,000. Make a{" "}
+          Skills are downloaded from GitHub. Without a token GitHub allows this
+          server 60 requests an hour, and a few installs use them up. A token
+          raises it to 5,000. Make a{" "}
           <a
             href={NEW_TOKEN_URL}
             target="_blank"
@@ -79,18 +79,18 @@ export function GithubTokenCard() {
           >
             fine-grained token
           </a>{" "}
-          with “Public repositories (read-only)” and no permissions. Hermes
-          keeps it for installing skills only; workspaces never get it.
+          with “Public repositories (read-only)” and no permissions. It is kept
+          for installing skills only; workspaces never get it.
         </p>
       </div>
       {loading ? (
-        <p className="text-sm text-ink-3">Asking Hermes…</p>
+        <p className="text-sm text-ink-3">Checking…</p>
       ) : state ? (
         <p className="text-sm">{usage(state)}</p>
       ) : null}
       {state?.saved ? (
         <div className="flex flex-wrap items-center gap-3 text-sm">
-          <span className="font-medium">Token saved in Hermes</span>
+          <span className="font-medium">Token saved</span>
           <span className="ml-auto">
             <Button
               variant="ghost"
@@ -100,7 +100,7 @@ export function GithubTokenCard() {
                   if (
                     !(await confirm({
                       title: "Remove the GitHub token?",
-                      body: "Hermes goes back to 60 GitHub requests an hour for installing skills.",
+                      body: "Skill installs go back to 60 GitHub requests an hour.",
                       confirmLabel: "Remove",
                       danger: true,
                     }))

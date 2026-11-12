@@ -31,11 +31,11 @@ export function Details({
       </summary>
       <div className="mt-2 flex flex-col gap-3 rounded-lg bg-sunken p-3">
         <p className="font-mono text-xs break-all text-ink-3">
-          Hermes setting: {title}
+          Setting: {title}
         </p>
         {notice && <p className="text-xs text-warn">{notice}</p>}
         {description && (
-          <p className="text-xs text-ink-2">Hermes: {description}</p>
+          <p className="text-xs text-ink-2">From the engine: {description}</p>
         )}
         {children}
       </div>
@@ -65,7 +65,7 @@ export function RawFields({
   const send = (sets: Record<string, string>, unsets: string[]) =>
     startSave(async () => {
       const r = await saveHermesHelperModels(sets, unsets);
-      setNote(r.error ?? "Saved in Hermes.");
+      setNote(r.error ?? "Saved.");
     });
 
   return (
@@ -101,9 +101,7 @@ export function RawFields({
                 <input
                   value={drafts[f.key] ?? ""}
                   disabled={saving || f.secret}
-                  placeholder={
-                    asText(f.hermesDefault) || "empty (Hermes's default)"
-                  }
+                  placeholder={asText(f.hermesDefault) || "empty (the default)"}
                   onChange={(e) => {
                     setDrafts({ ...drafts, [f.key]: e.target.value });
                     setNote(null);
@@ -112,9 +110,9 @@ export function RawFields({
                 />
               )}
               <span className="text-ink-2">
-                Hermes uses {shownValue(f.value)} · {where(f)}
+                In use: {shownValue(f.value)} · {where(f)}
                 {!f.isDefault &&
-                  ` · Hermes's default: ${shownValue(f.hermesDefault)}`}
+                  ` · the default: ${shownValue(f.hermesDefault)}`}
               </span>
             </label>
           ))}
@@ -134,7 +132,7 @@ export function RawFields({
                 else if (f.managed) unsets.push(f.key);
               }
               if (!Object.keys(sets).length && !unsets.length) {
-                setNote("Nothing changed in Hermes.");
+                setNote("Nothing changed.");
                 return;
               }
               send(sets, unsets);
@@ -149,9 +147,9 @@ export function RawFields({
           onClick={() => {
             void (async () => {
               const ok = await confirm({
-                title: "Use Hermes's default?",
-                body: `Removes ${pinned.map((f) => f.key).join(", ")} from Hermes's managed settings, so Hermes uses its own default again.`,
-                confirmLabel: "Use Hermes's default",
+                title: "Use the default?",
+                body: `Removes ${pinned.map((f) => f.key).join(", ")} from the shared settings, so the default applies again.`,
+                confirmLabel: "Use the default",
               });
               if (ok)
                 send(
@@ -161,7 +159,7 @@ export function RawFields({
             })();
           }}
         >
-          Use Hermes&apos;s default
+          Use the default
         </Button>
         {note && <span className="text-xs text-ink-2">{note}</span>}
       </div>

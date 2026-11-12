@@ -18,51 +18,8 @@ from agos_core.engine.cofounder_kind import Effect as Effect
 from agos_core.ops import catalog
 from agos_core.ops.specs import SPECS
 
-
-def _words(text: str) -> list[str]:
-    return text.split()
-
-
-_POWER = _words(
-    # automations and what starts work by itself
-    "create_automation update_automation resume_automation delete_automation "
-    "set_work_hours "
-    # agents, skills, tools, MCP servers, apps
-    "create_skill update_skill create_agent hire_agent update_agent create_mcp update_mcp "
-    "undo_learned "
-    # rules, docs the agents read (SOUL / rules files), the Brain
-    "update_doc update_file add_owner_rule add_method edit_owner_rule delete_owner_rule "
-    "edit_method delete_method set_method_here delete_doc restore_doc_version "
-    "save_review_settings set_latin_only "
-    # keys, Hermes's settings, approvals, people, channels, the workspace
-    "change_hermes_setting reset_hermes_setting approve_held_write reject_held_write "
-    "add_pool_key remove_pool_key move_pool_key set_pool_strategy approve_person "
-    "remove_person add_chat_address remove_chat_address set_bot_reactions set_timezone "
-    "set_notifications set_backup_schedule run_hermes_update set_flag set_trusted_apps"
-)
-
-_READ = _words(
-    "list_held_writes list_pool_keys hermes_health secrets_check show_hermes_setting "
-    "check_hermes_update"
-)
-
-_WORK = _words(
-    "pause_automation run_automation rename assign_founder founder_done create_label "
-    "update_label delete_label rename_label_folder save_board_view delete_board_view "
-    "set_card_goal assign_card card_action hold_cards resume_hold bulk_cards watch_card "
-    "estimate_card set_card_review restore_card_doc resolve_doc_comment "
-    "create_status_card update_status_card delete_status_card refresh_status_card "
-    "stay_on_today wake_now set_team_group review_artifact promote_artifact run_backup "
-    "rehearse_restore mark_error_fixed reopen_error create_folder rename_folder "
-    "delete_folder move_to_folder"
-)
-
-EFFECT: dict[str, Effect] = {
-    **{k: "work" for k in _WORK},
-    **{k: "read" for k in _READ},
-    **{k: "power" for k in _POWER},
-    **catalog.effects(SPECS),  # the registry's kinds (ops/specs), as declared
-}
+# Every kind's row is its declaration's `effect` (ops/specs): no hand-written row.
+EFFECT: dict[str, Effect] = dict(catalog.effects(SPECS))
 # Several changes in one card (actions/cofounder_actions BUNDLE): always the owner's.
 EFFECT["bundle"] = "power"
 

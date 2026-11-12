@@ -53,7 +53,7 @@ def _hermes_defer(core: Core) -> list[str]:
 
     found = cofounder_hermes._row(core, DEFER).get("default")
     if not isinstance(found, list):
-        raise ActionError("Hermes's own list of deferred tools can't be read.", 503)
+        raise ActionError("The engine's own list of deferred tools can't be read.", 503)
     return [str(n) for n in found]
 
 

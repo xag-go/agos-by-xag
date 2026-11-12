@@ -19,6 +19,8 @@ from agos_core.engine.cofounder_kind import WORKSPACE
 from agos_core.ops.spec import CofounderFields, OperationSpec
 
 __all__ = [
+    "CHECK_UPDATES",
+    "RUN_UPDATES",
     "SET_FALLBACK",
     "SET_HELPER_MODELS",
     "SET_HERMES_LIMITS",
@@ -26,6 +28,8 @@ __all__ = [
     "SET_VOICE",
     "SET_WORKSPACE_SETTINGS",
     "SPECS",
+    "CheckUpdates",
+    "RunUpdates",
     "SetFallback",
     "SetHelperModels",
     "SetHermesLimits",
@@ -47,11 +51,12 @@ SET_WORKSPACE_SETTINGS: OperationSpec[SetWorkspaceSettings] = OperationSpec(
     input_model=SetWorkspaceSettings,
     audit_title="This workspace's settings",
     gate="undo",
+    agent_tool=None,
     web_action="saveWorkspaceSettings",
     cofounder_domain=WORKSPACE,
     cofounder_fields=(
         "model (its default model: the model id, or {provider, model, effort}), name, "
-        "description, values (object: the page's other Hermes settings keys)"
+        "description, values (object: the page's other engine settings keys)"
     ),
     cofounder_structured=("values",),
 )
@@ -71,11 +76,12 @@ SET_HERMES_LIMITS: OperationSpec[SetHermesLimits] = OperationSpec(
     input_model=SetHermesLimits,
     audit_title="Loop detector & limits",
     gate="undo",
+    agent_tool=None,
     web_action="saveHermesLimits",
     cofounder_domain=WORKSPACE,
     cofounder_fields=(
         "loop_on, same_error, same_tool_failing, no_progress, time_limit_minutes, "
-        'members_at_once (each optional; "" = Hermes\'s default)'
+        'members_at_once (each optional; "" = the engine\'s default)'
     ),
 )
 
@@ -89,6 +95,7 @@ SET_TIME_LIMITS: OperationSpec[SetTimeLimits] = OperationSpec(
     input_model=SetTimeLimits,
     audit_title="Time limits",
     gate="undo",
+    agent_tool=None,
     web_action="saveHermesTimeLimits",
     cofounder_domain=WORKSPACE,
     cofounder_fields="values (object: key -> seconds)",
@@ -107,6 +114,7 @@ SET_HELPER_MODELS: OperationSpec[SetHelperModels] = OperationSpec(
     input_model=SetHelperModels,
     audit_title="Helper models",
     gate="owner",
+    agent_tool=None,
     web_action="saveHermesHelperModels",
     cofounder_domain=WORKSPACE,
     cofounder_fields=(
@@ -126,6 +134,7 @@ SET_VOICE: OperationSpec[SetVoice] = OperationSpec(
     input_model=SetVoice,
     audit_title="Voice notes: {provider} {model}",
     gate="undo",
+    agent_tool=None,
     web_action="saveHermesVoice",
     cofounder_domain=WORKSPACE,
     cofounder_fields="provider, model",
@@ -141,10 +150,45 @@ SET_FALLBACK: OperationSpec[SetFallback] = OperationSpec(
     input_model=SetFallback,
     audit_title="Fallback models",
     gate="undo",
+    agent_tool=None,
     web_action="saveHermesFallback",
     cofounder_domain=WORKSPACE,
     cofounder_fields="chain ([{provider, model, base_url}], in order)",
     cofounder_structured=("chain",),
+)
+
+
+class CheckUpdates(CofounderFields):
+    pass
+
+
+CHECK_UPDATES: OperationSpec[CheckUpdates] = OperationSpec(
+    name="check_updates",
+    input_model=CheckUpdates,
+    audit_title="Check for updates",
+    gate="once",
+    agent_tool=None,
+    effect="read",
+    web_action="checkUpdates",
+    cofounder_domain=WORKSPACE,
+    cofounder_fields="(no fields)",
+)
+
+
+class RunUpdates(CofounderFields):
+    pass
+
+
+RUN_UPDATES: OperationSpec[RunUpdates] = OperationSpec(
+    name="run_updates",
+    input_model=RunUpdates,
+    audit_title="Install the update",
+    gate="owner",
+    agent_tool=None,
+    web_action="runUpdates",
+    cofounder_domain=WORKSPACE,
+    cofounder_fields="(no fields)",
+    idempotent=True,
 )
 
 SPECS: tuple[OperationSpec[Any], ...] = (
@@ -154,4 +198,6 @@ SPECS: tuple[OperationSpec[Any], ...] = (
     SET_HELPER_MODELS,
     SET_VOICE,
     SET_FALLBACK,
+    CHECK_UPDATES,
+    RUN_UPDATES,
 )

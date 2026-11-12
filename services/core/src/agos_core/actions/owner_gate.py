@@ -156,7 +156,7 @@ def tool_check(
         # A hub skill installed on a tainted session's word: a power (engine/power.py).
         if workspace_id:
             _asked(workspace_id, address, _skill_key(args), once)
-        said = f"🧩 Install the skill {str(args.get('source') or '')[:200]} from Hermes's hub"
+        said = f"🧩 Install the skill {str(args.get('source') or '')[:200]} from the skills hub"
         return _answer(True, power.held_message(source, said), once)
     return {"ask": False, "message": ""}
 

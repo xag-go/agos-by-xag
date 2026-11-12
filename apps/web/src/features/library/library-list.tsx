@@ -44,10 +44,10 @@ export function LibraryList({
     <div className="flex flex-col gap-4">
       {kind === "tool" && (
         <p className="max-w-2xl text-sm text-ink-2">
-          Every tool Hermes has, from Hermes&apos;s own list: anything Hermes
-          adds shows up here by itself. Its core is always on; the others are on
-          in every workspace (turn one off in that workspace&apos;s
-          Capabilities); locked ones reach accounts outside AGOS.
+          Every tool the agents can use, from one built-in list: a new tool
+          shows up here by itself. The core is always on; the others are on in
+          every workspace (turn one off in that workspace&apos;s Capabilities);
+          locked ones reach accounts outside AGOS.
         </p>
       )}
       {items.length === 0 ? (
@@ -74,7 +74,7 @@ export function LibraryList({
               {!workspaceId && (
                 <p className="text-sm text-ink-3">
                   {item.always
-                    ? "Always on (Hermes's core)"
+                    ? "Always on (core)"
                     : item.locked
                       ? "Locked"
                       : item.usedBy.length === 0

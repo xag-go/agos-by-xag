@@ -98,10 +98,10 @@
       "length": 81
     },
     "services/core/src/agos_core/actions/services/automation/owner.py::save": {
-      "C901": 16,
-      "PLR0912": 16,
-      "PLR0915": 60,
-      "length": 143
+      "C901": 15,
+      "PLR0912": 15,
+      "PLR0915": 58,
+      "length": 141
     },
     "services/core/src/agos_core/actions/services/automation/sync_loop.py::keep_in_step": {
       "C901": 15,
@@ -145,20 +145,16 @@
     },
     "services/core/src/agos_core/actions/services/cofounder/agent_tools.py::run_actions": {
       "C901": 13,
-      "PLR0912": 13,
-      "length": 85
+      "PLR0912": 13
     },
     "services/core/src/agos_core/actions/services/cofounder/dispatch.py::_do": {
-      "C901": 35,
-      "PLR0912": 34,
-      "PLR0915": 70,
-      "length": 140
+      "C901": 20,
+      "PLR0912": 19
     },
     "services/core/src/agos_core/actions/services/cofounder/dispatch.py::_undo": {
       "C901": 23,
       "PLR0912": 25,
-      "PLR0915": 55,
-      "length": 81
+      "PLR0915": 55
     },
     "services/core/src/agos_core/actions/services/cofounder/skill_kinds.py::save_library_item": {
       "C901": 14,
@@ -427,7 +423,7 @@
     "services/core/src/agos_core/hermes_plugin/agos_guard/__init__.py::register": {
       "C901": 19,
       "PLR0915": 79,
-      "length": 177
+      "length": 172
     },
     "services/core/src/agos_core/hermes_plugin/agos_guard/bridge_platform.py::_agos_adapter": {
       "C901": 33,
@@ -459,8 +455,8 @@
       "lines": 164
     },
     "apps/web/src/app/(app)/w/[id]/automations/page.tsx::(anonymous)": {
-      "complexity": 28,
-      "lines": 185
+      "complexity": 22,
+      "lines": 174
     },
     "apps/web/src/app/(app)/w/[id]/kanban/page.tsx::(anonymous)": {
       "complexity": 38,
@@ -975,9 +971,6 @@
       "complexity": 14,
       "lines": 119
     },
-    "apps/web/src/features/setup/actions.ts::(anonymous)": {
-      "complexity": 17
-    },
     "apps/web/src/features/setup/actions.ts::parseVariables": {
       "complexity": 12
     },
@@ -986,8 +979,8 @@
       "lines": 438
     },
     "apps/web/src/features/setup/automation-modal.tsx::AutomationModal": {
-      "complexity": 26,
-      "lines": 210
+      "complexity": 24,
+      "lines": 184
     },
     "apps/web/src/features/setup/automation-runs.tsx::RunCard": {
       "complexity": 11
@@ -996,11 +989,11 @@
       "lines": 109
     },
     "apps/web/src/features/setup/automations-list.tsx::(anonymous)": {
-      "complexity": 20,
-      "lines": 155
+      "complexity": 18,
+      "lines": 141
     },
     "apps/web/src/features/setup/automations-list.tsx::AutomationsList": {
-      "lines": 190
+      "lines": 178
     },
     "apps/web/src/features/setup/connector-config.tsx::ConnectorConfig": {
       "complexity": 12,
@@ -1039,11 +1032,8 @@
     "apps/web/src/features/setup/schedule.ts::fromCron": {
       "complexity": 26
     },
-    "apps/web/src/features/setup/who-field.tsx::(anonymous)": {
-      "lines": 99
-    },
     "apps/web/src/features/setup/who-field.tsx::WhoField": {
-      "lines": 228
+      "lines": 201
     },
     "apps/web/src/features/shell/rail-order.ts::(anonymous)": {
       "complexity": 13

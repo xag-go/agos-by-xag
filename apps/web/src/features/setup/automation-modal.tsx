@@ -1,7 +1,7 @@
 "use client";
 
 import type { ModelSelection } from "@agos/core";
-import { useActionState, useTransition } from "react";
+import { useActionState, useRef } from "react";
 import type {
   Automation,
   AutomationRevision,
@@ -10,14 +10,12 @@ import type {
   TicketPreset,
 } from "@/data/types";
 import { ModelPicker } from "@/features/models/model-picker";
-import { Button } from "@/shared/ui/button";
 import { DialogCloseButton, RouteDialog } from "@/shared/ui/dialog";
 import { Field, Input, Select, Textarea } from "@/shared/ui/field";
 import { Switch } from "@/shared/ui/switch";
 import { Tabs } from "@/shared/ui/tabs";
-import { useAsk } from "@/shared/ui/confirm";
-import { FormStatus } from "@/shared/ui/form-status";
-import { deleteAutomation, saveAutomation } from "./actions";
+import { saveAutomation } from "./actions";
+import { AutomationFooter } from "./automation-footer";
 import {
   PolicyField,
   RevisionsTab,
@@ -53,15 +51,16 @@ export function AutomationModal({
     saveAutomation.bind(null, workspaceId, automation?.id ?? null),
     { error: null },
   );
-  const editing = automation !== null;
-  const { dialog, confirm } = useAsk();
-  const [deleting, startDelete] = useTransition();
-  const title = editing ? "Edit automation" : "New automation";
+  const title = automation ? "Edit automation" : "New automation";
+  const formRef = useRef<HTMLFormElement>(null);
 
   return (
     <RouteDialog closeHref={closeHref} label={title} size="md">
-      {dialog}
-      <form action={action} className="flex max-h-[92dvh] flex-col">
+      <form
+        ref={formRef}
+        action={action}
+        className="flex max-h-[92dvh] flex-col"
+      >
         <header className="flex items-start gap-3 border-b border-line px-5 py-4">
           <div className="flex-1">
             <h2 className="font-display text-xl font-semibold">{title}</h2>
@@ -205,40 +204,13 @@ export function AutomationModal({
           ]}
         />
 
-        <footer className="flex flex-wrap items-center gap-2 border-t border-line px-5 py-3">
-          <FormStatus error={state.error} className="mr-auto" />
-          {automation && (
-            <Button
-              type="button"
-              variant="ghost"
-              disabled={deleting}
-              onClick={() => {
-                void (async () => {
-                  const ok = await confirm({
-                    title: "Delete this automation?",
-                    body: `“${automation.name}” stops and is removed.`,
-                    confirmLabel: "Delete",
-                    danger: true,
-                  });
-                  if (!ok) return;
-                  startDelete(async () => {
-                    await deleteAutomation(workspaceId, automation.id);
-                  });
-                })();
-              }}
-            >
-              Delete
-            </Button>
-          )}
-          <Button
-            type="submit"
-            variant="primary"
-            className="ml-auto"
-            disabled={pending}
-          >
-            {editing ? "Save changes" : "Create automation"}
-          </Button>
-        </footer>
+        <AutomationFooter
+          workspaceId={workspaceId}
+          automation={automation}
+          pending={pending}
+          saveError={state.error}
+          form={formRef}
+        />
       </form>
     </RouteDialog>
   );

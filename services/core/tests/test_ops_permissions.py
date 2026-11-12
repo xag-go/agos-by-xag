@@ -42,7 +42,7 @@ def test_every_cofounder_action_comes_from_the_catalog() -> None:
     assert {n: k.required for n, k in kinds.items()} == cofounder_actions.ACTIONS
     assert kinds == cofounder_parity.KINDS
     assert {**catalog.effects(SPECS), "bundle": "power"} == power.EFFECT
-    assert len(cofounder_actions.ACTIONS) == 140
+    assert len(cofounder_actions.ACTIONS) == 142  # + automation_cost, check_automation (auto wave)
 
 
 def test_no_hand_written_kind_tables_are_left() -> None:

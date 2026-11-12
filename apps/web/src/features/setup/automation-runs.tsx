@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import type {
   Automation,
+  AutomationCost,
   AutomationRun,
   AutomationVariable,
 } from "@/data/types";
@@ -14,17 +15,21 @@ import { FormStatus } from "@/shared/ui/form-status";
 import { Markdown } from "@/shared/ui/markdown";
 import { formatWhen } from "@/shared/format";
 import { runAutomationNow } from "./actions";
+import { MonthCosts, RunSteps } from "./run-steps";
 
 /** The last runs of one automation: result, report, proposed cards. */
 export function AutomationRuns({
   workspaceId,
   automation,
   runs,
+  costs = [],
   closeHref,
 }: {
   workspaceId: string;
   automation: Automation;
   runs: AutomationRun[];
+  /** What the automations' runs used this month and last month. */
+  costs?: AutomationCost[];
   closeHref: string;
 }) {
   return (
@@ -43,6 +48,7 @@ export function AutomationRuns({
               The last runs, newest first. Proposed cards go to To do only when
               you add them.
             </p>
+            <MonthCosts of={automation.id} costs={costs} />
           </div>
           <RunNowButton
             workspaceId={workspaceId}
@@ -105,6 +111,7 @@ function RunCard({
       {run.report && (
         <Markdown text={run.report} className="mt-2 text-sm text-ink" />
       )}
+      <RunSteps workspaceId={workspaceId} detail={run.detail} />
       {run.proposals.length > 0 && (
         <ul className="mt-3 flex flex-col gap-2 border-t border-line pt-3">
           {run.proposals.map((p) => (

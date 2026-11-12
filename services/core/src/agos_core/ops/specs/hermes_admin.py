@@ -22,7 +22,6 @@ CHANGE_HERMES_SETTING: OperationSpec[ChangeHermesSetting] = OperationSpec(
     audit_title="Engine setting {key} → {value}",
     gate="undo",
     agent_tool=None,
-    web_action="saveHermesSetting",
     cofounder_domain=CHAT,
 )
 

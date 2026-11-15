@@ -12,6 +12,9 @@ Every notable change to AGOS is written here. The format follows
   `agos-ci`); its service is `server-ci-runner.service`.
 - CI: with the repository variable `CI_RUNNER=self`, every CI and Security job
   runs on that runner (no minutes limit); without it, GitHub's machines as before.
+- Tests: Lighthouse drives Playwright's chrome-headless-shell instead of the full
+  Chrome, whose page kept dying on GitHub's runner image (the Lighthouse test failed
+  in 23 of 51 Browser jobs).
 
 ### Added
 

@@ -12,6 +12,8 @@ Every notable change to AGOS is written here. The format follows
   `agos-ci`); its service is `server-ci-runner.service`.
 - CI: with the repository variable `CI_RUNNER=self`, every CI and Security job
   runs on that runner (no minutes limit); without it, GitHub's machines as before.
+- CI: `ci.yml` can also be started by hand (`gh workflow run ci.yml --ref main`),
+  so the whole suite can be run on `main` without a new commit.
 
 ### Added
 

@@ -4,7 +4,7 @@ Three workflows in `.github/workflows/`:
 
 | Workflow             | When                              | Runs on                     |
 | -------------------- | --------------------------------- | --------------------------- |
-| `ci.yml`             | every PR, push to `main`          | GitHub (`ubuntu-24.04`)     |
+| `ci.yml`             | every PR, push to `main`, by hand | GitHub (`ubuntu-24.04`)     |
 | `security.yml`       | every PR, push to `main`, Mondays | GitHub (`ubuntu-24.04`)     |
 | `nightly-hermes.yml` | nightly 02:23 UTC, by hand        | self-hosted runner `hermes` |
 

@@ -9,6 +9,9 @@ on:
     types: [opened, synchronize, reopened, labeled, unlabeled]
   push:
     branches: [main]
+  # By hand, on any branch: `gh workflow run ci.yml --ref main`. The pull-request-only
+  # steps (diff coverage, API break, changelog) are skipped, as on a push.
+  workflow_dispatch:
 
 permissions:
   contents: read

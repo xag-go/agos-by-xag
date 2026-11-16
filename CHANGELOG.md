@@ -15,6 +15,8 @@ Every notable change to AGOS is written here. The format follows
 - Tests: Lighthouse drives Playwright's chrome-headless-shell instead of the full
   Chrome, whose page kept dying on GitHub's runner image (the Lighthouse test failed
   in 23 of 51 Browser jobs).
+- CI: `ci.yml` can also be started by hand (`gh workflow run ci.yml --ref main`),
+  so the whole suite can be run on `main` without a new commit.
 
 ### Added
 

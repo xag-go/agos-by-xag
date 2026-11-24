@@ -14,6 +14,8 @@ Every notable change to AGOS is written here. The format follows
   name. A hidden character after the warning sign no longer shows as a literal `\ufe0f`.
 - A fresh install keeps chat approvals as a list: on some SQLite builds migration 122 stored them
   as JSON text (`"kept": "[...]"`); migration 148 turns them back into a list.
+- The Telegram tests' fake server no longer resets a caller when several connect at once (a rare
+  `Connection reset by peer` in `test_a_chat_gets_its_own_telegram_topic`): bigger listen backlog.
 
 ### Changed
 

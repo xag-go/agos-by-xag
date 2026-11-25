@@ -36,25 +36,31 @@ WORDS: dict[str, str] = {
 }
 
 # H: tools/approval.py request_tool_approval: display_target=f"<{tool_name}> (plugin approval rule)"
-_LABEL = re.compile(r"<[A-Za-z0-9_.:-]{1,128}> \(plugin approval rule\)")
+_LABEL = re.compile(r"<agos_[a-z_]{1,64}> \(plugin approval rule\)")
 _MARK = "_agos_card_words"
 
 
 def split(command: str, description: str | None) -> tuple[str, str | None]:
     """(what the card shows as the action, the reason) for one card.
 
-    A plugin rule's card whose reason has the change on its first line: that line
-    replaces the label. Anything else comes back unchanged."""
+    The card of one of AGOS's tools whose words (engine/approval_words.py) put the
+    change on line 1 and the reason below: that line replaces the label. Anything
+    else (a terminal command, a one-line message) comes back unchanged."""
     if not _LABEL.fullmatch(str(command or "").strip()) or not description:
         return command, description
     first, _, rest = str(description).strip().partition("\n")
-    return (first.strip(), rest.strip() or None) if first.strip() else (command, description)
+    if not first.strip() or not rest.strip():
+        return command, description
+    return first.strip(), rest.strip()
 
 
 def register(ctx: Any) -> None:
-    """Both, at plugin load."""
-    register_words(ctx)
-    install()
+    """Both, at plugin load. Never breaks the plugin: the card then keeps Hermes's words."""
+    try:
+        register_words(ctx)
+        install()
+    except Exception as error:  # noqa: BLE001 — wording only; the guard must load
+        runtime._report("agos_guard.approval_card", error)
 
 
 def register_words(ctx: Any) -> None:

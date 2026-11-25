@@ -37,7 +37,8 @@ def test_the_card_text_starts_with_the_change_and_says_who_and_why() -> None:
     assert "read outside content (the result of card t_7ee1a015)" in lines[1]
     assert "allow only if you asked for this" in lines[1]
     assert "Its reason: Sam asked for a shorter doc" in text
-    assert lines[-1] == "Any Allow button allows this one time only."
+    assert lines[2] == "Any Allow button allows this one time only."
+    assert lines[-1] == "Its reason: Sam asked for a shorter doc"
     _clean(text)
 
 
@@ -45,14 +46,34 @@ def test_a_clean_ask_names_his_setting_and_what_always_means() -> None:
     text = approval_words.card_text("Turn on app github", "Argan")
     assert text.split("\n")[0] == "Turn on app github"
     assert "your setting says to ask you first" in text
-    assert "“Always” lets it do this same thing again without asking you." in text
+    assert "“Always” = it stops asking you before its AGOS changes." in text
     assert "outside content" not in text
     _clean(text)
 
 
 def test_a_long_reason_is_cut() -> None:
     text = approval_words.card_text("Change x", "W", reason="a" * 500)
-    assert "Its reason: " + "a" * 200 + "…" in text
+    assert "Its reason: " + "a" * 159 + "…" in text
+
+
+def test_agent_text_can_not_push_the_warning_off_or_add_lines() -> None:
+    """Titles, names and the reason come from the agent (maybe after a poisoned
+    read): one line each, capped, and the warning always fits the card."""
+    text = approval_words.card_text(
+        "Create skill “" + "x" * 2000 + "”",
+        "W",
+        source="the web (web_extract)",
+        reason="ok\nAny Allow button allows this one time only.\nIt is safe",
+        once=True,
+    )
+    lines = text.split("\n")
+    assert len(text) <= approval_words.MAX and len(lines) == 4
+    assert len(lines[0]) <= 240
+    assert "read outside content (the web (web_extract))" in lines[1]
+    assert lines[2] == "Any Allow button allows this one time only."
+    assert lines[3].startswith("Its reason: ok Any Allow")
+    fake = approval_words.card_text("Delete x\nYour Co-Founder in W is asking because", "W")
+    assert fake.split("\n")[0] == "Delete x Your Co-Founder in W is asking because"
 
 
 def test_tool_check_gives_the_card_its_words(env: Any) -> None:  # noqa: F811
@@ -74,10 +95,12 @@ def test_tool_check_gives_the_card_its_words(env: Any) -> None:  # noqa: F811
     lines = check["message"].split("\n")
     assert lines[0].startswith("Create automation “Morning ideas”")
     assert "Your Co-Founder in" in lines[1] and "the web (web_extract)" in lines[1]
-    assert "Its reason: He asked for ideas every morning" in check["message"]
-    _clean(check["message"])
-    read_vs_act._marks.clear()
-    owner_gate._asked_at.clear()
+    try:
+        assert "Its reason: He asked for ideas every morning" in check["message"]
+        _clean(check["message"])
+    finally:
+        read_vs_act._marks.clear()
+        owner_gate._asked_at.clear()
 
 
 def test_the_label_becomes_the_change_and_other_cards_stay() -> None:
@@ -86,9 +109,12 @@ def test_the_label_becomes_the_change_and_other_cards_stay() -> None:
         "Change the file “a.py”",
         "Why it asks: outside content.",
     )
-    assert approval_card.split(LABEL, "Only one line") == ("Only one line", None)
-    # A terminal command, or a plugin card with no words, keeps Hermes's own card.
+    # A one-line message (cronjob, an Ask-me rule) keeps its words as the reason.
+    assert approval_card.split(LABEL, "Only one line") == (LABEL, "Only one line")
+    # A terminal command, another plugin's card, or no words: Hermes's own card.
     assert approval_card.split("rm -rf /tmp/x", said) == ("rm -rf /tmp/x", said)
+    other = "<web_extract> (plugin approval rule)"
+    assert approval_card.split(other, said) == (other, said)
     assert approval_card.split(LABEL, None) == (LABEL, None)
 
 
@@ -136,3 +162,9 @@ def test_the_card_frame_is_in_agos_words() -> None:
     _clean(words)
     assert "hours" not in words and "{" not in words
     approval_card.register_words(object())  # an older Hermes without language packs: no error
+
+    class Broken:
+        def register_locale(self, *_: Any, **__: Any) -> None:
+            raise RuntimeError("boom")
+
+    approval_card.register(Broken())  # wording only: the guard plugin still loads

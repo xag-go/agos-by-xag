@@ -2889,4 +2889,14 @@ MIGRATIONS: tuple[str, ...] = (
     ERROR_ISSUES,  # 145: Settings → Errors (db/schema_errors.py)
     SERVICE_LAYER,  # 146: operation runs, sagas, outbox (db/schema_service_layer.py)
     RELIABILITY,  # 147: job queue, SLO samples (db/schema_reliability.py)
+    # 148: the approvals migration 122 kept can be JSON text ('{"kept": "[...]"}') on an
+    # SQLite that drops the JSON subtype through a subquery: back to a list (no-op
+    # where it already is one; safe to run again).
+    """
+  UPDATE chat_turns
+     SET activity = json_object('kept', json(json_extract(activity, '$.kept')))
+   WHERE json_valid(activity)
+     AND json_type(activity, '$.kept') = 'text'
+     AND json_valid(json_extract(activity, '$.kept'));
+  """,
 )

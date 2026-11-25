@@ -468,7 +468,7 @@ def test_a_tainted_session_installs_no_hub_skill_without_his_one_time_yes(
     check = {**clean, "session": "s1"}
     asked = _post(client, core, ws, "tool-check", check)
     assert asked["ask"] is True and asked["once"]
-    assert "This came after reading the web (web_extract)" in asked["message"]
+    assert "it read outside content (the web (web_extract))" in asked["message"]
     body = {**request, "chat": chat, "session": "s1"}
     refused = _post(client, core, ws, "skill-request", body)
     assert refused == {"error": hermes_channel.GATE_NOT_ASKED}

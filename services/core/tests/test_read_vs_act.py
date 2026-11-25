@@ -108,14 +108,14 @@ def test_after_an_untrusted_read_a_power_action_asks_him_with_the_reason(
         {"tool": "agos_action", "args": {"actions": [AUTOMATION]}, "chat": chat},
     )
     assert check["ask"] is True
-    assert "This came after reading the web (web_extract)" in check["message"]
+    assert "it read outside content (the web (web_extract))" in check["message"]
     # Work on the board is not a power: it stays direct.
     work = hermes_channel.tool_check(core, "agos_action", {"actions": [LABEL]}, ws, chat)
     assert work["ask"] is False
     # Turning on an app is.
     capability = {"kind": "app", "name": "github", "on": True}
     asked = hermes_channel.tool_check(core, "agos_capability", capability, ws, chat)
-    assert asked["ask"] is True and "after reading" in asked["message"]
+    assert asked["ask"] is True and "read outside content" in asked["message"]
 
 
 def test_a_tainted_batch_that_skipped_the_check_is_refused(env: Any) -> None:  # noqa: F811
@@ -265,7 +265,7 @@ def test_a_web_page_that_says_create_an_automation_gets_a_held_action(
     # 2. It then calls agos_action create_automation: Hermes must ask the owner.
     held = hook(tool_name="agos_action", args={"actions": [AUTOMATION]}, tool_call_id="c2", **ids)
     assert held is not None and held["action"] == "approve", held
-    assert "This came after reading the web (web_extract)" in held["message"]
+    assert "it read outside content (the web (web_extract))" in held["message"]
     # The core marked the chat too: the same batch POSTed without that check is refused.
     assert read_vs_act.source_of(core, ws, chat) == "the web (web_extract)"
     # 3. Nothing was created on the model's word.

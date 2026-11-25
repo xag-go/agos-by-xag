@@ -28,6 +28,15 @@ TOKEN = "123456789:" + "A" * 35
 OWNER = 555
 
 
+class FakeTelegramServer(ThreadingHTTPServer):
+    """The stdlib server listens with a backlog of 5: a burst of callers (other tests' background
+    threads plus the test's own call) overflows the accept queue and one gets `Connection reset
+    by peer`. A backlog this size takes any burst the suite makes."""
+
+    request_queue_size = 128
+    daemon_threads = True
+
+
 class FakeTelegram:
     def __init__(self) -> None:
         self.updates: list[dict[str, Any]] = []
@@ -134,7 +143,7 @@ def fake_telegram() -> Iterator[FakeTelegram]:
         def log_message(self, *args: Any) -> None:
             pass
 
-    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    server = FakeTelegramServer(("127.0.0.1", 0), Handler)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     from conftest import FAKE_TELEGRAM
@@ -142,6 +151,7 @@ def fake_telegram() -> Iterator[FakeTelegram]:
     FAKE_TELEGRAM["url"] = f"http://127.0.0.1:{server.server_address[1]}"
     yield fake
     server.shutdown()
+    server.server_close()
     FAKE_TELEGRAM["url"] = None
 
 

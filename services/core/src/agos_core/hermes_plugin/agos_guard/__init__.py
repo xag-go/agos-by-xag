@@ -180,9 +180,16 @@ def _post(*args: Any, **kwargs: Any) -> Any:
     return runtime._bridge_module().post(*args, **kwargs)
 
 
-def register(ctx: Any) -> None:
+def _start(ctx: Any) -> None:
+    """First at load: keep Hermes's ctx, quiet the sandbox cwd notice, and put his
+    Allow / Deny card in plain words."""
     runtime._CTX["ctx"] = ctx
     _quiet_sandbox_cwd()
+    runtime._sibling("approval_card").register(ctx)
+
+
+def register(ctx: Any) -> None:
+    _start(ctx)
 
     def pre_tool_call(
         tool_name: str = "",

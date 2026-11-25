@@ -422,8 +422,8 @@
     },
     "services/core/src/agos_core/hermes_plugin/agos_guard/__init__.py::register": {
       "C901": 19,
-      "PLR0915": 79,
-      "length": 172
+      "PLR0915": 78,
+      "length": 171
     },
     "services/core/src/agos_core/hermes_plugin/agos_guard/bridge_platform.py::_agos_adapter": {
       "C901": 33,

@@ -96,7 +96,8 @@ def approval_asked(
     if pattern.startswith(hermes_addresses.AGOS_TOOL_RULE):
         # One of AGOS's own tools (Add to To do, the Co-Founder's actions…): the card
         # says what it does, not Hermes's "<tool> (plugin approval rule)".
-        command, description = description, ""
+        # Line 1 = the change, the rest = who asks and why (engine/approval_words.py).
+        command, _, description = description.partition("\n")
     asked = {"command": command, "description": description, "pattern_key": pattern}
     live.turn.apply({"event": "approval.request", **asked})
     live.turn.version += 1

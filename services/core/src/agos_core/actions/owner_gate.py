@@ -33,7 +33,9 @@ import time
 from typing import Any
 
 from agos_core.context import Core
+from agos_core.db import workspaces as workspaces_repo
 from agos_core.domain.secrets import same_secret
+from agos_core.engine import approval_words
 
 log = logging.getLogger("agos.hermes_channel")
 
@@ -137,28 +139,38 @@ def tool_check(
         decided_later = [a for a in actions if a.do == "hire_agent"]
         others = [a for a in actions if a.do != "hire_agent"]
         ask = any(held_kinds(core, others, source=source))
-        titles = "; ".join(action_rules.title_of(a) for a in (others or decided_later)[:10])
+        shown = (others or decided_later)[:10]
+        titles = "; ".join(action_rules.title_of(a) for a in shown)
         if ask and workspace_id:
             _asked(workspace_id, address, _batch_key(args.get("actions")), once)
-        message = f"🛠 {titles}"
-        if ask and source and any(power.is_power(a.do) for a in others):
-            message = power.held_message(source, message)
-        return _answer(ask, message, once)
+        held = bool(ask and source and any(power.is_power(a.do) for a in others))
+        reason = "; ".join(str(a.fields.get("why") or "").strip() for a in shown).strip("; ")
+        return _answer(
+            ask, _card(core, workspace_id, titles, source if held else "", reason, once), once
+        )
     if tool == "agos_capability":
         verb = "Turn on" if args.get("on", True) is not False else "Turn off"
         name = str(args.get("name") or "")
         ask = cofounder_actions.mode(core) == "ask" or bool(source)
         if ask and workspace_id:
             _asked(workspace_id, address, _capability_key(args), once)
-        message = f"🔌 {verb} {args.get('kind') or 'app'} {name}"
-        return _answer(ask, power.held_message(source, message) if source else message, once)
+        said = f"{verb} {args.get('kind') or 'app'} {name}"
+        return _answer(ask, _card(core, workspace_id, said, source, "", once), once)
     if tool == SKILL_REQUEST and args.get("action") == "request" and source:
         # A hub skill installed on a tainted session's word: a power (engine/power.py).
         if workspace_id:
             _asked(workspace_id, address, _skill_key(args), once)
-        said = f"🧩 Install the skill {str(args.get('source') or '')[:200]} from the skills hub"
-        return _answer(True, power.held_message(source, said), once)
+        said = f"Install the skill {str(args.get('source') or '')[:200]} from the skills hub"
+        return _answer(True, _card(core, workspace_id, said, source, "", once), once)
     return {"ask": False, "message": ""}
+
+
+def _card(
+    core: Core, workspace_id: str | None, what: str, source: str, reason: str, once: str
+) -> str:
+    """His Allow / Deny card's words (engine/approval_words.py): line 1 = the change."""
+    name = workspaces_repo.name_of(core.db, workspace_id) if workspace_id else ""
+    return approval_words.card_text(what, name, source=source, reason=reason, once=bool(once))
 
 
 SKILL_REQUEST = "agos_skill_request"

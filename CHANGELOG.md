@@ -12,6 +12,8 @@ Every notable change to AGOS is written here. The format follows
   itself (not "<agos_action> (plugin approval rule)"), who asks and why, the agent's own reason,
   what the buttons allow, "No answer = nothing happens." instead of "8760 hours", and no engine
   name. A hidden character after the warning sign no longer shows as a literal `\ufe0f`.
+- A fresh install keeps chat approvals as a list: on some SQLite builds migration 122 stored them
+  as JSON text (`"kept": "[...]"`); migration 148 turns them back into a list.
 
 ### Changed
 

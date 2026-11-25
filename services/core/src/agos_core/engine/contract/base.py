@@ -125,6 +125,7 @@ _THREADS = (
     "assign / labels in one Hermes process, who follows a card"
 )
 _VOICE = "voice notes heard by Gemini (stt.provider: gemini)"
+_WORDS = "the owner's Allow / Deny card in plain words (no raw tool label, no engine name)"
 _CLOCK = "the current time on a turn Hermes didn't stamp"
 _MCP = "connecting an MCP app with its own sign-in (OAuth) from AGOS"
 _TOOLS = "Settings → Tools: the toolsets, their services and which one is active"

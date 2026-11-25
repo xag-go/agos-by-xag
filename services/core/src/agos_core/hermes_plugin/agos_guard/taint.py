@@ -269,10 +269,9 @@ def held_power(
     if known == "":
         return None
     found = known or "something AGOS couldn't check (it didn't answer)"
-    what = (
-        f"⏰ {args.get('action')} the scheduled job {args.get('name') or args.get('job_id') or ''}"
-    )
-    said = f"⚠️ This came after reading {found}. {what.strip()}"[:900]
+    what = f"{args.get('action')} the scheduled job {args.get('name') or args.get('job_id') or ''}"
+    # No emoji with a hidden variation selector: Hermes prints it on the card as "\ufe0f".
+    said = f"This came after reading {found}. {what.strip()}"[:900]
     if _is_run(session):
         return {
             "action": "block",

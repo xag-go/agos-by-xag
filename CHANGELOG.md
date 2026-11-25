@@ -6,6 +6,13 @@ Every notable change to AGOS is written here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- The Telegram Allow / Deny card for a Co-Founder change is readable: it shows the change
+  itself (not "<agos_action> (plugin approval rule)"), who asks and why, the agent's own reason,
+  what the buttons allow, "No answer = nothing happens." instead of "8760 hours", and no engine
+  name. A hidden character after the warning sign no longer shows as a literal `\ufe0f`.
+
 ### Changed
 
 - CI: the self-hosted nightly runner's account is now `server-ci` (was

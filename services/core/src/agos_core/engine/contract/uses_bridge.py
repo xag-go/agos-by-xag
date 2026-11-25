@@ -386,6 +386,16 @@ USES: tuple[Use, ...] = (
         _CHATS,
         accepts="chat_id metadata",
     ),
+    # Wrapped once (agos_guard/approval_card.py): a plugin rule's card shows the change
+    # instead of the raw "<tool> (plugin approval rule)" label.
+    _u(
+        "gateway.platforms.base",
+        "BasePlatformAdapter.send_exec_approval",
+        "method",
+        "bridge",
+        _CARDS,
+        kw="chat_id command session_key description",
+    ),
     _u(
         "gateway.platforms.base",
         "BasePlatformAdapter._send_exec_approval_prompt",

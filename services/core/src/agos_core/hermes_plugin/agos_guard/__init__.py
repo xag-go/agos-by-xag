@@ -183,6 +183,7 @@ def _post(*args: Any, **kwargs: Any) -> Any:
 def register(ctx: Any) -> None:
     runtime._CTX["ctx"] = ctx
     _quiet_sandbox_cwd()
+    runtime._sibling("approval_card").register(ctx)  # his Allow / Deny card in plain words
 
     def pre_tool_call(
         tool_name: str = "",
